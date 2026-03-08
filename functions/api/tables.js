@@ -1,34 +1,35 @@
-// Cloudflare Pages Function - Proxy for /api/tables/settings
-// Handles: GET /api/tables/settings?search=...
-//          POST /api/tables/settings
-//          PUT /api/tables/settings/:id
-//          DELETE /api/tables/settings/:id
+// Cloudflare Pages Function - Proxy for /api/tables/*
+// This proxies ALL requests under /api/tables to https://www.genspark.ai/api/tables
 
-const API_BASE = 'https://www.genspark.ai/api/tables/settings';
+const API_BASE = 'https://www.genspark.ai/api/tables';
 
 export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
   
-  // Build target URL with query params and path
-  const targetUrl = `${API_BASE}${url.pathname.replace('/api/tables/settings', '')}${url.search}`;
+  // Extract the path after /api/tables
+  const path = url.pathname.replace('/api/tables', '');
+  const targetUrl = `${API_BASE}${path}${url.search}`;
   
-  console.log(`[Proxy] ${request.method} ${targetUrl}`);
+  console.log(`[API Proxy] ${request.method} ${targetUrl}`);
   
   try {
     // Get request body if exists
     let body = undefined;
     if (request.method !== 'GET' && request.method !== 'HEAD') {
-      body = await request.text();
+      const contentType = request.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        body = await request.text();
+      }
     }
     
-    // Forward the request to the actual API with proper headers
+    // Forward the request
     const apiRequest = new Request(targetUrl, {
       method: request.method,
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
         'Referer': 'https://jwcsite.pages.dev/',
         'Origin': 'https://jwcsite.pages.dev',
       },
@@ -38,7 +39,9 @@ export async function onRequest(context) {
     const response = await fetch(apiRequest);
     const data = await response.text();
     
-    // Return response with CORS headers
+    console.log(`[API Proxy] Response status: ${response.status}`);
+    
+    // Return with CORS headers
     return new Response(data, {
       status: response.status,
       headers: {
@@ -49,10 +52,11 @@ export async function onRequest(context) {
       },
     });
   } catch (error) {
-    console.error('[Proxy Error]', error);
+    console.error('[API Proxy Error]', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error.message,
+      details: 'Proxy error occurred'
     }), {
       status: 500,
       headers: {
@@ -63,7 +67,7 @@ export async function onRequest(context) {
   }
 }
 
-// Handle OPTIONS preflight requests
+// Handle OPTIONS
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
