@@ -135,13 +135,13 @@ async function removeLogo() {
     if (!confirm('로고를 제거하시겠습니까?')) return;
     
     try {
-        const response = await fetch('tables/images?search=logo');
+        const response = await fetch('/api/table/images?search=logo');
         const result = await response.json();
         
         if (result.data && result.data.length > 0) {
             for (const logo of result.data) {
                 if (logo.type === 'logo') {
-                    await fetch(`tables/images/${logo.id}`, { method: 'DELETE' });
+                    await fetch(`/api/table/images/${logo.id}`, { method: 'DELETE' });
                 }
             }
         }
