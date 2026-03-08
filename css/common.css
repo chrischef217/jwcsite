@@ -257,32 +257,6 @@ footer {
     text-align: center;
 }
 
-footer .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-.admin-btn-footer {
-    background: none;
-    color: rgba(255, 255, 255, 0.3);
-    border: none;
-    width: auto;
-    height: auto;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0;
-    transition: all 0.3s;
-    opacity: 0.5;
-}
-
-.admin-btn-footer:hover {
-    color: rgba(255, 255, 255, 0.6);
-    opacity: 0.8;
-    transform: rotate(90deg);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .nav-menu {
@@ -310,14 +284,5 @@ footer .container {
 
     .page-hero h1 {
         font-size: 32px;
-    }
-
-    footer .container {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .admin-btn-footer {
-        font-size: 14px;
     }
 }

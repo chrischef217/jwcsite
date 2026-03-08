@@ -135,22 +135,15 @@ async function removeLogo() {
     if (!confirm('로고를 제거하시겠습니까?')) return;
     
     try {
-        const db = await ensureDB();
-        const tx = db.transaction(['images'], 'readwrite');
-        const store = tx.objectStore('images');
-        const index = store.index('type');
+        const response = await fetch('tables/images?search=logo');
+        const result = await response.json();
         
-        const logos = await new Promise((resolve) => {
-            const request = index.getAll('logo');
-            request.onsuccess = () => resolve(request.result);
-        });
-        
-        for (const logo of logos) {
-            await new Promise((resolve, reject) => {
-                const request = store.delete(logo.id);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
+        if (result.data && result.data.length > 0) {
+            for (const logo of result.data) {
+                if (logo.type === 'logo') {
+                    await fetch(`tables/images/${logo.id}`, { method: 'DELETE' });
+                }
+            }
         }
         
         alert('로고가 제거되었습니다.');
