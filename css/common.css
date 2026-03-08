@@ -48,12 +48,10 @@ header {
 }
 
 .logo img {
-    max-height: 50px;
+    max-height: 40px;
+    height: 40px;
     width: auto;
-}
-
-.logo span {
-    display: inline-block;
+    display: block;
 }
 
 .nav-menu {
