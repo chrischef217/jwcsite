@@ -52,16 +52,35 @@ async function saveLogoToDB(filename, dataUrl) {
  */
 async function getLogo() {
     try {
+        console.log('🔍 [getLogo] API 호출 시작:', `${API_BASE}/images?search=logo&limit=1`);
+        
         const response = await fetch(`${API_BASE}/images?search=logo&limit=1`);
+        console.log('📡 [getLogo] 응답 상태:', response.status, response.statusText);
+        
         const result = await response.json();
+        console.log('📦 [getLogo] 응답 데이터:', result);
         
         if (result.data && result.data.length > 0) {
+            console.log('📋 [getLogo] 데이터 개수:', result.data.length);
             const logo = result.data.find(item => item.type === 'logo');
-            return logo ? { filename: logo.filename, data: logo.data } : null;
+            
+            if (logo) {
+                console.log('✅ [getLogo] 로고 발견:', {
+                    filename: logo.filename,
+                    type: logo.type,
+                    dataLength: logo.data ? logo.data.length : 0
+                });
+                return { filename: logo.filename, data: logo.data };
+            } else {
+                console.log('⚠️ [getLogo] type=logo인 데이터 없음');
+                return null;
+            }
         }
+        console.log('ℹ️ [getLogo] 데이터 없음');
         return null;
     } catch (error) {
-        console.error('❌ 로고 로딩 실패:', error);
+        console.error('❌ [getLogo] 로고 로딩 실패:', error);
+        console.error('Error details:', error.message, error.stack);
         return null;
     }
 }
