@@ -15,15 +15,23 @@ export async function onRequest(context) {
   console.log(`[Proxy] ${request.method} ${targetUrl}`);
   
   try {
-    // Forward the request to the actual API
+    // Get request body if exists
+    let body = undefined;
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      body = await request.text();
+    }
+    
+    // Forward the request to the actual API with proper headers
     const apiRequest = new Request(targetUrl, {
       method: request.method,
       headers: {
         'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Referer': 'https://jwcsite.pages.dev/',
+        'Origin': 'https://jwcsite.pages.dev',
       },
-      body: request.method !== 'GET' && request.method !== 'HEAD' 
-        ? await request.text() 
-        : undefined,
+      body: body,
     });
     
     const response = await fetch(apiRequest);
