@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/cloudflare-workers'
 import { cors } from 'hono/cors'
 import { layout, heroSlider, pageHero } from './views/layout'
 import { homeContent } from './views/home'
@@ -16,15 +15,6 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // CORS for API routes
 app.use('/api/*', cors())
-
-// Static files
-app.use('/css/*', serveStatic({ root: './public' }))
-app.use('/js/*', serveStatic({ root: './public' }))
-app.use('/images/*', serveStatic({ root: './public' }))
-app.use('/jwc-logo.png', serveStatic({ root: './public' }))
-
-// Admin pages (keep as static files)
-app.use('/admin*.html', serveStatic({ root: './' }))
 
 // Home page (SSR)
 app.get('/', async (c) => {
