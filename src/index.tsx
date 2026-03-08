@@ -16,6 +16,26 @@ const app = new Hono<{ Bindings: Bindings }>()
 // CORS for API routes
 app.use('/api/*', cors())
 
+// Logo endpoint - serve from hardcoded data URL
+const LOGO_DATA_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAI8CAYAAABvddlvAAAACXBIWXMAAC4jAAAuIwF4pT92AAAgAElEQVR4nOy9B7BlV3nn+1vnnnvv7XxvzjmnVlBACMkkjAkGY2zjHMDGGAw2wcYYYxtjG2OMbYwxtrGNMcYYY4wxJgcJJJCQhBAgkBASQgiEhISE0u10u/Ptc885e633/d+99z3ddLp1u+vcvrerfWv12muv9a1vhf9a/7W+tRYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+
+app.get('/jwc-logo.png', async (c) => {
+  // Decode base64 and serve as PNG
+  const base64Data = LOGO_DATA_URL.split(',')[1]
+  const binaryString = atob(base64Data)
+  const bytes = new Uint8Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  
+  return new Response(bytes, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=31536000'
+    }
+  })
+})
+
 // Home page (SSR)
 app.get('/', async (c) => {
   const heroImages = await getHeroImages(c.env.KV)
