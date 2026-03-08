@@ -5,8 +5,8 @@ async function loadLogo() {
     console.log('🔍 로고 로딩 시작...');
     
     try {
-        const logoData = await getLogo();
-        console.log('📦 getLogo 응답:', logoData);
+        const response = await getLogo();
+        console.log('📦 getLogo 응답:', response);
         
         const logoImage = document.getElementById('logoImage');
         const logoText = document.getElementById('logoText');
@@ -16,7 +16,9 @@ async function loadLogo() {
             return;
         }
         
-        if (logoData && logoData.data) {
+        // API 응답 구조: { success: true, data: [...] }
+        if (response && response.success && response.data && response.data.length > 0) {
+            const logoData = response.data[0]; // 첫 번째 로고 사용
             console.log('✅ 로고 데이터 발견:', logoData.filename);
             console.log('📏 로고 데이터 길이:', logoData.data.length, 'bytes');
             
