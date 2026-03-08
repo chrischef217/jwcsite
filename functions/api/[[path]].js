@@ -1,14 +1,15 @@
-// Cloudflare Pages Function - Proxy for /api/tables/*
-// This proxies ALL requests under /api/tables to https://www.genspark.ai/api/tables
+// Cloudflare Pages Function - Proxy for /api/*
+// This proxies ALL requests under /api to https://www.genspark.ai/api
 
-const API_BASE = 'https://www.genspark.ai/api/tables';
+const API_BASE = 'https://www.genspark.ai/api';
 
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, params } = context;
   const url = new URL(request.url);
   
-  // Extract the path after /api/tables
-  const path = url.pathname.replace('/api/tables', '');
+  // Build path from params
+  const pathParts = params.path || [];
+  const path = '/' + pathParts.join('/');
   const targetUrl = `${API_BASE}${path}${url.search}`;
   
   console.log(`[API Proxy] ${request.method} ${targetUrl}`);
