@@ -4,7 +4,7 @@
 // LAST UPDATE: 2024-02-20 11:20
 // ============================================
 
-const API_BASE = 'tables';
+const API_BASE = 'https://www.genspark.ai/api/tables';
 
 // ============================================
 // 이미지 관리 API

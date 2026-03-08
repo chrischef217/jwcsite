@@ -257,6 +257,35 @@ footer {
     text-align: center;
 }
 
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.footer-admin-btn {
+    background: #333;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    opacity: 0.3;
+}
+
+.footer-admin-btn:hover {
+    background: #555;
+    opacity: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .nav-menu {
