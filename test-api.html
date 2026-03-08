@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0f0;
+            color: #000;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #0f0;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #f00;
+        }
+        .success {
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 RESTful Table API 테스트</h1>
+    
+    <div>
+        <h2>테스트 버튼</h2>
+        <button onclick="testCreateTable()">1. 테이블 생성 (images)</button>
+        <button onclick="testGetImages()">2. 이미지 조회</button>
+        <button onclick="testUploadLogo()">3. 로고 업로드</button>
+        <button onclick="testGetLogo()">4. 로고 조회</button>
+    </div>
+    
+    <div class="result" id="result">테스트 결과가 여기에 표시됩니다...</div>
+    
+    <script>
+        const API_BASE = '/api/table';
+        
+        function log(msg, isError = false) {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            result.innerHTML += `<div class="${className}">[${timestamp}] ${msg}</div>`;
+        }
+        
+        async function testCreateTable() {
+            log('📋 images 테이블 생성 시도...');
+            try {
+                const response = await fetch(`${API_BASE}/images`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'test',
+                        filename: 'test.png',
+                        data: 'data:image/png;base64,test',
+                        page: '',
+                        order_index: 0
+                    })
+                });
+                
+                log(`Status: ${response.status} ${response.statusText}`);
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ 에러: ${error.message}`, true);
+                log(`Stack: ${error.stack}`, true);
+            }
+        }
+        
+        async function testGetImages() {
+            log('📥 이미지 목록 조회 시도...');
+            try {
+                const response = await fetch(`${API_BASE}/images`);
+                log(`Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ 에러: ${error.message}`, true);
+                log(`Stack: ${error.stack}`, true);
+            }
+        }
+        
+        async function testUploadLogo() {
+            log('📤 로고 업로드 시도...');
+            try {
+                // 작은 테스트 이미지 생성
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(0, 0, 100, 100);
+                const dataUrl = canvas.toDataURL('image/png');
+                
+                log(`DataURL 길이: ${dataUrl.length}`);
+                
+                const response = await fetch(`${API_BASE}/images`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'logo',
+                        filename: 'test-logo.png',
+                        data: dataUrl,
+                        page: '',
+                        order_index: 0
+                    })
+                });
+                
+                log(`Status: ${response.status} ${response.statusText}`);
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ 에러: ${error.message}`, true);
+                log(`Stack: ${error.stack}`, true);
+            }
+        }
+        
+        async function testGetLogo() {
+            log('🔍 로고 조회 시도...');
+            try {
+                const response = await fetch(`${API_BASE}/images?search=logo`);
+                log(`Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.data && data.data.length > 0) {
+                    log(`✅ 로고 발견: ${data.data.length}개`);
+                    data.data.forEach((item, idx) => {
+                        log(`  [${idx}] type: ${item.type}, filename: ${item.filename}`);
+                    });
+                }
+            } catch (error) {
+                log(`❌ 에러: ${error.message}`, true);
+                log(`Stack: ${error.stack}`, true);
+            }
+        }
+        
+        log('✅ API 테스트 페이지 로드 완료');
+        log(`API Base URL: ${API_BASE}`);
+    </script>
+</body>
+</html>

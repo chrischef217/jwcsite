@@ -1,10 +1,52 @@
 // ============================================
-// RESTful Table API 기반 데이터 관리
-// VERSION: 3.1.20240308
-// LAST UPDATE: 2024-03-08 - API 경로 수정
+// IndexedDB 기반 데이터 관리
+// VERSION: 3.2.20240308
+// LAST UPDATE: 2024-03-08 - IndexedDB로 전환
 // ============================================
 
-const API_BASE = '/api/table';
+const DB_NAME = 'JWC_DB';
+const DB_VERSION = 1;
+let db = null;
+
+// IndexedDB 초기화
+async function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            console.log('✅ IndexedDB 초기화 완료');
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            
+            // images 스토어
+            if (!db.objectStoreNames.contains('images')) {
+                const imagesStore = db.createObjectStore('images', { keyPath: 'id', autoIncrement: true });
+                imagesStore.createIndex('type', 'type', { unique: false });
+                imagesStore.createIndex('page', 'page', { unique: false });
+                console.log('✅ images 스토어 생성 완료');
+            }
+            
+            // settings 스토어
+            if (!db.objectStoreNames.contains('settings')) {
+                db.createObjectStore('settings', { keyPath: 'key' });
+                console.log('✅ settings 스토어 생성 완료');
+            }
+        };
+    });
+}
+
+// DB 연결 보장
+async function ensureDB() {
+    if (!db) {
+        await initDB();
+    }
+    return db;
+}
 
 // ============================================
 // 이미지 관리 API
@@ -15,32 +57,40 @@ const API_BASE = '/api/table';
  */
 async function saveLogoToDB(filename, dataUrl) {
     try {
-        // 기존 로고 삭제
-        const existing = await fetch(`${API_BASE}/images?search=logo`);
-        const result = await existing.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readwrite');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            for (const logo of result.data) {
-                if (logo.type === 'logo') {
-                    await fetch(`${API_BASE}/images/${logo.id}`, { method: 'DELETE' });
-                }
-            }
+        // 기존 로고 삭제
+        const existing = await new Promise((resolve) => {
+            const request = index.getAll('logo');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        for (const logo of existing) {
+            await new Promise((resolve, reject) => {
+                const request = store.delete(logo.id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
         }
-
+        
         // 새 로고 저장
-        const response = await fetch(`${API_BASE}/images`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+        await new Promise((resolve, reject) => {
+            const request = store.add({
                 type: 'logo',
                 filename: filename,
                 data: dataUrl,
                 page: '',
                 order_index: 0
-            })
+            });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
-
-        return await response.json();
+        
+        console.log('✅ 로고 저장 완료');
+        return true;
     } catch (error) {
         console.error('❌ 로고 저장 실패:', error);
         throw error;
@@ -52,12 +102,20 @@ async function saveLogoToDB(filename, dataUrl) {
  */
 async function getLogo() {
     try {
-        const response = await fetch(`${API_BASE}/images?search=logo&limit=1`);
-        const result = await response.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readonly');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            const logo = result.data.find(item => item.type === 'logo');
-            return logo ? { filename: logo.filename, data: logo.data } : null;
+        const logos = await new Promise((resolve) => {
+            const request = index.getAll('logo');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        if (logos && logos.length > 0) {
+            const logo = logos[0];
+            console.log('✅ 로고 데이터 발견:', logo.filename);
+            return { filename: logo.filename, data: logo.data };
         }
         return null;
     } catch (error) {
@@ -71,34 +129,41 @@ async function getLogo() {
  */
 async function saveHeroImagesToDB(images) {
     try {
-        // 기존 히어로 이미지 모두 삭제
-        const existing = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
-        const result = await existing.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readwrite');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            for (const img of result.data) {
-                if (img.type === 'heroSlider') {
-                    await fetch(`${API_BASE}/images/${img.id}`, { method: 'DELETE' });
-                }
-            }
+        // 기존 히어로 이미지 모두 삭제
+        const existing = await new Promise((resolve) => {
+            const request = index.getAll('heroSlider');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        for (const img of existing) {
+            await new Promise((resolve, reject) => {
+                const request = store.delete(img.id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
         }
-
+        
         // 새 이미지 저장
-        const promises = images.map((img, index) => 
-            fetch(`${API_BASE}/images`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+        for (let i = 0; i < images.length; i++) {
+            await new Promise((resolve, reject) => {
+                const request = store.add({
                     type: 'heroSlider',
-                    filename: img.filename,
-                    data: img.data,
+                    filename: images[i].filename,
+                    data: images[i].data,
                     page: '',
-                    order_index: index
-                })
-            })
-        );
-
-        await Promise.all(promises);
+                    order_index: i
+                });
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        console.log(`✅ 히어로 이미지 ${images.length}개 저장 완료`);
         return true;
     } catch (error) {
         console.error('❌ 히어로 이미지 저장 실패:', error);
@@ -111,15 +176,20 @@ async function saveHeroImagesToDB(images) {
  */
 async function getHeroImages() {
     try {
-        const response = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
-        const result = await response.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readonly');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            const heroImages = result.data
-                .filter(item => item.type === 'heroSlider')
-                .sort((a, b) => a.order_index - b.order_index);
-            
-            return heroImages.map(img => ({
+        const images = await new Promise((resolve) => {
+            const request = index.getAll('heroSlider');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        if (images && images.length > 0) {
+            images.sort((a, b) => a.order_index - b.order_index);
+            console.log(`✅ 히어로 이미지 ${images.length}개 로드됨`);
+            return images.map(img => ({
                 filename: img.filename,
                 data: img.data
             }));
@@ -136,32 +206,42 @@ async function getHeroImages() {
  */
 async function savePageHeroToDB(page, filename, dataUrl) {
     try {
-        // 기존 페이지 히어로 삭제
-        const existing = await fetch(`${API_BASE}/images?search=pageHero&limit=100`);
-        const result = await existing.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readwrite');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            for (const img of result.data) {
-                if (img.type === 'pageHero' && img.page === page) {
-                    await fetch(`${API_BASE}/images/${img.id}`, { method: 'DELETE' });
-                }
+        // 기존 페이지 히어로 삭제
+        const existing = await new Promise((resolve) => {
+            const request = index.getAll('pageHero');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        for (const img of existing) {
+            if (img.page === page) {
+                await new Promise((resolve, reject) => {
+                    const request = store.delete(img.id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
             }
         }
-
+        
         // 새 히어로 이미지 저장
-        const response = await fetch(`${API_BASE}/images`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+        await new Promise((resolve, reject) => {
+            const request = store.add({
                 type: 'pageHero',
                 filename: filename,
                 data: dataUrl,
                 page: page,
                 order_index: 0
-            })
+            });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
-
-        return await response.json();
+        
+        console.log(`✅ ${page} 페이지 히어로 저장 완료`);
+        return true;
     } catch (error) {
         console.error(`❌ ${page} 페이지 히어로 저장 실패:`, error);
         throw error;
@@ -173,12 +253,20 @@ async function savePageHeroToDB(page, filename, dataUrl) {
  */
 async function getPageHero(page) {
     try {
-        const response = await fetch(`${API_BASE}/images?search=pageHero&limit=100`);
-        const result = await response.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['images'], 'readonly');
+        const store = tx.objectStore('images');
+        const index = store.index('type');
         
-        if (result.data && result.data.length > 0) {
-            const hero = result.data.find(item => item.type === 'pageHero' && item.page === page);
-            return hero ? { filename: hero.filename, data: hero.data } : null;
+        const images = await new Promise((resolve) => {
+            const request = index.getAll('pageHero');
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        const hero = images.find(img => img.page === page);
+        if (hero) {
+            console.log(`✅ ${page} 페이지 히어로 이미지 발견:`, hero.filename);
+            return { filename: hero.filename, data: hero.data };
         }
         return null;
     } catch (error) {
@@ -196,37 +284,19 @@ async function getPageHero(page) {
  */
 async function saveSetting(key, value) {
     try {
-        // 기존 설정 확인
-        const existing = await fetch(`${API_BASE}/settings?search=${key}&limit=1`);
-        const result = await existing.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['settings'], 'readwrite');
+        const store = tx.objectStore('settings');
         
         const valueStr = typeof value === 'string' ? value : JSON.stringify(value);
         
-        if (result.data && result.data.length > 0) {
-            const setting = result.data.find(item => item.key === key);
-            if (setting) {
-                // 업데이트
-                await fetch(`${API_BASE}/settings/${setting.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        key: key,
-                        value: valueStr
-                    })
-                });
-                return;
-            }
-        }
-
-        // 새로 생성
-        await fetch(`${API_BASE}/settings`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                key: key,
-                value: valueStr
-            })
+        await new Promise((resolve, reject) => {
+            const request = store.put({ key: key, value: valueStr });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
+        
+        console.log(`✅ 설정 저장 완료: ${key}`);
     } catch (error) {
         console.error(`❌ 설정 저장 실패 (${key}):`, error);
         throw error;
@@ -238,17 +308,20 @@ async function saveSetting(key, value) {
  */
 async function getSetting(key, defaultValue = null) {
     try {
-        const response = await fetch(`${API_BASE}/settings?search=${key}&limit=1`);
-        const result = await response.json();
+        const db = await ensureDB();
+        const tx = db.transaction(['settings'], 'readonly');
+        const store = tx.objectStore('settings');
         
-        if (result.data && result.data.length > 0) {
-            const setting = result.data.find(item => item.key === key);
-            if (setting) {
-                try {
-                    return JSON.parse(setting.value);
-                } catch {
-                    return setting.value;
-                }
+        const setting = await new Promise((resolve) => {
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        if (setting) {
+            try {
+                return JSON.parse(setting.value);
+            } catch {
+                return setting.value;
             }
         }
         return defaultValue;
@@ -303,4 +376,9 @@ async function compressImage(file, maxWidth = 1920, quality = 0.85) {
     });
 }
 
-console.log('✅ RESTful Table API 데이터베이스 초기화 완료');
+// 페이지 로드 시 DB 초기화
+initDB().then(() => {
+    console.log('✅ IndexedDB 데이터베이스 초기화 완료');
+}).catch(error => {
+    console.error('❌ IndexedDB 초기화 실패:', error);
+});
