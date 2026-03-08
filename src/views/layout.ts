@@ -178,7 +178,7 @@ function header(activePage: string) {
             <div class="header-content">
                 <div class="logo">
                     <a href="/">
-                        <img src="/jwc-logo.png" alt="JWC">
+                        <img src="/jwc-logo.png" alt="">
                     </a>
                 </div>
                 <nav class="nav-menu" id="navMenu">
