@@ -1,0 +1,4 @@
+# Ignore schema export for deployment
+schema.json
+*.db
+*.sqlite
