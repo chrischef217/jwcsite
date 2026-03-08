@@ -1,16 +1,17 @@
-// Cloudflare Pages Function - API Proxy for RESTful Table API
-// This function proxies all requests to https://www.genspark.ai/api/tables
-// and handles CORS issues
+// Cloudflare Pages Function - Proxy for /api/tables/settings
+// Handles: GET /api/tables/settings?search=...
+//          POST /api/tables/settings
+//          PUT /api/tables/settings/:id
+//          DELETE /api/tables/settings/:id
 
-const API_BASE = 'https://www.genspark.ai/api/tables';
+const API_BASE = 'https://www.genspark.ai/api/tables/settings';
 
 export async function onRequest(context) {
-  const { request, params } = context;
+  const { request } = context;
   const url = new URL(request.url);
   
-  // Build target URL
-  const path = params.path ? params.path.join('/') : '';
-  const targetUrl = `${API_BASE}/${path}${url.search}`;
+  // Build target URL with query params and path
+  const targetUrl = `${API_BASE}${url.pathname.replace('/api/tables/settings', '')}${url.search}`;
   
   console.log(`[Proxy] ${request.method} ${targetUrl}`);
   
