@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWC - 관리자 (v3.0.20240220)</title>
+    <!-- LAST UPDATE: 2024-02-20 11:20 - FILE UPLOAD VERSION -->
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">JWC 관리자 v3.0</div>
+            <nav class="admin-nav">
+                <button class="admin-nav-btn" onclick="location.href='index.html'">🏠 홈으로</button>
+                <button class="admin-nav-btn active" data-section="dashboard">대시보드</button>
+                <button class="admin-nav-btn" data-section="hero-slider">히어로 슬라이더</button>
+                <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 이미지</button>
+                <button class="admin-nav-btn" data-section="products">제품 관리</button>
+                <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard -->
+            <section class="admin-section active" id="dashboard">
+                <h2>대시보드 (v3.0 - 서버 저장 방식)</h2>
+                
+                <div style="background: #d4edda; border: 1px solid #28a745; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <h3 style="color: #155724; margin-top: 0;">✅ 서버 데이터베이스 저장 (파일 업로드)</h3>
+                    <p style="color: #155724; margin: 10px 0;">업로드한 이미지는 <strong>Genspark 서버 DB</strong>에 저장됩니다.</p>
+                    <ul style="color: #155724;">
+                        <li>✅ 파일 업로드 방식 (드래그앤드롭 지원)</li>
+                        <li>✅ 모든 디바이스에서 동일한 이미지 표시</li>
+                        <li>✅ 배포 후에도 모든 방문자가 확인 가능</li>
+                        <li>✅ 브라우저 캐시와 무관하게 영구 저장</li>
+                    </ul>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>히어로 이미지</h3>
+                        <p class="dashboard-number" id="heroImagesCount">0</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>제품</h3>
+                        <p class="dashboard-number" id="productsCount">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logo Management -->
+            <section class="admin-section" id="logo">
+                <h2>로고 관리 (파일 업로드)</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 파일을 선택하거나 드래그앤드롭으로 업로드하세요. 서버 DB에 자동 저장됩니다.</p>
+                
+                <div class="progress-bar" id="logoProgress" style="display: none;">
+                    <div class="progress-fill"></div>
+                    <div class="progress-text">0%</div>
+                </div>
+                
+                <div class="upload-area small" id="logoUploadArea" style="border: 2px dashed #28a745;">
+                    <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                    <div class="upload-placeholder">
+                        <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        <p class="upload-hint">권장: 500x500px 이하 (JPG, PNG)</p>
+                    </div>
+                    <img id="logoPreview" class="upload-preview" style="display: none;">
+                </div>
+                
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="saveLogoButton()">💾 로고 서버 저장</button>
+                    <button class="btn btn-secondary" onclick="removeLogo()">🗑️ 로고 제거</button>
+                </div>
+            </section>
+
+            <!-- Hero Slider Management -->
+            <section class="admin-section" id="hero-slider">
+                <h2>히어로 슬라이더 관리 (파일 업로드)</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 여러 개의 이미지를 선택할 수 있습니다. 서버 DB에 자동 저장됩니다.</p>
+                
+                <div class="form-group">
+                    <label>슬라이드 간격 (초)</label>
+                    <input type="number" id="slideInterval" min="1" max="30" value="5">
+                </div>
+                
+                <div class="progress-bar" id="heroSliderProgress" style="display: none;">
+                    <div class="progress-fill"></div>
+                    <div class="progress-text">0%</div>
+                </div>
+                
+                <div class="upload-area" id="heroSliderUploadArea" style="border: 2px dashed #28a745;">
+                    <input type="file" id="heroSliderInput" accept="image/*" multiple style="display: none;">
+                    <div class="upload-placeholder">
+                        <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        <p class="upload-hint">여러 개 이미지 업로드 (Ctrl+클릭 또는 전체 선택)</p>
+                        <p class="upload-hint">권장: 1920x1080px (JPG, PNG)</p>
+                    </div>
+                </div>
+                
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="saveHeroImages()">💾 이미지 서버 저장</button>
+                </div>
+                
+                <h3 style="margin-top: 40px;">현재 히어로 이미지</h3>
+                <div class="hero-images-list" id="heroImagesList"></div>
+            </section>
+
+            <!-- Page Heroes Management -->
+            <section class="admin-section" id="page-heroes">
+                <h2>페이지 히어로 이미지 관리 (파일 업로드)</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 각 페이지의 히어로 이미지를 업로드하세요. 서버 DB에 자동 저장됩니다.</p>
+                
+                <!-- About Hero -->
+                <div class="page-hero-section">
+                    <h3>About 페이지</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="aboutHeroEnabled"> 히어로 이미지 표시
+                        </label>
+                    </div>
+                    
+                    <div class="progress-bar" id="aboutHeroProgress" style="display: none;">
+                        <div class="progress-fill"></div>
+                        <div class="progress-text">0%</div>
+                    </div>
+                    
+                    <div class="upload-area small" id="aboutHeroUploadArea" style="border: 2px dashed #28a745;">
+                        <input type="file" id="aboutHeroInput" accept="image/*" style="display: none;">
+                        <div class="upload-placeholder">
+                            <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        </div>
+                        <img id="aboutHeroPreview" class="upload-preview" style="display: none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="savePageHero('about')">💾 저장</button>
+                </div>
+
+                <!-- Products Hero -->
+                <div class="page-hero-section">
+                    <h3>Products 페이지</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="productsHeroEnabled"> 히어로 이미지 표시
+                        </label>
+                    </div>
+                    
+                    <div class="progress-bar" id="productsHeroProgress" style="display: none;">
+                        <div class="progress-fill"></div>
+                        <div class="progress-text">0%</div>
+                    </div>
+                    
+                    <div class="upload-area small" id="productsHeroUploadArea" style="border: 2px dashed #28a745;">
+                        <input type="file" id="productsHeroInput" accept="image/*" style="display: none;">
+                        <div class="upload-placeholder">
+                            <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        </div>
+                        <img id="productsHeroPreview" class="upload-preview" style="display: none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="savePageHero('products')">💾 저장</button>
+                </div>
+
+                <!-- Contact Hero -->
+                <div class="page-hero-section">
+                    <h3>Contact 페이지</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="contactHeroEnabled"> 히어로 이미지 표시
+                        </label>
+                    </div>
+                    
+                    <div class="progress-bar" id="contactHeroProgress" style="display: none;">
+                        <div class="progress-fill"></div>
+                        <div class="progress-text">0%</div>
+                    </div>
+                    
+                    <div class="upload-area small" id="contactHeroUploadArea" style="border: 2px dashed #28a745;">
+                        <input type="file" id="contactHeroInput" accept="image/*" style="display: none;">
+                        <div class="upload-placeholder">
+                            <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        </div>
+                        <img id="contactHeroPreview" class="upload-preview" style="display: none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="savePageHero('contact')">💾 저장</button>
+                </div>
+            </section>
+
+            <!-- Products Management -->
+            <section class="admin-section" id="products">
+                <h2>제품 관리</h2>
+                <button class="btn btn-primary" onclick="showProductForm()">제품 추가</button>
+                <div class="products-list" id="productsList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
