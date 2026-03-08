@@ -69,12 +69,15 @@ JWC Website/
 ├── contact.html            # Contact 페이지
 ├── admin-login.html        # 관리자 로그인
 ├── admin.html              # 관리자 대시보드
+├── setup-logo.html         # ⭐ 장원 로고 자동 설정 페이지
 ├── css/
 │   ├── common.css          # 공통 스타일
 │   ├── home.css            # 홈 페이지 + 애니메이션
 │   └── admin.css           # 관리자 페이지
+├── images/
+│   └── jangwon-logo.png    # ⭐ 장원 회사 로고
 └── js/
-    ├── db.js               # IndexedDB 관리
+    ├── db.js               # RESTful Table API 관리
     ├── common.js           # 공통 기능 (로고 로딩)
     ├── home.js             # 히어로 슬라이더
     ├── about.js            # About 히어로 로딩
@@ -92,12 +95,18 @@ JWC Website/
 
 ## 🚀 사용 방법
 
+### 0. 자동 로고 설정 (장원 로고) ⭐ NEW
+1. 브라우저에서 `setup-logo.html` 페이지 접속
+2. 자동으로 장원 회사 로고가 데이터베이스에 저장됩니다
+3. "홈으로 이동" 버튼을 클릭하여 메인 페이지로 이동
+4. 모든 페이지 헤더에 장원 로고가 표시됩니다
+
 ### 1. 관리자 로그인
 1. 헤더 우측 ⚙ 아이콘 클릭 또는 `admin-login.html` 접속
 2. 아이디: `1`, 비밀번호: `1` 입력
 3. 로그인 버튼 클릭
 
-### 2. 로고 업로드
+### 2. 로고 업로드 (수동)
 1. **로고 관리** 메뉴 클릭
 2. 클릭 또는 드래그앤드롭으로 로고 파일 업로드
 3. **로고 저장** 버튼 클릭
