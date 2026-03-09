@@ -18,7 +18,7 @@ body {
 
 /* Header */
 header {
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.95);
     padding: 15px 0;
     position: fixed;
     top: 0;
@@ -26,6 +26,8 @@ header {
     right: 0;
     z-index: 1000;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 header .container {
