@@ -4,7 +4,7 @@ let selectedMediaFiles = [];
 // Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
     // Check login
-    if (!sessionStorage.getItem('admin_logged_in')) {
+    if (sessionStorage.getItem('admin_logged_in') !== 'true') {
         window.location.href = 'admin-login.html';
         return;
     }

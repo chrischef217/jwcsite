@@ -75,7 +75,7 @@
             const password = document.getElementById('password').value;
             
             if (password === '1111') {
-                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('admin_logged_in', 'true');
                 window.location.href = 'admin.html';
             } else {
                 alert('비밀번호가 잘못되었습니다.');
@@ -83,7 +83,7 @@
         });
 
         // 이미 로그인된 경우
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+        if (sessionStorage.getItem('admin_logged_in') === 'true') {
             window.location.href = 'admin.html';
         }
     </script>
