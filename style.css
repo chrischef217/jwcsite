@@ -62,20 +62,19 @@ header .container {
     transition: all 0.3s;
 }
 
-/* Navigation Menu - Full Screen Overlay */
+/* Navigation Menu - Dropdown from Header */
 nav {
     position: fixed;
     top: 75px;
     left: 0;
     width: 100%;
-    height: calc(100vh - 75px);
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(245, 245, 245, 0.98);
     display: none;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
     z-index: 2000;
-    padding-top: 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 nav.active {
@@ -83,45 +82,34 @@ nav.active {
 }
 
 .close-menu {
-    position: absolute;
-    top: -60px;
-    right: 20px;
-    background: white;
-    border: 1px solid #333;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #333;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 400;
-    border-radius: 3px;
+    display: none;
 }
 
 nav a {
     color: #333;
     text-decoration: none;
-    padding: 20px 30px;
+    padding: 18px 30px;
     font-weight: 400;
-    font-size: 1rem;
+    font-size: 0.95rem;
     transition: background 0.2s;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: rgba(245, 245, 245, 0.98);
 }
 
 nav a::after {
     content: '∨';
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #666;
 }
 
 nav a:hover {
+    background: rgba(230, 230, 230, 0.98);
+}
     background: rgba(0, 0, 0, 0.05);
 }
 
