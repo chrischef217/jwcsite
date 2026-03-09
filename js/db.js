@@ -44,9 +44,13 @@ async function videoToBase64(file) {
 // Save hero slider media (images + videos)
 async function saveHeroMediaToDB(mediaFiles) {
     try {
+        console.log('💾 저장 시작:', mediaFiles.length, '개 파일');
+        
         // Delete existing hero slider items
         const existingResponse = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
         const existingData = await existingResponse.json();
+        
+        console.log('📋 기존 데이터:', existingData);
         
         if (existingData.success && existingData.data && existingData.data.length > 0) {
             const deletePromises = existingData.data
@@ -55,10 +59,13 @@ async function saveHeroMediaToDB(mediaFiles) {
                     fetch(`${API_BASE}/images/${item.id}`, { method: 'DELETE' })
                 );
             await Promise.all(deletePromises);
+            console.log('🗑️ 기존 데이터 삭제 완료');
         }
         
         // Upload new media files
         const uploadPromises = mediaFiles.map(async (mediaFile, index) => {
+            console.log(`📤 업로드 중 ${index + 1}/${mediaFiles.length}: ${mediaFile.name}`);
+            
             let mediaData;
             let mediaType;
             let filename = mediaFile.name;
@@ -71,7 +78,7 @@ async function saveHeroMediaToDB(mediaFiles) {
                 mediaType = 'video';
             }
             
-            return fetch(`${API_BASE}/images`, {
+            const response = await fetch(`${API_BASE}/images`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -83,9 +90,14 @@ async function saveHeroMediaToDB(mediaFiles) {
                     order_index: index
                 })
             });
+            
+            const result = await response.json();
+            console.log(`✅ 업로드 완료 ${index + 1}:`, result);
+            return result;
         });
         
         await Promise.all(uploadPromises);
+        console.log('✅ 모든 파일 업로드 완료');
         return true;
     } catch (error) {
         console.error('❌ 히어로 슬라이더 저장 실패:', error);
@@ -99,6 +111,8 @@ async function getHeroSliderMedia() {
         const response = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
         const data = await response.json();
         
+        console.log('📥 히어로 슬라이더 데이터:', data);
+        
         if (data.success && data.data) {
             return data.data
                 .filter(item => item.type === 'heroSlider')
@@ -110,3 +124,7 @@ async function getHeroSliderMedia() {
         return [];
     }
 }
+
+// Expose functions globally
+window.saveHeroMediaToDB = saveHeroMediaToDB;
+window.getHeroSliderMedia = getHeroSliderMedia;
