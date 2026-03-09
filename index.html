@@ -27,9 +27,19 @@
     </nav>
 
     <main>
-        <section class="hero">
-            <h1>Welcome to JWC</h1>
-            <p>Premium Cosmetics</p>
+        <section class="hero" id="heroSlider">
+            <div class="hero-slider-container">
+                <div class="hero-slider-wrapper" id="heroSliderWrapper">
+                    <!-- Default content if no slider -->
+                    <div class="hero-slide active">
+                        <div class="hero-content">
+                            <h1>Welcome to JWC</h1>
+                            <p>Premium Cosmetics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-slider-dots" id="heroSliderDots"></div>
+            </div>
         </section>
 
         <section class="content">
@@ -58,6 +68,11 @@
     </footer>
 
     <script>
+        const API_BASE = 'https://www.genspark.ai/api/tables';
+        let currentSlide = 0;
+        let sliderInterval;
+        let heroMediaItems = [];
+
         function toggleMenu() {
             const nav = document.getElementById('navMenu');
             nav.classList.toggle('active');
@@ -72,6 +87,97 @@
                 nav.classList.remove('active');
             }
         });
+
+        // Load hero slider
+        async function loadHeroSlider() {
+            try {
+                const response = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    heroMediaItems = data.data
+                        .filter(item => item.type === 'heroSlider')
+                        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                    
+                    if (heroMediaItems.length > 0) {
+                        renderHeroSlider();
+                        if (heroMediaItems.length > 1) {
+                            startSlider();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load hero slider:', error);
+            }
+        }
+
+        function renderHeroSlider() {
+            const wrapper = document.getElementById('heroSliderWrapper');
+            const dots = document.getElementById('heroSliderDots');
+            
+            wrapper.innerHTML = '';
+            dots.innerHTML = '';
+            
+            heroMediaItems.forEach((item, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'hero-slide' + (index === 0 ? ' active' : '');
+                
+                if (item.mediaType === 'video') {
+                    slide.innerHTML = `
+                        <video class="hero-media" autoplay loop muted playsinline>
+                            <source src="${item.data}" type="video/mp4">
+                        </video>
+                        <div class="hero-content">
+                            <h1>Welcome to JWC</h1>
+                            <p>Premium Cosmetics</p>
+                        </div>
+                    `;
+                } else {
+                    slide.style.backgroundImage = `url(${item.data})`;
+                    slide.style.backgroundSize = 'cover';
+                    slide.style.backgroundPosition = 'center';
+                    slide.innerHTML = `
+                        <div class="hero-content">
+                            <h1>Welcome to JWC</h1>
+                            <p>Premium Cosmetics</p>
+                        </div>
+                    `;
+                }
+                
+                wrapper.appendChild(slide);
+                
+                // Add dot
+                const dot = document.createElement('span');
+                dot.className = 'slider-dot' + (index === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(index);
+                dots.appendChild(dot);
+            });
+        }
+
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.slider-dot');
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            const nextIndex = (currentSlide + 1) % heroMediaItems.length;
+            goToSlide(nextIndex);
+        }
+
+        function startSlider() {
+            sliderInterval = setInterval(nextSlide, 5000); // 5 seconds
+        }
+
+        // Load slider on page load
+        loadHeroSlider();
     </script>
 </body>
 </html>
