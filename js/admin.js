@@ -1,63 +1,93 @@
 // Admin page functionality
 let selectedMediaFiles = [];
 
-// Section navigation
-document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (btn.classList.contains('logout-btn')) return;
-        
-        const section = btn.dataset.section;
-        if (!section) return;
-        
-        document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-        
-        btn.classList.add('active');
-        document.getElementById(section).classList.add('active');
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check login
+    if (!sessionStorage.getItem('admin_logged_in')) {
+        window.location.href = 'admin-login.html';
+        return;
+    }
+
+    initAdmin();
+});
+
+function initAdmin() {
+    // Section navigation
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.classList.contains('logout-btn')) return;
+            
+            const section = btn.dataset.section;
+            if (!section) return;
+            
+            document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            
+            btn.classList.add('active');
+            const sectionEl = document.getElementById(section);
+            if (sectionEl) {
+                sectionEl.classList.add('active');
+            }
+        });
     });
-});
 
-// Hero Slider file input handling
-const heroSliderInput = document.getElementById('heroSliderInput');
-const heroSliderUploadArea = document.getElementById('heroSliderUploadArea');
-const heroPreviewGrid = document.getElementById('heroPreviewGrid');
+    // Hero Slider file input handling
+    const heroSliderInput = document.getElementById('heroSliderInput');
+    const heroSliderUploadArea = document.getElementById('heroSliderUploadArea');
+    const heroPreviewGrid = document.getElementById('heroPreviewGrid');
 
-heroSliderUploadArea.addEventListener('click', () => {
-    heroSliderInput.click();
-});
+    if (heroSliderInput && heroSliderUploadArea) {
+        heroSliderUploadArea.addEventListener('click', () => {
+            heroSliderInput.click();
+        });
 
-heroSliderInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    handleHeroMediaFiles(files);
-});
+        heroSliderInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleHeroMediaFiles(files);
+        });
 
-// Drag and drop
-heroSliderUploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    heroSliderUploadArea.style.borderColor = '#28a745';
-    heroSliderUploadArea.style.background = '#f0f8f0';
-});
+        // Drag and drop
+        heroSliderUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            heroSliderUploadArea.style.borderColor = '#28a745';
+            heroSliderUploadArea.style.background = '#f0f8f0';
+        });
 
-heroSliderUploadArea.addEventListener('dragleave', () => {
-    heroSliderUploadArea.style.borderColor = '#28a745';
-    heroSliderUploadArea.style.background = '';
-});
+        heroSliderUploadArea.addEventListener('dragleave', () => {
+            heroSliderUploadArea.style.borderColor = '#28a745';
+            heroSliderUploadArea.style.background = '';
+        });
 
-heroSliderUploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    heroSliderUploadArea.style.borderColor = '#28a745';
-    heroSliderUploadArea.style.background = '';
-    
-    const files = Array.from(e.dataTransfer.files);
-    handleHeroMediaFiles(files);
-});
+        heroSliderUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            heroSliderUploadArea.style.borderColor = '#28a745';
+            heroSliderUploadArea.style.background = '';
+            
+            const files = Array.from(e.dataTransfer.files);
+            handleHeroMediaFiles(files);
+        });
+    }
+
+    // Load data
+    loadHeroSliderList();
+}
 
 // Handle selected media files
 function handleHeroMediaFiles(files) {
     selectedMediaFiles = files;
     
+    const heroPreviewGrid = document.getElementById('heroPreviewGrid');
+    const placeholder = document.querySelector('#heroSliderUploadArea .upload-placeholder');
+    
+    if (!heroPreviewGrid) return;
+    
     heroPreviewGrid.innerHTML = '';
     heroPreviewGrid.style.display = 'grid';
+    
+    if (placeholder) {
+        placeholder.style.display = 'none';
+    }
     
     files.forEach((file, index) => {
         const previewItem = document.createElement('div');
@@ -96,12 +126,10 @@ function handleHeroMediaFiles(files) {
         
         heroPreviewGrid.appendChild(previewItem);
     });
-    
-    document.querySelector('.upload-placeholder').style.display = 'none';
 }
 
-// Save hero media
-async function saveHeroMedia() {
+// Save hero media (global function)
+window.saveHeroMedia = async function() {
     if (selectedMediaFiles.length === 0) {
         alert('파일을 선택해주세요.');
         return;
@@ -129,10 +157,19 @@ async function saveHeroMedia() {
             
             // Reset
             selectedMediaFiles = [];
-            heroPreviewGrid.innerHTML = '';
-            heroPreviewGrid.style.display = 'none';
-            document.querySelector('.upload-placeholder').style.display = 'block';
-            heroSliderInput.value = '';
+            const heroPreviewGrid = document.getElementById('heroPreviewGrid');
+            if (heroPreviewGrid) {
+                heroPreviewGrid.innerHTML = '';
+                heroPreviewGrid.style.display = 'none';
+            }
+            const placeholder = document.querySelector('#heroSliderUploadArea .upload-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'block';
+            }
+            const heroSliderInput = document.getElementById('heroSliderInput');
+            if (heroSliderInput) {
+                heroSliderInput.value = '';
+            }
         }, 500);
         
     } catch (error) {
@@ -144,6 +181,8 @@ async function saveHeroMedia() {
 // Load hero slider list
 async function loadHeroSliderList() {
     const list = document.getElementById('heroImagesList');
+    if (!list) return;
+    
     const mediaItems = await getHeroSliderMedia();
     
     if (mediaItems.length === 0) {
@@ -162,7 +201,7 @@ async function loadHeroSliderList() {
                     <video src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;" controls></video>
                     <div>
                         <p><strong>🎥 동영상 ${index + 1}</strong></p>
-                        <p style="color: #666; font-size: 14px;">${item.filename}</p>
+                        <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
                         <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                     </div>
                 </div>
@@ -173,7 +212,7 @@ async function loadHeroSliderList() {
                     <img src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;">
                     <div>
                         <p><strong>📷 이미지 ${index + 1}</strong></p>
-                        <p style="color: #666; font-size: 14px;">${item.filename}</p>
+                        <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
                         <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                     </div>
                 </div>
@@ -184,11 +223,12 @@ async function loadHeroSliderList() {
     });
 }
 
-// Delete hero media
-async function deleteHeroMedia(id) {
+// Delete hero media (global function)
+window.deleteHeroMedia = async function(id) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     
     try {
+        const API_BASE = 'https://www.genspark.ai/api/tables';
         await fetch(`${API_BASE}/images/${id}`, { method: 'DELETE' });
         alert('✅ 삭제되었습니다.');
         loadHeroSliderList();
@@ -197,16 +237,9 @@ async function deleteHeroMedia(id) {
     }
 }
 
-// Logout
-function logout() {
+// Logout (global function)
+window.logout = function() {
     sessionStorage.removeItem('admin_logged_in');
     window.location.href = 'admin-login.html';
 }
 
-// Check login
-if (!sessionStorage.getItem('admin_logged_in')) {
-    window.location.href = 'admin-login.html';
-}
-
-// Load data on page load
-loadHeroSliderList();
