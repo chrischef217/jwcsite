@@ -305,7 +305,7 @@ main {
 
 .hero-text-overlay p {
     color: white;
-    font-size: 0.7rem;
+    font-size: 1.05rem;
     font-weight: 300;
     margin-top: 20px;
     text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
@@ -572,7 +572,7 @@ footer a:hover {
     }
     
     .hero-text-overlay p {
-        font-size: 0.65rem;
+        font-size: 0.98rem;
         margin-top: 15px;
     }
     
