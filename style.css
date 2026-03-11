@@ -91,7 +91,7 @@ header .container {
     display: block;
     width: 26px;
     height: 3px;
-    background: #222;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 3px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -110,7 +110,7 @@ header .container {
 }
 
 .menu-btn:hover span {
-    background: #000;
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .menu-btn:hover span:nth-child(1) {
