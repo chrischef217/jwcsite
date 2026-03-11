@@ -91,7 +91,10 @@
         async function loadHeroSlider() {
             try {
                 const response = await fetch('/api/hero');
-                heroMediaItems = await response.json();
+                const items = await response.json();
+                heroMediaItems = items.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                
+                console.log('✅ 로드:', heroMediaItems.length, '개');
                 
                 if (heroMediaItems.length > 0) {
                     renderHeroSlider();
@@ -151,6 +154,8 @@
             const slides = document.querySelectorAll('.hero-slide');
             const dots = document.querySelectorAll('.slider-dot');
             
+            if (slides.length === 0) return;
+            
             slides[currentSlide].classList.remove('active');
             dots[currentSlide].classList.remove('active');
             
@@ -166,7 +171,8 @@
         }
 
         function startSlider() {
-            sliderInterval = setInterval(nextSlide, 5000); // 5 seconds
+            if (sliderInterval) clearInterval(sliderInterval);
+            sliderInterval = setInterval(nextSlide, 5000);
         }
 
         // Load slider on page load
