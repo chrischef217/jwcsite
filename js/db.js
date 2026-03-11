@@ -128,7 +128,7 @@ async function getSliderSettings() {
         return await response.json();
     } catch (error) {
         console.error('❌ 설정 불러오기 실패:', error);
-        return null;
+        return { text: '' };
     }
 }
 

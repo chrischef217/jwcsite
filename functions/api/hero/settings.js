@@ -4,7 +4,7 @@ export async function onRequestGet(context) {
     
     try {
         const data = await env.KV.get('slider_settings');
-        return new Response(data || JSON.stringify({ interval: 5, text: '' }), {
+        return new Response(data || JSON.stringify({ text: '' }), {
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
     } catch (error) {

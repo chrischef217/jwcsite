@@ -202,25 +202,14 @@ window.saveHeroMedia = async function() {
 async function loadSliderSettings() {
     const settings = await getSliderSettings();
     if (settings) {
-        document.getElementById('slideInterval').value = settings.interval || 5;
         document.getElementById('sliderText').value = settings.text || '';
     }
-}
-
-// Save slide interval
-window.saveSlideInterval = async function() {
-    const interval = document.getElementById('slideInterval').value;
-    const settings = await getSliderSettings() || {};
-    settings.interval = parseInt(interval);
-    await saveSliderSettings(settings);
-    alert('✅ 슬라이드 간격이 저장되었습니다!');
 }
 
 // Save slider text
 window.saveSliderText = async function() {
     const text = document.getElementById('sliderText').value;
-    const settings = await getSliderSettings() || {};
-    settings.text = text;
+    const settings = { text: text };
     await saveSliderSettings(settings);
     alert('✅ 슬라이더 텍스트가 저장되었습니다!');
 }
