@@ -228,7 +228,7 @@ window.deleteHeroMedia = async function(id) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     
     try {
-        const API_BASE = 'https://www.genspark.ai/api/tables';
+        const API_BASE = '/api/tables';
         await fetch(`${API_BASE}/images/${id}`, { method: 'DELETE' });
         alert('✅ 삭제되었습니다.');
         loadHeroSliderList();

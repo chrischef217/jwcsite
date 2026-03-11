@@ -1,5 +1,5 @@
-// API Configuration
-const API_BASE = 'https://www.genspark.ai/api/tables';
+// API Configuration - Use local proxy to avoid CORS
+const API_BASE = '/api/tables';
 
 // Helper: Compress image
 async function compressImage(file, maxWidth = 1920, quality = 0.9) {
