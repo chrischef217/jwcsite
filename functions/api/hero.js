@@ -66,3 +66,32 @@ export async function onRequestDelete(context) {
         });
     }
 }
+
+export async function onRequestPut(context) {
+    const { request, env } = context;
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    
+    try {
+        const existingData = await env.KV.get(id);
+        if (!existingData) {
+            return new Response(JSON.stringify({ error: 'Not found' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        const updates = await request.json();
+        const data = { ...JSON.parse(existingData), ...updates };
+        await env.KV.put(id, JSON.stringify(data));
+        
+        return new Response(JSON.stringify({ success: true }), {
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
+    }
+}

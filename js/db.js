@@ -41,24 +41,16 @@ async function videoToBase64(file) {
     });
 }
 
-// Save hero slider media with text
-async function saveHeroMediaToDB(mediaWithText) {
+// Save hero slider media (append mode)
+async function saveHeroMediaToDB(mediaFiles, startIndex = 0) {
     try {
-        console.log('💾 저장 시작:', mediaWithText.length, '개 파일');
+        console.log('💾 저장 시작:', mediaFiles.length, '개 파일');
         
-        // Delete all existing
-        const existing = await getHeroSliderMedia();
-        for (const item of existing) {
-            await fetch(`${API_ENDPOINT}?id=${item.id}`, { method: 'DELETE' });
-        }
-        
-        // Upload new
-        for (let i = 0; i < mediaWithText.length; i++) {
-            const item = mediaWithText[i];
-            const mediaFile = item.file;
-            const text = item.text || '';
+        // Upload new files starting from startIndex
+        for (let i = 0; i < mediaFiles.length; i++) {
+            const mediaFile = mediaFiles[i];
             
-            console.log(`📤 업로드 중 ${i + 1}/${mediaWithText.length}: ${mediaFile.name}`);
+            console.log(`📤 업로드 중 ${i + 1}/${mediaFiles.length}: ${mediaFile.name}`);
             
             let mediaData;
             let mediaType;
@@ -78,8 +70,7 @@ async function saveHeroMediaToDB(mediaWithText) {
                     filename: mediaFile.name,
                     data: mediaData,
                     mediaType: mediaType,
-                    text: text,
-                    order_index: i
+                    order_index: startIndex + i
                 })
             });
         }
@@ -115,7 +106,51 @@ async function deleteHeroMediaById(id) {
     }
 }
 
+// Update item order
+async function updateItemOrder(id, order_index) {
+    try {
+        await fetch(`${API_ENDPOINT}?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_index })
+        });
+        return true;
+    } catch (error) {
+        console.error('❌ 순서 수정 실패:', error);
+        throw error;
+    }
+}
+
+// Get slider settings
+async function getSliderSettings() {
+    try {
+        const response = await fetch('/api/hero/settings');
+        return await response.json();
+    } catch (error) {
+        console.error('❌ 설정 불러오기 실패:', error);
+        return null;
+    }
+}
+
+// Save slider settings
+async function saveSliderSettings(settings) {
+    try {
+        await fetch('/api/hero/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        return true;
+    } catch (error) {
+        console.error('❌ 설정 저장 실패:', error);
+        throw error;
+    }
+}
+
 // Expose functions globally
 window.saveHeroMediaToDB = saveHeroMediaToDB;
 window.getHeroSliderMedia = getHeroSliderMedia;
 window.deleteHeroMediaById = deleteHeroMediaById;
+window.updateItemOrder = updateItemOrder;
+window.getSliderSettings = getSliderSettings;
+window.saveSliderSettings = saveSliderSettings;

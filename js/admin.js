@@ -71,6 +71,7 @@ function initAdmin() {
 
     // Load data
     loadHeroSliderList();
+    loadSliderSettings();
 }
 
 // Handle selected media files
@@ -106,13 +107,8 @@ function handleHeroMediaFiles(files) {
                 <div style="flex: 1;">
                     <p><strong>${file.type.startsWith('video/') ? '🎥' : '📷'} ${file.name}</strong></p>
                     <div style="margin-top: 10px;">
-                        <label style="display: block; margin-bottom: 5px;">텍스트 (선택사항):</label>
-                        <input type="text" id="text-${index}" class="slide-text-input" placeholder="슬라이드 텍스트 입력" 
-                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <button onclick="moveUp(${index})" style="padding: 5px 10px; margin-right: 5px;">↑</button>
-                        <button onclick="moveDown(${index})" style="padding: 5px 10px;">↓</button>
+                        <button onclick="moveUpPreview(${index})" style="padding: 5px 10px; margin-right: 5px;">↑</button>
+                        <button onclick="moveDownPreview(${index})" style="padding: 5px 10px;">↓</button>
                     </div>
                 </div>
             </div>
@@ -130,8 +126,8 @@ function handleHeroMediaFiles(files) {
     });
 }
 
-// Move up
-window.moveUp = function(index) {
+// Move up preview
+window.moveUpPreview = function(index) {
     if (index === 0) return;
     const temp = selectedMediaFiles[index];
     selectedMediaFiles[index] = selectedMediaFiles[index - 1];
@@ -139,8 +135,8 @@ window.moveUp = function(index) {
     handleHeroMediaFiles(Array.from(selectedMediaFiles));
 }
 
-// Move down
-window.moveDown = function(index) {
+// Move down preview
+window.moveDownPreview = function(index) {
     if (index >= selectedMediaFiles.length - 1) return;
     const temp = selectedMediaFiles[index];
     selectedMediaFiles[index] = selectedMediaFiles[index + 1];
@@ -155,15 +151,6 @@ window.saveHeroMedia = async function() {
         return;
     }
     
-    // Collect text inputs
-    const mediaWithText = selectedMediaFiles.map((file, index) => {
-        const textInput = document.getElementById(`text-${index}`);
-        return {
-            file: file,
-            text: textInput ? textInput.value : ''
-        };
-    });
-    
     const progressBar = document.getElementById('heroSliderProgress');
     const progressFill = progressBar.querySelector('.progress-fill');
     const progressText = progressBar.querySelector('.progress-text');
@@ -173,7 +160,11 @@ window.saveHeroMedia = async function() {
         progressFill.style.width = '50%';
         progressText.textContent = '50%';
         
-        await saveHeroMediaToDB(mediaWithText);
+        // Get existing media to append
+        const existing = await getHeroSliderMedia();
+        const startIndex = existing.length;
+        
+        await saveHeroMediaToDB(selectedMediaFiles, startIndex);
         
         progressFill.style.width = '100%';
         progressText.textContent = '100%';
@@ -207,6 +198,33 @@ window.saveHeroMedia = async function() {
     }
 }
 
+// Load slider settings
+async function loadSliderSettings() {
+    const settings = await getSliderSettings();
+    if (settings) {
+        document.getElementById('slideInterval').value = settings.interval || 5;
+        document.getElementById('sliderText').value = settings.text || '';
+    }
+}
+
+// Save slide interval
+window.saveSlideInterval = async function() {
+    const interval = document.getElementById('slideInterval').value;
+    const settings = await getSliderSettings() || {};
+    settings.interval = parseInt(interval);
+    await saveSliderSettings(settings);
+    alert('✅ 슬라이드 간격이 저장되었습니다!');
+}
+
+// Save slider text
+window.saveSliderText = async function() {
+    const text = document.getElementById('sliderText').value;
+    const settings = await getSliderSettings() || {};
+    settings.text = text;
+    await saveSliderSettings(settings);
+    alert('✅ 슬라이더 텍스트가 저장되었습니다!');
+}
+
 // Load hero slider list
 async function loadHeroSliderList() {
     const list = document.getElementById('heroImagesList');
@@ -222,36 +240,70 @@ async function loadHeroSliderList() {
     list.innerHTML = '';
     mediaItems.forEach((item, index) => {
         const itemDiv = document.createElement('div');
-        itemDiv.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px;';
+        itemDiv.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center;';
         
         if (item.mediaType === 'video') {
             itemDiv.innerHTML = `
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <video src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;" controls></video>
-                    <div>
-                        <p><strong>🎥 동영상 ${index + 1}</strong></p>
-                        <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
-                        ${item.text ? `<p style="color: #333; font-size: 14px; margin-top: 5px;">📝 "${item.text}"</p>` : ''}
-                        <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
-                    </div>
+                <video src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;" controls></video>
+                <div style="flex: 1;">
+                    <p><strong>🎥 동영상 ${index + 1}</strong></p>
+                    <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                 </div>
             `;
         } else {
             itemDiv.innerHTML = `
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <img src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;">
-                    <div>
-                        <p><strong>📷 이미지 ${index + 1}</strong></p>
-                        <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
-                        ${item.text ? `<p style="color: #333; font-size: 14px; margin-top: 5px;">📝 "${item.text}"</p>` : ''}
-                        <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
-                    </div>
+                <img src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;">
+                <div style="flex: 1;">
+                    <p><strong>📷 이미지 ${index + 1}</strong></p>
+                    <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                 </div>
             `;
         }
         
         list.appendChild(itemDiv);
     });
+}
+
+// Move item up in saved list
+window.moveItemUp = async function(index) {
+    const items = await getHeroSliderMedia();
+    if (index === 0) return;
+    
+    // Swap order_index
+    const temp = items[index].order_index;
+    items[index].order_index = items[index - 1].order_index;
+    items[index - 1].order_index = temp;
+    
+    await updateItemOrder(items[index].id, items[index].order_index);
+    await updateItemOrder(items[index - 1].id, items[index - 1].order_index);
+    
+    loadHeroSliderList();
+}
+
+// Move item down in saved list
+window.moveItemDown = async function(index) {
+    const items = await getHeroSliderMedia();
+    if (index >= items.length - 1) return;
+    
+    // Swap order_index
+    const temp = items[index].order_index;
+    items[index].order_index = items[index + 1].order_index;
+    items[index + 1].order_index = temp;
+    
+    await updateItemOrder(items[index].id, items[index].order_index);
+    await updateItemOrder(items[index + 1].id, items[index + 1].order_index);
+    
+    loadHeroSliderList();
 }
 
 // Delete hero media (global function)
