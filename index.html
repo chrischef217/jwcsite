@@ -68,7 +68,6 @@
     </footer>
 
     <script>
-        const API_BASE = '/api/tables';
         let currentSlide = 0;
         let sliderInterval;
         let heroMediaItems = [];
@@ -91,13 +90,9 @@
         // Load hero slider
         async function loadHeroSlider() {
             try {
-                const response = await fetch(`${API_BASE}/images?search=heroSlider&limit=100`);
-                const data = await response.json();
-                
-                if (data.success && data.data && data.data.length > 0) {
-                    heroMediaItems = data.data
-                        .filter(item => item.type === 'heroSlider')
-                        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                const data = localStorage.getItem('jwc_hero_slider');
+                if (data) {
+                    heroMediaItems = JSON.parse(data);
                     
                     if (heroMediaItems.length > 0) {
                         renderHeroSlider();

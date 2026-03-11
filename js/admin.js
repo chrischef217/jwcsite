@@ -228,8 +228,7 @@ window.deleteHeroMedia = async function(id) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     
     try {
-        const API_BASE = '/api/tables';
-        await fetch(`${API_BASE}/images/${id}`, { method: 'DELETE' });
+        await window.deleteHeroMediaById(id);
         alert('✅ 삭제되었습니다.');
         loadHeroSliderList();
     } catch (error) {
