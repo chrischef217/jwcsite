@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JWC - Products</title>
+    <title>Products - JWC</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="products.css">
 </head>
 <body>
+    <!-- Header -->
     <header>
         <div class="container">
-            <a href="index.html" class="logo">
-                <img src="logo.png" alt="JWC">
-            </a>
-            <button class="menu-btn" onclick="toggleMenu()">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="logo.png" alt="JWC Logo">
+                </a>
+            </div>
+            <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle navigation menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -20,39 +24,217 @@
         </div>
     </header>
 
-    <nav id="navMenu">
+    <!-- Navigation Menu -->
+    <nav id="nav">
+        <a href="index.html">HOME</a>
         <a href="about.html">ABOUT</a>
-        <a href="products.html">PRODUCTS</a>
-        <a href="contact.html">CONTACT</a>
+        <a href="products.html" class="active">PRODUCTS</a>
+        <a href="#contact">CONTACT</a>
     </nav>
 
-    <main>
-        <section class="page-hero">
-            <h1>Our Products</h1>
-        </section>
+    <!-- Products Hero Section -->
+    <section class="products-hero">
+        <div class="container">
+            <h1>PRODUCTS</h1>
+            <p>Premium K-Beauty Packaging Solutions</p>
+        </div>
+    </section>
 
-        <section class="content">
-            <div class="container">
-                <div class="products-header">
-                    <div class="filters">
-                        <button class="filter-btn active">전체</button>
-                        <button class="filter-btn">스킨케어</button>
-                        <button class="filter-btn">메이크업</button>
-                        <button class="filter-btn">바디케어</button>
+    <!-- Category Filter -->
+    <section class="category-filter">
+        <div class="container">
+            <button class="filter-btn active" data-category="all">All Products</button>
+            <button class="filter-btn" data-category="cream">Cream Jars</button>
+            <button class="filter-btn" data-category="essence">Essence & Serum</button>
+            <button class="filter-btn" data-category="lotion">Lotion</button>
+            <button class="filter-btn" data-category="eco">Eco-Friendly</button>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-grid" id="productsGrid">
+                <!-- Product 1 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-02.jpg" alt="사각 크림 용기 J3-C50">
+                    </div>
+                    <div class="product-info">
+                        <h3>사각 크림 용기</h3>
+                        <p class="product-model">J3-C50</p>
+                        <p class="product-size">62.6 x 62.6 x 62.6</p>
+                        <p class="product-volume">50g</p>
                     </div>
                 </div>
-                <div class="products-grid">
-                    <div class="placeholder">
-                        <h3>📦 제품 준비중</h3>
-                        <p>곧 다양한 제품을 만나보실 수 있습니다.</p>
+
+                <!-- Product 2 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-01.jpg" alt="사각 크림 용기 J3-C30">
+                    </div>
+                    <div class="product-info">
+                        <h3>사각 크림 용기</h3>
+                        <p class="product-model">J3-C30</p>
+                        <p class="product-size">55 x 55 x 55</p>
+                        <p class="product-volume">30g</p>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-04.jpg" alt="팔각 크림 용기 J8-C30">
+                    </div>
+                    <div class="product-info">
+                        <h3>팔각 크림 용기</h3>
+                        <p class="product-model">J8-C30</p>
+                        <p class="product-size">62.6 x 62.6 x 63</p>
+                        <p class="product-volume">30g</p>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-03.jpg" alt="팔각 크림 용기 J8-C50">
+                    </div>
+                    <div class="product-info">
+                        <h3>팔각 크림 용기</h3>
+                        <p class="product-model">J8-C50</p>
+                        <p class="product-size">62.6 x 62.6 x 63</p>
+                        <p class="product-volume">50g</p>
+                    </div>
+                </div>
+
+                <!-- Product 5 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-06.jpg" alt="원형 크림 용기 J5-C80">
+                    </div>
+                    <div class="product-info">
+                        <h3>원형 크림 용기</h3>
+                        <p class="product-model">J5-C80</p>
+                        <p class="product-size">Φ72.3 x 71.8</p>
+                        <p class="product-volume">80g, 50g</p>
+                    </div>
+                </div>
+
+                <!-- Product 6 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-08.jpg" alt="원형 크림 용기 J1-C50">
+                    </div>
+                    <div class="product-info">
+                        <h3>원형 크림 용기</h3>
+                        <p class="product-model">J1-C50</p>
+                        <p class="product-size">Φ69.6 x 52.0</p>
+                        <p class="product-volume">50g, 30g</p>
+                    </div>
+                </div>
+
+                <!-- Product 7 -->
+                <div class="product-card" data-category="eco">
+                    <div class="product-image">
+                        <img src="product-10.jpg" alt="All PP 소재 제품 J1-P100">
+                    </div>
+                    <div class="product-info">
+                        <h3>All PP 소재 제품</h3>
+                        <p class="product-model">J1-P100</p>
+                        <p class="product-size">재질: PP</p>
+                        <p class="product-volume">100g, 50g, 30g</p>
+                    </div>
+                </div>
+
+                <!-- Product 8 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-12.jpg" alt="원형 크림 용기 J1-C50,30,20">
+                    </div>
+                    <div class="product-info">
+                        <h3>원형 크림 용기</h3>
+                        <p class="product-model">J1-C50, 30, 20</p>
+                        <p class="product-size">Multi Size</p>
+                        <p class="product-volume">50g, 30g, 20g</p>
+                    </div>
+                </div>
+
+                <!-- Product 9 -->
+                <div class="product-card" data-category="essence">
+                    <div class="product-image">
+                        <img src="product-14.jpg" alt="에센스 용기 J1-E20,15">
+                    </div>
+                    <div class="product-info">
+                        <h3>에센스 용기</h3>
+                        <p class="product-model">J1-E20, 15</p>
+                        <p class="product-size">Φ32 x 114</p>
+                        <p class="product-volume">20ml, 15ml</p>
+                    </div>
+                </div>
+
+                <!-- Product 10 -->
+                <div class="product-card" data-category="lotion">
+                    <div class="product-image">
+                        <img src="product-16.jpg" alt="로션 용기 J1-L130">
+                    </div>
+                    <div class="product-info">
+                        <h3>로션 용기</h3>
+                        <p class="product-model">J1-L130</p>
+                        <p class="product-size">Φ46.5 x 188.5</p>
+                        <p class="product-volume">130ml</p>
+                    </div>
+                </div>
+
+                <!-- Product 11 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-18.jpg" alt="사각 크림 용기 J2-C50">
+                    </div>
+                    <div class="product-info">
+                        <h3>사각 크림 용기</h3>
+                        <p class="product-model">J2-C50</p>
+                        <p class="product-size">67.1 x 67.1 x 67.1</p>
+                        <p class="product-volume">50g, 30g</p>
+                    </div>
+                </div>
+
+                <!-- Product 12 -->
+                <div class="product-card" data-category="cream">
+                    <div class="product-image">
+                        <img src="product-20.jpg" alt="오크통 크림 용기 J10-C30">
+                    </div>
+                    <div class="product-info">
+                        <h3>오크통 크림 용기</h3>
+                        <p class="product-model">J10-C30</p>
+                        <p class="product-size">Φ73.6 x 69.3</p>
+                        <p class="product-volume">30g</p>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
 
+    <!-- Footer -->
     <footer>
         <p>&copy; 2024 JWC. All rights reserved.</p>
+        <a href="admin-login.html" style="color: rgba(255,255,255,0.3); text-decoration: none; font-size: 0.7rem;">Admin</a>
     </footer>
+
+    <script src="products.js"></script>
+    <script>
+        function toggleMenu() {
+            const nav = document.getElementById('nav');
+            nav.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const nav = document.getElementById('nav');
+            const menuBtn = document.querySelector('.menu-btn');
+            if (nav.classList.contains('active') && !nav.contains(e.target) && !menuBtn.contains(e.target)) {
+                nav.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 </html>
