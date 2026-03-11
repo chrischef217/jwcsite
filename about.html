@@ -3,8 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JWC - About</title>
+    <title>JWC (장원특수산업) - About</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .about-nav {
+            background: white;
+            padding: 20px 0;
+            border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 75px;
+            z-index: 100;
+        }
+        
+        .about-nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            padding: 0 20px;
+        }
+        
+        .about-nav a {
+            color: #666;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .about-nav a:hover,
+        .about-nav a.active {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .about-section {
+            background: white;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .about-section h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #333;
+            border-bottom: 3px solid #333;
+            padding-bottom: 15px;
+        }
+        
+        .about-section h3 {
+            font-size: 1.5rem;
+            margin: 30px 0 15px 0;
+            color: #444;
+        }
+        
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .vision-card {
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #333;
+        }
+        
+        .vision-card h3 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .business-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .business-step {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .business-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #666;
+        }
+        
+        .business-step:last-child::after {
+            display: none;
+        }
+        
+        .business-step h4 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .business-step p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .quality-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        
+        .quality-table th,
+        .quality-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .quality-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .quality-table tr:hover {
+            background: #fafafa;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .highlight-box strong {
+            color: #333;
+        }
+        
+        .contact-info {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .contact-info h3 {
+            margin-top: 0;
+        }
+        
+        .contact-item {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .contact-item strong {
+            min-width: 100px;
+            color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            .business-step::after {
+                display: none;
+            }
+            
+            .about-section {
+                padding: 40px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -12,42 +227,260 @@
             <a href="index.html" class="logo">
                 <img src="logo.png" alt="JWC">
             </a>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="about.html" class="active">About</a>
-                <a href="products.html">Products</a>
-                <a href="contact.html">Contact</a>
-            </nav>
+            <button class="menu-btn" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
+    <nav id="navMenu">
+        <a href="about.html">ABOUT</a>
+        <a href="products.html">PRODUCTS</a>
+        <a href="contact.html">CONTACT</a>
+    </nav>
+
     <main>
         <section class="page-hero">
-            <h1>About Us</h1>
+            <h1>JANGWON 회사 소개</h1>
         </section>
+
+        <!-- 내부 네비게이션 -->
+        <div class="about-nav">
+            <div class="about-nav-container">
+                <a href="#company" class="active">회사 소개</a>
+                <a href="#business">사업부문</a>
+                <a href="#quality">품질 관리</a>
+                <a href="#contact-info">연락처</a>
+            </div>
+        </div>
 
         <section class="content">
             <div class="container">
                 <div class="about-content">
-                    <div class="about-section">
-                        <h2>우리의 비전</h2>
-                        <p>JWC는 고객의 아름다움과 건강을 최우선으로 생각하는 화장품 회사입니다. 자연에서 얻은 순수한 성분과 첨단 과학기술을 결합하여, 피부에 안전하면서도 효과적인 제품을 만들어갑니다.</p>
+                    
+                    <!-- 회사 소개 -->
+                    <div id="company" class="about-section">
+                        <h2>【 JANGWON 】 회사 소개</h2>
+                        
+                        <div class="vision-grid">
+                            <div class="vision-card">
+                                <h3>【기업비전】</h3>
+                                <p>한국 화장품 용기 산업 발전의 역사와 함께한 장원특수산업은 독자 기술에 의한 신제품 개발과 제조 경쟁력을 바탕으로 글로벌 Top 제조 업체로 도약하고 있습니다.</p>
+                                <p><strong>비전! 2025!</strong>를 수립하여 품질 향상 및 친환경 제품 개발에 집중하여 글로벌 기업으로 성장하도록 하겠습니다.</p>
+                            </div>
+                            
+                            <div class="vision-card">
+                                <h3>【고객】</h3>
+                                <p><strong>고객의 성공이 당사의 성공이라는 모토!</strong></p>
+                                <ul style="margin: 15px 0; padding-left: 20px;">
+                                    <li>고객에 우리 제품에 맞는 공정 기술 제공, 공급 물량, 일정에 대한 약속 이행</li>
+                                    <li>변경, 조정 요청에 빠른 응답 속도로 대응</li>
+                                </ul>
+                                <p>고객 신뢰 기반의 기술 서비스업. 고객 이해 기반의 기술, 생산 역량 개발</p>
+                                <ul style="margin: 15px 0; padding-left: 20px;">
+                                    <li>긴밀한 협업을 통한 고객 요구 제품을 생산</li>
+                                    <li>다양한 고객의 니즈 해결을 위하여 역량 확보</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="vision-card">
+                                <h3>【임직원】</h3>
+                                <p>장원특수산업을 최고의 기업으로 성장 시키고 사람이 모이는 기업으로 성장 시키겠습니다.</p>
+                                <p>임직원들에게 좋은 근무환경과 휴가, 더 많은 임금을 제공해서 행복한 일터를 만들겠습니다.</p>
+                                <p>익숙했던 것에서 벗어나 본질적인 변화를 함께 만들어 가겠습니다.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="about-section">
-                        <h2>우리의 미션</h2>
-                        <p>모든 사람이 자신의 피부 타입과 고민에 맞는 완벽한 솔루션을 찾을 수 있도록, 다양하고 전문적인 제품 라인을 제공합니다. 지속 가능한 뷰티를 추구하며, 환경을 생각하는 기업이 되겠습니다.</p>
+
+                    <!-- 사업부문 소개 -->
+                    <div id="business" class="about-section">
+                        <h2>사업부문 소개</h2>
+                        <p style="font-size: 1.1rem; color: #555; line-height: 1.8;">
+                            장원특수산업의 사업은 화장품 용기 생산을 위하여 <strong>사출, 내측 코팅, 조립 3개 부문</strong>으로 구성되어 있습니다.
+                        </p>
+                        
+                        <div class="business-flow">
+                            <div class="business-step">
+                                <h4>사출</h4>
+                                <p><strong>11대 설비 보유</strong></p>
+                                <p>280ton 7대<br>170ton 4대</p>
+                                <p style="margin-top: 10px;">외캡, 외용기, 내용기, 리드 등 생산</p>
+                            </div>
+                            
+                            <div class="business-step">
+                                <h4>내측 코팅</h4>
+                                <p><strong>자체 개발 설비 10대</strong></p>
+                                <p>(국내 최초)</p>
+                                <p style="margin-top: 10px;">크림 용기, 로션 용기, 명판 설비</p>
+                            </div>
+                            
+                            <div class="business-step">
+                                <h4>조립</h4>
+                                <p><strong>2개 라인</strong></p>
+                                <p>최종 품질 검사</p>
+                                <p style="margin-top: 10px;">완제품 출고</p>
+                            </div>
+                        </div>
+                        
+                        <div class="highlight-box">
+                            <p style="margin: 0; font-size: 1.1rem;">
+                                <strong>🏭 회사內 사출 → 코팅 → 조립</strong>을 통하여 경쟁사 보다 <strong>더 빠르고 품질적으로 완벽한 제품</strong>을 생산할 수 있습니다.
+                            </p>
+                        </div>
                     </div>
-                    <div class="about-section">
-                        <h2>핵심 가치</h2>
-                        <p>품질, 혁신, 신뢰. 이 세 가지 핵심 가치를 바탕으로 고객 만족을 위해 끊임없이 노력합니다. 엄격한 품질 관리와 지속적인 연구개발을 통해 업계 최고의 제품을 만들어갑니다.</p>
+
+                    <!-- 품질 관리 -->
+                    <div id="quality" class="about-section">
+                        <h2>품질 업무 소개</h2>
+                        
+                        <p style="font-size: 1.1rem; color: #555; line-height: 1.8; margin-bottom: 30px;">
+                            품질 System 구축으로 안정적인 제품 생산이 가능하고 고객에게 좋은 제품을 납품할 수 있습니다.
+                        </p>
+                        
+                        <div class="highlight-box">
+                            <p style="margin: 0;">
+                                <strong>✅ 제품당 6회 이상 품질 확인</strong><br>
+                                <strong>✅ 품질팀에서 제품당 오전/오후 품질 검사 추가 실시</strong>
+                            </p>
+                        </div>
+                        
+                        <h3>품질 검사 프로세스</h3>
+                        <p style="margin-bottom: 20px;">사출 → 코팅 → 조립 과정을 통하여 <strong>작업자가 실시간으로 품질을 확인</strong>합니다. 추가로 <strong>품질팀에서 제품당 오전/오후 품질 검사를 실시</strong>하여 완벽한 제품을 생산하도록 관리하고 있습니다.</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">6+</div>
+                                <div class="stat-label">제품당 품질 확인 횟수</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">2회</div>
+                                <div class="stat-label">품질팀 오전/오후 검사</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">16:00</div>
+                                <div class="stat-label">매일 품질 회의</div>
+                            </div>
+                        </div>
+                        
+                        <h3>품질 회의 운영</h3>
+                        <table class="quality-table">
+                            <thead>
+                                <tr>
+                                    <th>회의명</th>
+                                    <th>내용</th>
+                                    <th>효과</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>일일 품질 회의</strong><br>(매일 16시)</td>
+                                    <td>금일 생산 되고 있는 제품 점검 내용 및 품질 논의</td>
+                                    <td>품질 불량 조기 감지 및 개선</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>화요일 고질 불량 회의</strong><br>(+생산 점검)</td>
+                                    <td>고질적으로 발생하는 불량 개선 목적</td>
+                                    <td>고질적인 불량 개선</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>금요일 주간 품질 회의</strong></td>
+                                    <td>한주간 발생한 불량 정리 및 공유하여 개선 목적</td>
+                                    <td>단발성 불량 개선</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>월례회</strong></td>
+                                    <td>불량개선 내용 및 품질 교육</td>
+                                    <td>품질 마인드 상승</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>일일/월간 보고</strong></td>
+                                    <td>금일 생산되는 제품에 대한 정보 습득</td>
+                                    <td>제품에 대한 이해를 도와 품질 안정화</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="highlight-box" style="background: #d4edda; border-left-color: #28a745;">
+                            <p style="margin: 0;">
+                                <strong>👥 전문 인력 확보</strong><br>
+                                ✅ 정직원 비율 <strong>91% 이상</strong> 유지<br>
+                                ✅ 평균 근속년수 <strong>10년 이상</strong><br>
+                                📊 경쟁사 대비: 라인 작업자 평균 40% 이하
+                            </p>
+                        </div>
                     </div>
+
+                    <!-- 연락처 -->
+                    <div id="contact-info" class="about-section">
+                        <h2>영업 사업부</h2>
+                        
+                        <div class="contact-info">
+                            <h3>본사</h3>
+                            <div class="contact-item">
+                                <strong>📍 주소</strong>
+                                <span>경기도 화성시 가능골 1길 13번지 장원특수산업</span>
+                            </div>
+                            <div class="contact-item">
+                                <strong>📞 전화</strong>
+                                <span>031-227-0095</span>
+                            </div>
+                            <div class="contact-item">
+                                <strong>📠 팩스</strong>
+                                <span>031-227-0073</span>
+                            </div>
+                            <div class="contact-item">
+                                <strong>📧 이메일</strong>
+                                <span>jw86156@hanmail.net</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-info" style="margin-top: 20px;">
+                            <h3>영업 담당자</h3>
+                            <div class="contact-item">
+                                <strong>손승범 부장</strong>
+                                <span>010-3512-3922 (영업 총괄)</span>
+                            </div>
+                            <div class="contact-item">
+                                <strong>이남은 실장</strong>
+                                <span>010-2291-7526 (영업 담당)</span>
+                            </div>
+                            <div class="contact-item">
+                                <strong>함종석 차장</strong>
+                                <span>010-8721-1078 (영업 담당)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-info" style="margin-top: 20px;">
+                            <h3>영업 사업부</h3>
+                            <div class="contact-item">
+                                <strong>📍 주소</strong>
+                                <span>경기 광명시 소하로 200 광명G타워 5층</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-info" style="margin-top: 20px;">
+                            <h3>홈페이지</h3>
+                            <div class="contact-item">
+                                <strong>🌐 웹사이트</strong>
+                                <a href="https://newjangwon.modoo.at/" target="_blank" style="color: #007bff;">https://newjangwon.modoo.at/</a>
+                            </div>
+                            <div class="contact-item">
+                                <strong>🌐 제품 카탈로그</strong>
+                                <a href="https://jw.freemold.net/WEB/index.html" target="_blank" style="color: #007bff;">https://jw.freemold.net/WEB/index.html</a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 JWC. All rights reserved.</p>
+        <p>&copy; 2024 JWC (장원특수산업). All rights reserved.</p>
+        <a href="admin-login.html" style="opacity: 0.3; font-size: 12px;">⚙️</a>
     </footer>
 
     <script>
@@ -62,6 +495,40 @@
             
             if (!nav.contains(event.target) && !menuBtn.contains(event.target)) {
                 nav.classList.remove('active');
+            }
+        });
+        
+        // 내부 네비게이션 활성화
+        document.querySelectorAll('.about-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                document.querySelectorAll('.about-nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 스크롤 시 네비게이션 활성화
+        window.addEventListener('scroll', function() {
+            const sections = ['company', 'business', 'quality', 'contact-info'];
+            const navLinks = document.querySelectorAll('.about-nav a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 150 && rect.bottom >= 150) {
+                        current = section;
+                    }
+                }
+            });
+            
+            if (current) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
             }
         });
     </script>
