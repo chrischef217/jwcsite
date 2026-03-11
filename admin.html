@@ -83,8 +83,12 @@
                 <p style="color: #666; margin-bottom: 20px;">✅ 이미지/동영상을 업로드하고 순서를 변경할 수 있습니다. (이미지 5초, 영상은 영상 길이만큼 자동 재생)</p>
                 
                 <div class="form-group">
-                    <label>슬라이더 텍스트 (모든 슬라이드에 표시)</label>
-                    <input type="text" id="sliderText" placeholder="예: Welcome to JWC" style="width: 100%; padding: 10px;">
+                    <label>슬라이더 제목 (모든 슬라이드에 표시)</label>
+                    <input type="text" id="sliderTitle" placeholder="예: JWC - 장원특수산업" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                    
+                    <label>슬라이더 내용 (줄바꿈 가능)</label>
+                    <textarea id="sliderContent" placeholder="예: 화장품 용기 전문 기업&#10;고품질 제품 생산" style="width: 100%; padding: 10px; min-height: 100px; font-family: inherit; resize: vertical;"></textarea>
+                    
                     <button class="btn btn-secondary" onclick="saveSliderText()" style="margin-top: 10px;">텍스트 저장</button>
                 </div>
                 

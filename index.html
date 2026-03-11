@@ -91,12 +91,13 @@
                 // Load settings
                 const settingsResponse = await fetch('/api/hero/settings');
                 const settings = await settingsResponse.json();
-                const sliderText = settings.text || '';
+                const sliderTitle = settings.title || '';
+                const sliderContent = settings.content || '';
                 
-                console.log('✅ 로드:', heroMediaItems.length, '개, 텍스트:', sliderText);
+                console.log('✅ 로드:', heroMediaItems.length, '개, 제목:', sliderTitle, '내용:', sliderContent);
                 
                 if (heroMediaItems.length > 0) {
-                    renderHeroSlider(sliderText);
+                    renderHeroSlider(sliderTitle, sliderContent);
                     if (heroMediaItems.length > 1) {
                         scheduleNextSlide();
                     }
@@ -106,7 +107,7 @@
             }
         }
 
-        function renderHeroSlider(sliderText) {
+        function renderHeroSlider(sliderTitle, sliderContent) {
             const wrapper = document.getElementById('heroSliderWrapper');
             const dots = document.getElementById('heroSliderDots');
             
@@ -139,10 +140,17 @@
                     
                     slide.appendChild(video);
                     
-                    if (sliderText) {
+                    if (sliderTitle || sliderContent) {
                         const textOverlay = document.createElement('div');
                         textOverlay.className = 'hero-text-overlay';
-                        textOverlay.innerHTML = `<h1 style="color: white;">${sliderText}</h1>`;
+                        let html = '';
+                        if (sliderTitle) {
+                            html += `<h1>${sliderTitle}</h1>`;
+                        }
+                        if (sliderContent) {
+                            html += `<p>${sliderContent.replace(/\n/g, '<br>')}</p>`;
+                        }
+                        textOverlay.innerHTML = html;
                         slide.appendChild(textOverlay);
                     }
                 } else {
@@ -150,10 +158,17 @@
                     slide.style.backgroundSize = 'cover';
                     slide.style.backgroundPosition = 'center';
                     
-                    if (sliderText) {
+                    if (sliderTitle || sliderContent) {
                         const textOverlay = document.createElement('div');
                         textOverlay.className = 'hero-text-overlay';
-                        textOverlay.innerHTML = `<h1 style="color: white;">${sliderText}</h1>`;
+                        let html = '';
+                        if (sliderTitle) {
+                            html += `<h1>${sliderTitle}</h1>`;
+                        }
+                        if (sliderContent) {
+                            html += `<p>${sliderContent.replace(/\n/g, '<br>')}</p>`;
+                        }
+                        textOverlay.innerHTML = html;
                         slide.appendChild(textOverlay);
                     }
                 }

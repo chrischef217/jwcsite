@@ -202,14 +202,16 @@ window.saveHeroMedia = async function() {
 async function loadSliderSettings() {
     const settings = await getSliderSettings();
     if (settings) {
-        document.getElementById('sliderText').value = settings.text || '';
+        document.getElementById('sliderTitle').value = settings.title || '';
+        document.getElementById('sliderContent').value = settings.content || '';
     }
 }
 
 // Save slider text
 window.saveSliderText = async function() {
-    const text = document.getElementById('sliderText').value;
-    const settings = { text: text };
+    const title = document.getElementById('sliderTitle').value;
+    const content = document.getElementById('sliderContent').value;
+    const settings = { title: title, content: content };
     await saveSliderSettings(settings);
     alert('✅ 슬라이더 텍스트가 저장되었습니다!');
 }
