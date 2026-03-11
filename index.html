@@ -91,7 +91,7 @@
         async function loadHeroSlider() {
             try {
                 const response = await fetch('/api/hero');
-                const heroMediaItems = await response.json();
+                heroMediaItems = await response.json();
                 
                 if (heroMediaItems.length > 0) {
                     renderHeroSlider();
