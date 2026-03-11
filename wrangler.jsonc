@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jwcsite",
+  "compatibility_date": "2024-01-01",
+  "pages_build_output_dir": "./",
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "b87e72086da74e99b7f9b168ff2734a0"
+    }
+  ]
+}

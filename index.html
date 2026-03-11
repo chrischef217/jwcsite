@@ -90,15 +90,13 @@
         // Load hero slider
         async function loadHeroSlider() {
             try {
-                const data = localStorage.getItem('jwc_hero_slider');
-                if (data) {
-                    heroMediaItems = JSON.parse(data);
-                    
-                    if (heroMediaItems.length > 0) {
-                        renderHeroSlider();
-                        if (heroMediaItems.length > 1) {
-                            startSlider();
-                        }
+                const response = await fetch('/api/hero');
+                const heroMediaItems = await response.json();
+                
+                if (heroMediaItems.length > 0) {
+                    renderHeroSlider();
+                    if (heroMediaItems.length > 1) {
+                        startSlider();
                     }
                 }
             } catch (error) {

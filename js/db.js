@@ -1,5 +1,5 @@
-// Use localStorage for simple storage
-const STORAGE_KEY = 'jwc_hero_slider';
+// Use Cloudflare KV via Pages Function
+const API_ENDPOINT = '/api/hero';
 
 // Helper: Compress image
 async function compressImage(file, maxWidth = 1920, quality = 0.9) {
@@ -46,11 +46,16 @@ async function saveHeroMediaToDB(mediaFiles) {
     try {
         console.log('💾 저장 시작:', mediaFiles.length, '개 파일');
         
-        const savedMedia = [];
+        // Delete all existing
+        const existing = await getHeroSliderMedia();
+        for (const item of existing) {
+            await fetch(`${API_ENDPOINT}?id=${item.id}`, { method: 'DELETE' });
+        }
         
+        // Upload new
         for (let i = 0; i < mediaFiles.length; i++) {
             const mediaFile = mediaFiles[i];
-            console.log(`📤 처리 중 ${i + 1}/${mediaFiles.length}: ${mediaFile.name}`);
+            console.log(`📤 업로드 중 ${i + 1}/${mediaFiles.length}`);
             
             let mediaData;
             let mediaType;
@@ -63,22 +68,22 @@ async function saveHeroMediaToDB(mediaFiles) {
                 mediaType = 'video';
             }
             
-            savedMedia.push({
-                id: Date.now() + '_' + i,
-                type: 'heroSlider',
-                filename: mediaFile.name,
-                data: mediaData,
-                mediaType: mediaType,
-                order_index: i,
-                created_at: new Date().toISOString()
+            await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: mediaFile.name,
+                    data: mediaData,
+                    mediaType: mediaType,
+                    order_index: i
+                })
             });
         }
         
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedMedia));
-        console.log('✅ 모든 파일 저장 완료');
+        console.log('✅ 모든 파일 업로드 완료');
         return true;
     } catch (error) {
-        console.error('❌ 히어로 슬라이더 저장 실패:', error);
+        console.error('❌ 저장 실패:', error);
         throw error;
     }
 }
@@ -86,13 +91,11 @@ async function saveHeroMediaToDB(mediaFiles) {
 // Get hero slider media
 async function getHeroSliderMedia() {
     try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (data) {
-            return JSON.parse(data);
-        }
-        return [];
+        const response = await fetch(API_ENDPOINT);
+        const data = await response.json();
+        return data.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
     } catch (error) {
-        console.error('❌ 히어로 슬라이더 불러오기 실패:', error);
+        console.error('❌ 불러오기 실패:', error);
         return [];
     }
 }
@@ -100,9 +103,7 @@ async function getHeroSliderMedia() {
 // Delete hero media by id
 async function deleteHeroMediaById(id) {
     try {
-        const media = await getHeroSliderMedia();
-        const filtered = media.filter(item => item.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+        await fetch(`${API_ENDPOINT}?id=${id}`, { method: 'DELETE' });
         return true;
     } catch (error) {
         console.error('❌ 삭제 실패:', error);
