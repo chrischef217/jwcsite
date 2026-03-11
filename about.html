@@ -191,14 +191,13 @@
             color: #333;
         }
         
-        .contact-info {
-            background: transparent;
-            padding: 30px 0;
-            border-radius: 0;
-            margin-top: 30px;
+        #contact-info h3 {
+            font-size: 1.3rem;
+            margin: 30px 0 15px 0;
+            color: #333;
         }
         
-        .contact-info h3 {
+        #contact-info > h2 + div h3:first-of-type {
             margin-top: 0;
         }
         
@@ -328,11 +327,7 @@
             }
             
             /* 연락처 정보 모바일 최적화 */
-            .contact-info {
-                padding: 20px;
-            }
-            
-            .contact-info h3 {
+            #contact-info h3 {
                 font-size: 1.2rem;
             }
             
@@ -384,8 +379,8 @@
             </div>
         </div>
 
-        <section class="content" style="background: url('https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=1920') no-repeat center center; background-size: cover; background-attachment: fixed; position: relative;">
-            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.85); z-index: 0;"></div>
+        <section class="content" style="background: url('/blue-cosmetics-bg.jpg') no-repeat center center; background-size: cover; background-attachment: fixed; position: relative;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.65); z-index: 0;"></div>
             <div class="container" style="position: relative; z-index: 1;">
                 <div class="about-content">
                     
@@ -545,7 +540,7 @@
                     <div id="contact-info" class="about-section">
                         <h2>영업 사업부</h2>
                         
-                        <div class="contact-info">
+                        <div>
                             <h3>본사</h3>
                             <div class="contact-item">
                                 <strong>📍 주소</strong>
@@ -565,7 +560,7 @@
                             </div>
                         </div>
                         
-                        <div class="contact-info" style="margin-top: 20px;">
+                        <div>
                             <h3>영업 담당자</h3>
                             <div class="contact-item">
                                 <strong>손승범 부장</strong>
@@ -581,7 +576,7 @@
                             </div>
                         </div>
                         
-                        <div class="contact-info" style="margin-top: 20px;">
+                        <div>
                             <h3>영업 사업부</h3>
                             <div class="contact-item">
                                 <strong>📍 주소</strong>
@@ -589,7 +584,7 @@
                             </div>
                         </div>
                         
-                        <div class="contact-info" style="margin-top: 20px;">
+                        <div>
                             <h3>홈페이지</h3>
                             <div class="contact-item">
                                 <strong>🌐 웹사이트</strong>
