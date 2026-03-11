@@ -147,6 +147,75 @@ async function saveSliderSettings(settings) {
     }
 }
 
+// ========== PRODUCT MANAGEMENT ==========
+
+// Get all products
+async function getAllProducts() {
+    try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch products');
+        return await response.json();
+    } catch (error) {
+        console.error('❌ Failed to load products:', error);
+        return [];
+    }
+}
+
+// Save product (create or update)
+async function saveProduct(productData) {
+    try {
+        console.log('💾 Saving product:', productData.name);
+        
+        // Compress image if it's a file
+        if (productData.image && productData.image instanceof File) {
+            productData.imageData = await compressImage(productData.image, 800, 0.85);
+        }
+        
+        const response = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: productData.id || Date.now().toString(),
+                name: productData.name,
+                model: productData.model,
+                size: productData.size,
+                volume: productData.volume,
+                category: productData.category,
+                imageData: productData.imageData || productData.image,
+                createdAt: productData.createdAt || new Date().toISOString()
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save product');
+        
+        const result = await response.json();
+        console.log('✅ Product saved:', result);
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to save product:', error);
+        throw error;
+    }
+}
+
+// Delete product
+async function deleteProduct(productId) {
+    try {
+        console.log('🗑️ Deleting product:', productId);
+        
+        const response = await fetch(`/api/products/${productId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete product');
+        
+        console.log('✅ Product deleted');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to delete product:', error);
+        throw error;
+    }
+}
+
 // Expose functions globally
 window.saveHeroMediaToDB = saveHeroMediaToDB;
 window.getHeroSliderMedia = getHeroSliderMedia;
@@ -154,3 +223,6 @@ window.deleteHeroMediaById = deleteHeroMediaById;
 window.updateItemOrder = updateItemOrder;
 window.getSliderSettings = getSliderSettings;
 window.saveSliderSettings = saveSliderSettings;
+window.getAllProducts = getAllProducts;
+window.saveProduct = saveProduct;
+window.deleteProduct = deleteProduct;

@@ -1,7 +1,11 @@
-// Products Page - Category Filter
+// Products Page - Category Filter and Dynamic Loading
+let allProducts = [];
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Load products from API
+    loadProducts();
+    
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const productCards = document.querySelectorAll('.product-card');
     const productsGrid = document.getElementById('productsGrid');
 
     // Category filter functionality
@@ -16,26 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get selected category
             const category = this.getAttribute('data-category');
             
-            // Add loading state
-            productsGrid.classList.add('loading');
-            
-            // Filter products with smooth animation
-            setTimeout(() => {
-                productCards.forEach(card => {
-                    if (category === 'all') {
-                        card.classList.remove('hidden');
-                    } else {
-                        if (card.getAttribute('data-category') === category) {
-                            card.classList.remove('hidden');
-                        } else {
-                            card.classList.add('hidden');
-                        }
-                    }
-                });
-                
-                // Remove loading state
-                productsGrid.classList.remove('loading');
-            }, 200);
+            // Filter and render products
+            filterProducts(category);
         });
     });
 
@@ -53,8 +39,77 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+});
 
-    // Intersection Observer for fade-in animation
+// Load products from API
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch products');
+        
+        allProducts = await response.json();
+        console.log('✅ Loaded products:', allProducts.length);
+        
+        renderProducts(allProducts);
+        
+    } catch (error) {
+        console.error('❌ Failed to load products:', error);
+        document.getElementById('productsGrid').innerHTML = 
+            '<p style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #dc3545;">제품 목록을 불러오지 못했습니다.</p>';
+    }
+}
+
+// Filter products by category
+function filterProducts(category) {
+    const productsGrid = document.getElementById('productsGrid');
+    productsGrid.classList.add('loading');
+    
+    setTimeout(() => {
+        if (category === 'all') {
+            renderProducts(allProducts);
+        } else {
+            const filtered = allProducts.filter(p => p.category === category);
+            renderProducts(filtered);
+        }
+        productsGrid.classList.remove('loading');
+    }, 200);
+}
+
+// Render products to grid
+function renderProducts(products) {
+    const grid = document.getElementById('productsGrid');
+    
+    if (!products || products.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">등록된 제품이 없습니다.</p>';
+        return;
+    }
+    
+    let html = '';
+    
+    products.forEach(product => {
+        html += `
+            <div class="product-card" data-category="${product.category}">
+                <div class="product-image">
+                    <img src="${product.imageData || product.image}" alt="${product.name} ${product.model}">
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p class="product-model">${product.model}</p>
+                    ${product.size ? `<p class="product-size">${product.size}</p>` : ''}
+                    <p class="product-volume">${product.volume}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    grid.innerHTML = html;
+    
+    // Reapply intersection observer for fade-in animation
+    observeProductCards();
+}
+
+// Intersection Observer for fade-in animation
+function observeProductCards() {
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -70,10 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }, observerOptions);
 
     // Observe all product cards
+    const productCards = document.querySelectorAll('.product-card');
     productCards.forEach(card => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(30px)';
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
-});
+}

@@ -404,6 +404,264 @@ window.deleteHeroMedia = async function(id) {
     }
 }
 
+// ========== PRODUCTS MANAGEMENT ==========
+
+let currentEditingProduct = null;
+
+// Load products list
+async function loadProductsList() {
+    try {
+        const products = await window.getAllProducts();
+        const container = document.getElementById('productsList');
+        
+        if (!products || products.length === 0) {
+            container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">등록된 제품이 없습니다.</p>';
+            return;
+        }
+        
+        // Group by category
+        const grouped = products.reduce((acc, product) => {
+            const cat = product.category || 'uncategorized';
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(product);
+            return acc;
+        }, {});
+        
+        const categoryNames = {
+            'cream': 'Cream Jars (크림 용기)',
+            'essence': 'Essence & Serum (에센스/세럼)',
+            'lotion': 'Lotion (로션)',
+            'eco': 'Eco-Friendly (친환경)',
+            'uncategorized': '미분류'
+        };
+        
+        let html = '';
+        
+        Object.keys(grouped).forEach(category => {
+            html += `
+                <div class="product-category-group" style="margin-bottom: 30px;">
+                    <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
+                        ${categoryNames[category] || category} (${grouped[category].length})
+                    </h3>
+                    <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+            `;
+            
+            grouped[category].forEach(product => {
+                html += `
+                    <div class="product-item" style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="width: 100%; padding-top: 100%; position: relative; overflow: hidden; border-radius: 8px; background: #f8f9fa; margin-bottom: 12px;">
+                            <img src="${product.imageData || product.image}" alt="${product.name}" 
+                                 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; object-fit: contain;">
+                        </div>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${product.name}</h4>
+                        <p style="color: #007bff; font-weight: 600; margin: 5px 0;">${product.model}</p>
+                        ${product.size ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">${product.size}</p>` : ''}
+                        <p style="color: #555; font-weight: 500; margin: 5px 0;">${product.volume}</p>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button onclick="editProduct('${product.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
+                            <button onclick="deleteProductItem('${product.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Failed to load products:', error);
+        document.getElementById('productsList').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">제품 목록을 불러오지 못했습니다.</p>';
+    }
+}
+
+// Show product form
+window.showProductForm = function() {
+    currentEditingProduct = null;
+    document.getElementById('formTitle').textContent = '새 제품 추가';
+    document.getElementById('productName').value = '';
+    document.getElementById('productModel').value = '';
+    document.getElementById('productSize').value = '';
+    document.getElementById('productVolume').value = '';
+    document.getElementById('productCategory').value = '';
+    document.getElementById('productImagePreview').style.display = 'none';
+    document.getElementById('productImagePreview').src = '';
+    document.getElementById('productForm').style.display = 'block';
+    
+    // Scroll to form
+    document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Cancel product form
+window.cancelProductForm = function() {
+    currentEditingProduct = null;
+    document.getElementById('productForm').style.display = 'none';
+}
+
+// Edit product
+window.editProduct = async function(productId) {
+    try {
+        const products = await window.getAllProducts();
+        const product = products.find(p => p.id === productId);
+        
+        if (!product) {
+            alert('제품을 찾을 수 없습니다.');
+            return;
+        }
+        
+        currentEditingProduct = product;
+        document.getElementById('formTitle').textContent = '제품 수정';
+        document.getElementById('productName').value = product.name;
+        document.getElementById('productModel').value = product.model;
+        document.getElementById('productSize').value = product.size || '';
+        document.getElementById('productVolume').value = product.volume;
+        document.getElementById('productCategory').value = product.category;
+        
+        if (product.imageData || product.image) {
+            document.getElementById('productImagePreview').src = product.imageData || product.image;
+            document.getElementById('productImagePreview').style.display = 'block';
+        }
+        
+        document.getElementById('productForm').style.display = 'block';
+        document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+    } catch (error) {
+        alert('제품 로드 실패: ' + error.message);
+    }
+}
+
+// Save product
+window.saveProductData = async function() {
+    try {
+        const name = document.getElementById('productName').value.trim();
+        const model = document.getElementById('productModel').value.trim();
+        const size = document.getElementById('productSize').value.trim();
+        const volume = document.getElementById('productVolume').value.trim();
+        const category = document.getElementById('productCategory').value;
+        const imageInput = document.getElementById('productImageInput');
+        
+        if (!name || !model || !volume || !category) {
+            alert('필수 항목을 모두 입력해주세요.');
+            return;
+        }
+        
+        const productData = {
+            id: currentEditingProduct ? currentEditingProduct.id : Date.now().toString(),
+            name,
+            model,
+            size,
+            volume,
+            category,
+            createdAt: currentEditingProduct ? currentEditingProduct.createdAt : new Date().toISOString()
+        };
+        
+        // Handle image
+        if (imageInput.files && imageInput.files[0]) {
+            productData.image = imageInput.files[0];
+        } else if (currentEditingProduct && (currentEditingProduct.imageData || currentEditingProduct.image)) {
+            productData.imageData = currentEditingProduct.imageData || currentEditingProduct.image;
+        } else {
+            alert('제품 이미지를 선택해주세요.');
+            return;
+        }
+        
+        await window.saveProduct(productData);
+        
+        alert('✅ 제품이 저장되었습니다!');
+        cancelProductForm();
+        loadProductsList();
+        
+    } catch (error) {
+        alert('❌ 저장 실패: ' + error.message);
+    }
+}
+
+// Delete product
+window.deleteProductItem = async function(productId) {
+    if (!confirm('정말 이 제품을 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deleteProduct(productId);
+        alert('✅ 제품이 삭제되었습니다.');
+        loadProductsList();
+    } catch (error) {
+        alert('❌ 삭제 실패: ' + error.message);
+    }
+}
+
+// Setup product image upload
+function setupProductImageUpload() {
+    const uploadArea = document.getElementById('productImageArea');
+    const imageInput = document.getElementById('productImageInput');
+    const preview = document.getElementById('productImagePreview');
+    
+    if (!uploadArea || !imageInput) return;
+    
+    uploadArea.addEventListener('click', () => imageInput.click());
+    
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '#f0f8ff';
+    });
+    
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            imageInput.files = e.dataTransfer.files;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Initialize products management on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setupProductImageUpload();
+    
+    // Load products when navigating to products section
+    const productsNav = document.querySelector('[data-section="products"]');
+    if (productsNav) {
+        productsNav.addEventListener('click', loadProductsList);
+    }
+    
+    // Load products if already on products section
+    if (window.location.hash === '#products') {
+        loadProductsList();
+    }
+});
+
 // Logout (global function)
 window.logout = function() {
     sessionStorage.removeItem('admin_logged_in');
