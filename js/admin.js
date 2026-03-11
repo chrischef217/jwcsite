@@ -205,14 +205,9 @@ async function loadSliderSettings() {
         document.getElementById('sliderTitle').value = settings.title || '';
         document.getElementById('sliderContent').value = settings.content || '';
         
-        // Load title type and logo
-        if (settings.titleType === 'logo') {
-            document.getElementById('titleTypeLogo').checked = true;
-            toggleTitleType();
-        } else {
-            document.getElementById('titleTypeText').checked = true;
-            toggleTitleType();
-        }
+        // Load title type
+        const titleType = settings.titleType || 'text';
+        selectTitleType(titleType);
         
         if (settings.logoUrl) {
             displayCurrentLogo(settings.logoUrl);
@@ -220,13 +215,23 @@ async function loadSliderSettings() {
     }
 }
 
-// Toggle title type
-window.toggleTitleType = function() {
-    const titleType = document.querySelector('input[name="titleType"]:checked').value;
+// Select title type
+window.selectTitleType = function(type) {
     const textSection = document.getElementById('textTitleSection');
     const logoSection = document.getElementById('logoTitleSection');
+    const buttons = document.querySelectorAll('.title-type-btn');
     
-    if (titleType === 'text') {
+    // Update button styles
+    buttons.forEach(btn => {
+        if (btn.dataset.type === type) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Show/hide sections
+    if (type === 'text') {
         textSection.style.display = 'block';
         logoSection.style.display = 'none';
     } else {
@@ -256,8 +261,7 @@ window.deleteSliderLogo = async function() {
     await saveSliderSettings(settings);
     
     document.getElementById('currentLogoPreview').innerHTML = '';
-    document.getElementById('titleTypeText').checked = true;
-    toggleTitleType();
+    selectTitleType('text');
     alert('✅ 로고가 삭제되었습니다!');
 }
 
@@ -292,7 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Save slider text
 window.saveSliderText = async function() {
-    const titleType = document.querySelector('input[name="titleType"]:checked').value;
+    const activeBtn = document.querySelector('.title-type-btn.active');
+    const titleType = activeBtn ? activeBtn.dataset.type : 'text';
     const title = document.getElementById('sliderTitle').value;
     const content = document.getElementById('sliderContent').value;
     

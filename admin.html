@@ -83,35 +83,52 @@
                 <p style="color: #666; margin-bottom: 20px;">✅ 이미지/동영상을 업로드하고 순서를 변경할 수 있습니다. (이미지 5초, 영상은 영상 길이만큼 자동 재생)</p>
                 
                 <div class="form-group">
-                    <label style="display: block; margin-bottom: 10px;">
-                        <strong>제목 타입 선택:</strong>
+                    <label style="display: block; margin-bottom: 15px; font-weight: 600; font-size: 1.1rem;">
+                        제목 설정
                     </label>
-                    <div style="margin-bottom: 15px;">
-                        <label style="margin-right: 20px;">
-                            <input type="radio" name="titleType" value="text" id="titleTypeText" checked onchange="toggleTitleType()"> 텍스트
-                        </label>
-                        <label>
-                            <input type="radio" name="titleType" value="logo" id="titleTypeLogo" onchange="toggleTitleType()"> 로고 이미지
-                        </label>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button type="button" class="title-type-btn active" data-type="text" onclick="selectTitleType('text')" style="flex: 1; padding: 12px 20px; border: 2px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
+                            📝 텍스트
+                        </button>
+                        <button type="button" class="title-type-btn" data-type="logo" onclick="selectTitleType('logo')" style="flex: 1; padding: 12px 20px; border: 2px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
+                            🖼️ 로고 이미지
+                        </button>
                     </div>
                     
                     <div id="textTitleSection">
-                        <label>슬라이더 제목 (모든 슬라이드에 표시)</label>
-                        <input type="text" id="sliderTitle" placeholder="예: JWC - 장원특수산업" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px;">텍스트 제목</label>
+                        <input type="text" id="sliderTitle" placeholder="예: JWC - 장원특수산업" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
                     </div>
                     
                     <div id="logoTitleSection" style="display: none;">
-                        <label>슬라이더 로고 이미지</label>
+                        <label style="display: block; margin-bottom: 8px;">로고 이미지</label>
                         <input type="file" id="sliderLogoInput" accept="image/*" style="display: none;">
-                        <button class="btn btn-secondary" onclick="document.getElementById('sliderLogoInput').click()" style="margin-bottom: 10px;">로고 업로드</button>
-                        <div id="currentLogoPreview" style="margin-top: 10px;"></div>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('sliderLogoInput').click()" style="margin-bottom: 15px; width: 100%; padding: 12px;">
+                            📁 로고 업로드
+                        </button>
+                        <div id="currentLogoPreview"></div>
                     </div>
                     
-                    <label>슬라이더 내용 (줄바꿈 가능)</label>
-                    <textarea id="sliderContent" placeholder="예: 화장품 용기 전문 기업&#10;고품질 제품 생산" style="width: 100%; padding: 10px; min-height: 100px; font-family: inherit; resize: vertical;"></textarea>
+                    <label style="display: block; margin-bottom: 8px; margin-top: 20px;">내용 (줄바꿈 가능)</label>
+                    <textarea id="sliderContent" placeholder="예: 화장품 용기 전문 기업&#10;고품질 제품 생산" style="width: 100%; padding: 10px; min-height: 100px; font-family: inherit; resize: vertical; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;"></textarea>
                     
-                    <button class="btn btn-secondary" onclick="saveSliderText()" style="margin-top: 10px;">텍스트 저장</button>
+                    <button class="btn btn-primary" onclick="saveSliderText()" style="margin-top: 15px; width: 100%; padding: 12px; font-size: 1rem;">💾 저장</button>
                 </div>
+                
+                <style>
+                    .title-type-btn.active {
+                        background: #007bff !important;
+                        color: white !important;
+                        border-color: #007bff !important;
+                        font-weight: 600;
+                    }
+                    .title-type-btn:hover {
+                        border-color: #007bff;
+                        transform: translateY(-2px);
+                        box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+                    }
+                </style>
                 
                 <div class="progress-bar" id="heroSliderProgress" style="display: none;">
                     <div class="progress-fill"></div>
