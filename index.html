@@ -93,11 +93,13 @@
                 const settings = await settingsResponse.json();
                 const sliderTitle = settings.title || '';
                 const sliderContent = settings.content || '';
+                const titleType = settings.titleType || 'text';
+                const logoUrl = settings.logoUrl || '';
                 
-                console.log('✅ 로드:', heroMediaItems.length, '개, 제목:', sliderTitle, '내용:', sliderContent);
+                console.log('✅ 로드:', heroMediaItems.length, '개, 제목:', sliderTitle, '내용:', sliderContent, '타입:', titleType);
                 
                 if (heroMediaItems.length > 0) {
-                    renderHeroSlider(sliderTitle, sliderContent);
+                    renderHeroSlider(titleType, logoUrl, sliderTitle, sliderContent);
                     if (heroMediaItems.length > 1) {
                         scheduleNextSlide();
                     }
@@ -107,7 +109,7 @@
             }
         }
 
-        function renderHeroSlider(sliderTitle, sliderContent) {
+        function renderHeroSlider(titleType, logoUrl, sliderTitle, sliderContent) {
             const wrapper = document.getElementById('heroSliderWrapper');
             const dots = document.getElementById('heroSliderDots');
             
@@ -140,13 +142,17 @@
                     
                     slide.appendChild(video);
                     
-                    if (sliderTitle || sliderContent) {
+                    if ((titleType === 'text' && sliderTitle) || (titleType === 'logo' && logoUrl) || sliderContent) {
                         const textOverlay = document.createElement('div');
                         textOverlay.className = 'hero-text-overlay';
                         let html = '';
-                        if (sliderTitle) {
+                        
+                        if (titleType === 'text' && sliderTitle) {
                             html += `<h1>${sliderTitle}</h1>`;
+                        } else if (titleType === 'logo' && logoUrl) {
+                            html += `<img src="${logoUrl}" class="hero-logo" alt="Logo" style="max-width: 90%; height: auto; max-height: 100px; display: block; margin: 0 auto;">`;
                         }
+                        
                         if (sliderContent) {
                             html += `<p>${sliderContent.replace(/\n/g, '<br>')}</p>`;
                         }
@@ -158,13 +164,17 @@
                     slide.style.backgroundSize = 'cover';
                     slide.style.backgroundPosition = 'center';
                     
-                    if (sliderTitle || sliderContent) {
+                    if ((titleType === 'text' && sliderTitle) || (titleType === 'logo' && logoUrl) || sliderContent) {
                         const textOverlay = document.createElement('div');
                         textOverlay.className = 'hero-text-overlay';
                         let html = '';
-                        if (sliderTitle) {
+                        
+                        if (titleType === 'text' && sliderTitle) {
                             html += `<h1>${sliderTitle}</h1>`;
+                        } else if (titleType === 'logo' && logoUrl) {
+                            html += `<img src="${logoUrl}" class="hero-logo" alt="Logo" style="max-width: 90%; height: auto; max-height: 100px; display: block; margin: 0 auto;">`;
                         }
+                        
                         if (sliderContent) {
                             html += `<p>${sliderContent.replace(/\n/g, '<br>')}</p>`;
                         }

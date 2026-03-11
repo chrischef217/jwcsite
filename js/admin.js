@@ -204,14 +204,103 @@ async function loadSliderSettings() {
     if (settings) {
         document.getElementById('sliderTitle').value = settings.title || '';
         document.getElementById('sliderContent').value = settings.content || '';
+        
+        // Load title type and logo
+        if (settings.titleType === 'logo') {
+            document.getElementById('titleTypeLogo').checked = true;
+            toggleTitleType();
+        } else {
+            document.getElementById('titleTypeText').checked = true;
+            toggleTitleType();
+        }
+        
+        if (settings.logoUrl) {
+            displayCurrentLogo(settings.logoUrl);
+        }
     }
 }
 
+// Toggle title type
+window.toggleTitleType = function() {
+    const titleType = document.querySelector('input[name="titleType"]:checked').value;
+    const textSection = document.getElementById('textTitleSection');
+    const logoSection = document.getElementById('logoTitleSection');
+    
+    if (titleType === 'text') {
+        textSection.style.display = 'block';
+        logoSection.style.display = 'none';
+    } else {
+        textSection.style.display = 'none';
+        logoSection.style.display = 'block';
+    }
+}
+
+// Display current logo
+function displayCurrentLogo(logoUrl) {
+    const preview = document.getElementById('currentLogoPreview');
+    preview.innerHTML = `
+        <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #f9f9f9;">
+            <img src="${logoUrl}" style="max-width: 200px; max-height: 80px; display: block; margin-bottom: 10px;">
+            <button class="btn btn-danger" onclick="deleteSliderLogo()" style="font-size: 0.9rem; padding: 5px 10px;">로고 삭제</button>
+        </div>
+    `;
+}
+
+// Delete slider logo
+window.deleteSliderLogo = async function() {
+    if (!confirm('로고를 삭제하시겠습니까?')) return;
+    
+    const settings = await getSliderSettings();
+    settings.titleType = 'text';
+    settings.logoUrl = '';
+    await saveSliderSettings(settings);
+    
+    document.getElementById('currentLogoPreview').innerHTML = '';
+    document.getElementById('titleTypeText').checked = true;
+    toggleTitleType();
+    alert('✅ 로고가 삭제되었습니다!');
+}
+
+// Handle logo upload
+document.addEventListener('DOMContentLoaded', function() {
+    const logoInput = document.getElementById('sliderLogoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const logoUrl = event.target.result;
+                const settings = await getSliderSettings() || {};
+                settings.titleType = 'logo';
+                settings.logoUrl = logoUrl;
+                await saveSliderSettings(settings);
+                
+                displayCurrentLogo(logoUrl);
+                alert('✅ 로고가 업로드되었습니다!');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+});
+
 // Save slider text
 window.saveSliderText = async function() {
+    const titleType = document.querySelector('input[name="titleType"]:checked').value;
     const title = document.getElementById('sliderTitle').value;
     const content = document.getElementById('sliderContent').value;
-    const settings = { title: title, content: content };
+    
+    const settings = await getSliderSettings() || {};
+    settings.titleType = titleType;
+    settings.title = title;
+    settings.content = content;
+    
     await saveSliderSettings(settings);
     alert('✅ 슬라이더 텍스트가 저장되었습니다!');
 }
