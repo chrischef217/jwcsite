@@ -7,12 +7,13 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .about-nav {
-            background: white;
+            background: rgba(255, 255, 255, 0.98);
             padding: 20px 0;
             border-bottom: 2px solid #e0e0e0;
             position: sticky;
             top: 75px;
             z-index: 100;
+            backdrop-filter: blur(10px);
         }
         
         .about-nav-container {
@@ -41,11 +42,12 @@
         }
         
         .about-section {
-            background: white;
+            background: rgba(255, 255, 255, 0.98);
             padding: 60px 40px;
             margin-bottom: 40px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
         }
         
         .about-section h2 {
@@ -211,12 +213,136 @@
         }
         
         @media (max-width: 768px) {
+            /* 네비게이션 모바일 최적화 */
+            .about-nav {
+                top: 65px;
+                padding: 15px 0;
+            }
+            
+            .about-nav-container {
+                gap: 15px;
+                padding: 0 15px;
+            }
+            
+            .about-nav a {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            /* 섹션 모바일 최적화 */
+            .about-section {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+            
+            .about-section h2 {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+            
+            .about-section h3 {
+                font-size: 1.1rem;
+                margin: 20px 0 10px 0;
+            }
+            
+            .about-section p {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            
+            /* 비전 카드 모바일 최적화 */
+            .vision-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .vision-card {
+                padding: 20px;
+            }
+            
+            .vision-card h3 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            
+            /* 사업 프로세스 모바일 최적화 */
+            .business-flow {
+                flex-direction: column;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            
+            .business-step {
+                width: 100%;
+                min-width: auto;
+                padding: 20px;
+            }
+            
             .business-step::after {
                 display: none;
             }
             
-            .about-section {
-                padding: 40px 20px;
+            .business-step h4 {
+                font-size: 1.2rem;
+            }
+            
+            .business-step p {
+                font-size: 0.9rem;
+            }
+            
+            /* 표 모바일 최적화 */
+            .quality-table {
+                font-size: 0.85rem;
+            }
+            
+            .quality-table th,
+            .quality-table td {
+                padding: 10px 8px;
+            }
+            
+            /* 통계 카드 모바일 최적화 */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.9rem;
+            }
+            
+            /* 하이라이트 박스 모바일 최적화 */
+            .highlight-box {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+            
+            /* 연락처 정보 모바일 최적화 */
+            .contact-info {
+                padding: 20px;
+            }
+            
+            .contact-info h3 {
+                font-size: 1.2rem;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                font-size: 0.9rem;
+            }
+            
+            .contact-item strong {
+                min-width: auto;
             }
         }
     </style>
