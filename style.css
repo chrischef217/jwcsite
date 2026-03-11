@@ -542,13 +542,25 @@ footer a:hover {
         padding: 10px 0;
     }
     
+    header .container {
+        align-items: center;
+    }
+    
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    
     .logo img {
-        height: 52px;
+        height: 47px;
     }
     
     .menu-btn {
         width: 45px;
         height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     /* Navigation 모바일 최적화 */
@@ -567,17 +579,17 @@ footer a:hover {
     }
     
     .hero-text-overlay h1 {
-        font-size: 1.6rem;
+        font-size: 1.28rem;
         line-height: 1.2;
     }
     
-    .hero-text-overlay p {
-        font-size: 0.98rem;
-        margin-top: 3px;
+    .hero-text-overlay .hero-logo {
+        max-height: 80px !important;
     }
     
-    .hero-text-overlay h1 {
-        font-size: 2rem;
+    .hero-text-overlay p {
+        font-size: 0.78rem;
+        margin-top: 3px;
     }
     
     /* Content 모바일 최적화 */
