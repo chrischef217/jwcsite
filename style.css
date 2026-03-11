@@ -189,6 +189,24 @@ main {
     font-size: 1.5rem;
 }
 
+/* Hero Text Overlay - White text without background box */
+.hero-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    text-align: center;
+    width: 90%;
+}
+
+.hero-text-overlay h1 {
+    color: white;
+    font-size: 3rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin: 0;
+}
+
 .hero-slider-dots {
     position: absolute;
     bottom: 20px;

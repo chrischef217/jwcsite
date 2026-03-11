@@ -41,10 +41,10 @@ async function videoToBase64(file) {
     });
 }
 
-// Save hero slider media
-async function saveHeroMediaToDB(mediaFiles) {
+// Save hero slider media with text
+async function saveHeroMediaToDB(mediaWithText) {
     try {
-        console.log('💾 저장 시작:', mediaFiles.length, '개 파일');
+        console.log('💾 저장 시작:', mediaWithText.length, '개 파일');
         
         // Delete all existing
         const existing = await getHeroSliderMedia();
@@ -53,9 +53,12 @@ async function saveHeroMediaToDB(mediaFiles) {
         }
         
         // Upload new
-        for (let i = 0; i < mediaFiles.length; i++) {
-            const mediaFile = mediaFiles[i];
-            console.log(`📤 업로드 중 ${i + 1}/${mediaFiles.length}`);
+        for (let i = 0; i < mediaWithText.length; i++) {
+            const item = mediaWithText[i];
+            const mediaFile = item.file;
+            const text = item.text || '';
+            
+            console.log(`📤 업로드 중 ${i + 1}/${mediaWithText.length}: ${mediaFile.name}`);
             
             let mediaData;
             let mediaType;
@@ -75,6 +78,7 @@ async function saveHeroMediaToDB(mediaFiles) {
                     filename: mediaFile.name,
                     data: mediaData,
                     mediaType: mediaType,
+                    text: text,
                     order_index: i
                 })
             });

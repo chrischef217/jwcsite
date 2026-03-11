@@ -79,8 +79,8 @@
 
             <!-- Hero Slider Management -->
             <section class="admin-section" id="hero-slider">
-                <h2>히어로 슬라이더 관리 (이미지/동영상 업로드)</h2>
-                <p style="color: #666; margin-bottom: 20px;">✅ 여러 개의 이미지 또는 동영상을 선택할 수 있습니다. 서버 DB에 자동 저장됩니다.</p>
+                <h2>히어로 슬라이더 관리</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 이미지/동영상 업로드 후 텍스트를 입력하고 순서를 변경할 수 있습니다.</p>
                 
                 <div class="form-group">
                     <label>슬라이드 간격 (초)</label>
@@ -96,16 +96,14 @@
                     <input type="file" id="heroSliderInput" accept="image/*,video/*" multiple style="display: none;">
                     <div class="upload-placeholder">
                         <p>📁 파일 선택 또는 드래그앤드롭</p>
-                        <p class="upload-hint">여러 개 이미지/동영상 업로드 (Ctrl+클릭 또는 전체 선택)</p>
-                        <p class="upload-hint">이미지 권장: 1920x1080px (JPG, PNG)</p>
-                        <p class="upload-hint">동영상 권장: 1920x1080px (MP4, WebM)</p>
+                        <p class="upload-hint">여러 개 이미지/동영상 업로드</p>
                     </div>
                 </div>
                 
-                <div class="preview-grid" id="heroPreviewGrid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;"></div>
+                <div id="heroPreviewGrid" style="display: none; margin: 20px 0;"></div>
                 
                 <div class="admin-actions">
-                    <button class="btn btn-primary" onclick="saveHeroMedia()">💾 미디어 서버 저장</button>
+                    <button class="btn btn-primary" onclick="saveHeroMedia()">💾 저장</button>
                 </div>
                 
                 <h3 style="margin-top: 40px;">현재 히어로 슬라이더</h3>

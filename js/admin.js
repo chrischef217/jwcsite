@@ -83,7 +83,7 @@ function handleHeroMediaFiles(files) {
     if (!heroPreviewGrid) return;
     
     heroPreviewGrid.innerHTML = '';
-    heroPreviewGrid.style.display = 'grid';
+    heroPreviewGrid.style.display = 'block';
     
     if (placeholder) {
         placeholder.style.display = 'none';
@@ -91,41 +91,61 @@ function handleHeroMediaFiles(files) {
     
     files.forEach((file, index) => {
         const previewItem = document.createElement('div');
-        previewItem.style.cssText = 'position: relative; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;';
+        previewItem.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px;';
         
+        let mediaPreview = '';
         if (file.type.startsWith('image/')) {
-            const img = document.createElement('img');
-            img.style.cssText = 'width: 100%; height: 150px; object-fit: cover;';
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-            previewItem.appendChild(img);
+            mediaPreview = '<img style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;"/>';
         } else if (file.type.startsWith('video/')) {
-            const video = document.createElement('video');
-            video.style.cssText = 'width: 100%; height: 150px; object-fit: cover;';
-            video.controls = false;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                video.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-            previewItem.appendChild(video);
-            
-            const videoLabel = document.createElement('div');
-            videoLabel.textContent = '🎥 Video';
-            videoLabel.style.cssText = 'position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;';
-            previewItem.appendChild(videoLabel);
+            mediaPreview = '<video style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;" controls></video>';
         }
         
-        const filename = document.createElement('div');
-        filename.textContent = file.name;
-        filename.style.cssText = 'padding: 5px; font-size: 12px; text-align: center; background: #f8f9fa;';
-        previewItem.appendChild(filename);
+        previewItem.innerHTML = `
+            <div style="display: flex; gap: 15px; align-items: start;">
+                <div id="media-${index}">${mediaPreview}</div>
+                <div style="flex: 1;">
+                    <p><strong>${file.type.startsWith('video/') ? '🎥' : '📷'} ${file.name}</strong></p>
+                    <div style="margin-top: 10px;">
+                        <label style="display: block; margin-bottom: 5px;">텍스트 (선택사항):</label>
+                        <input type="text" id="text-${index}" class="slide-text-input" placeholder="슬라이드 텍스트 입력" 
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button onclick="moveUp(${index})" style="padding: 5px 10px; margin-right: 5px;">↑</button>
+                        <button onclick="moveDown(${index})" style="padding: 5px 10px;">↓</button>
+                    </div>
+                </div>
+            </div>
+        `;
         
         heroPreviewGrid.appendChild(previewItem);
+        
+        // Load preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const mediaEl = document.querySelector(`#media-${index} ${file.type.startsWith('image/') ? 'img' : 'video'}`);
+            if (mediaEl) mediaEl.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     });
+}
+
+// Move up
+window.moveUp = function(index) {
+    if (index === 0) return;
+    const temp = selectedMediaFiles[index];
+    selectedMediaFiles[index] = selectedMediaFiles[index - 1];
+    selectedMediaFiles[index - 1] = temp;
+    handleHeroMediaFiles(Array.from(selectedMediaFiles));
+}
+
+// Move down
+window.moveDown = function(index) {
+    if (index >= selectedMediaFiles.length - 1) return;
+    const temp = selectedMediaFiles[index];
+    selectedMediaFiles[index] = selectedMediaFiles[index + 1];
+    selectedMediaFiles[index + 1] = temp;
+    handleHeroMediaFiles(Array.from(selectedMediaFiles));
 }
 
 // Save hero media (global function)
@@ -134,6 +154,15 @@ window.saveHeroMedia = async function() {
         alert('파일을 선택해주세요.');
         return;
     }
+    
+    // Collect text inputs
+    const mediaWithText = selectedMediaFiles.map((file, index) => {
+        const textInput = document.getElementById(`text-${index}`);
+        return {
+            file: file,
+            text: textInput ? textInput.value : ''
+        };
+    });
     
     const progressBar = document.getElementById('heroSliderProgress');
     const progressFill = progressBar.querySelector('.progress-fill');
@@ -144,7 +173,7 @@ window.saveHeroMedia = async function() {
         progressFill.style.width = '50%';
         progressText.textContent = '50%';
         
-        await saveHeroMediaToDB(selectedMediaFiles);
+        await saveHeroMediaToDB(mediaWithText);
         
         progressFill.style.width = '100%';
         progressText.textContent = '100%';
@@ -202,6 +231,7 @@ async function loadHeroSliderList() {
                     <div>
                         <p><strong>🎥 동영상 ${index + 1}</strong></p>
                         <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
+                        ${item.text ? `<p style="color: #333; font-size: 14px; margin-top: 5px;">📝 "${item.text}"</p>` : ''}
                         <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                     </div>
                 </div>
@@ -213,6 +243,7 @@ async function loadHeroSliderList() {
                     <div>
                         <p><strong>📷 이미지 ${index + 1}</strong></p>
                         <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
+                        ${item.text ? `<p style="color: #333; font-size: 14px; margin-top: 5px;">📝 "${item.text}"</p>` : ''}
                         <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                     </div>
                 </div>
