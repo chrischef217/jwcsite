@@ -583,8 +583,8 @@ footer a:hover {
     
     /* Hero 모바일 최적화 */
     .hero {
-        height: 70vh;
-        min-height: 400px;
+        height: 105vh;
+        min-height: 600px;
     }
     
     .hero-text-overlay h1 {
