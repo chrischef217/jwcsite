@@ -662,6 +662,311 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ========== PAGE HERO SLIDERS MANAGEMENT ==========
+
+let currentPageName = '';
+let currentPageTitleType = 'text';
+let currentPageLogoData = '';
+let pageHeroMediaFiles = [];
+
+// Load page hero slider
+window.loadPageHeroSlider = async function(pageName) {
+    if (!pageName) {
+        document.getElementById('pageHeroContent').style.display = 'none';
+        return;
+    }
+    
+    currentPageName = pageName;
+    document.getElementById('pageHeroContent').style.display = 'block';
+    
+    const pageNames = {
+        'about': 'ABOUT',
+        'products': 'PRODUCTS',
+        'contact': 'CONTACT'
+    };
+    document.getElementById('pageHeroTitle').textContent = `${pageNames[pageName]} 페이지 히어로 슬라이더`;
+    
+    try {
+        const data = await window.getPageHeroSlider(pageName);
+        
+        // Load settings
+        if (data.settings) {
+            document.getElementById('pageSliderTitle').value = data.settings.title || '';
+            document.getElementById('pageSliderContent').value = data.settings.content || '';
+            currentPageTitleType = data.settings.titleType || 'text';
+            currentPageLogoData = data.settings.logoUrl || '';
+            
+            // Update title type buttons
+            document.querySelectorAll('.title-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === currentPageTitleType) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Show/hide inputs
+            if (currentPageTitleType === 'logo') {
+                document.getElementById('pageTitleTextInput').style.display = 'none';
+                document.getElementById('pageTitleLogoInput').style.display = 'block';
+                if (currentPageLogoData) {
+                    document.getElementById('pageLogoPreview').src = currentPageLogoData;
+                    document.getElementById('pageLogoPreviewContainer').style.display = 'block';
+                }
+            } else {
+                document.getElementById('pageTitleTextInput').style.display = 'block';
+                document.getElementById('pageTitleLogoInput').style.display = 'none';
+            }
+        }
+        
+        // Load media items
+        renderPageHeroList(data.media || []);
+        
+    } catch (error) {
+        console.error('Failed to load page hero:', error);
+    }
+}
+
+// Select page title type
+window.selectPageTitleType = function(type) {
+    currentPageTitleType = type;
+    
+    // Update button styles
+    document.querySelectorAll('.title-type-btn').forEach(btn => {
+        if (btn.dataset.type === type) {
+            btn.classList.add('active');
+            btn.style.background = '#007bff';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#007bff';
+        } else {
+            btn.classList.remove('active');
+            btn.style.background = 'white';
+            btn.style.color = '#666';
+            btn.style.borderColor = '#ddd';
+        }
+    });
+    
+    // Show/hide inputs
+    if (type === 'logo') {
+        document.getElementById('pageTitleTextInput').style.display = 'none';
+        document.getElementById('pageTitleLogoInput').style.display = 'block';
+    } else {
+        document.getElementById('pageTitleTextInput').style.display = 'block';
+        document.getElementById('pageTitleLogoInput').style.display = 'none';
+    }
+}
+
+// Setup page logo upload
+document.addEventListener('DOMContentLoaded', function() {
+    const logoInput = document.getElementById('pageLogoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentPageLogoData = e.target.result;
+                    document.getElementById('pageLogoPreview').src = currentPageLogoData;
+                    document.getElementById('pageLogoPreviewContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+// Delete page logo
+window.deletePageLogo = function() {
+    currentPageLogoData = '';
+    document.getElementById('pageLogoPreview').src = '';
+    document.getElementById('pageLogoPreviewContainer').style.display = 'none';
+    document.getElementById('pageLogoInput').value = '';
+}
+
+// Save page slider text
+window.savePageSliderText = async function() {
+    if (!currentPageName) {
+        alert('페이지를 먼저 선택하세요.');
+        return;
+    }
+    
+    try {
+        const settings = {
+            title: document.getElementById('pageSliderTitle').value.trim(),
+            content: document.getElementById('pageSliderContent').value.trim(),
+            titleType: currentPageTitleType,
+            logoUrl: currentPageLogoData
+        };
+        
+        await window.savePageHeroSettings(currentPageName, settings);
+        alert('✅ 텍스트가 저장되었습니다!');
+        
+    } catch (error) {
+        alert('❌ 저장 실패: ' + error.message);
+    }
+}
+
+// Setup page hero media upload
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('pageHeroUploadArea');
+    const mediaInput = document.getElementById('pageHeroMediaInput');
+    
+    if (!uploadArea || !mediaInput) return;
+    
+    uploadArea.addEventListener('click', (e) => {
+        if (!e.target.closest('.preview-grid')) {
+            mediaInput.click();
+        }
+    });
+    
+    mediaInput.addEventListener('change', handlePageMediaFiles);
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '#f0f8ff';
+    });
+    
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+        
+        const files = Array.from(e.dataTransfer.files).filter(f => 
+            f.type.startsWith('image/') || f.type.startsWith('video/')
+        );
+        
+        if (files.length > 0) {
+            mediaInput.files = e.dataTransfer.files;
+            handlePageMediaFiles({ target: { files } });
+        }
+    });
+});
+
+function handlePageMediaFiles(e) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    pageHeroMediaFiles = files;
+    
+    const previewGrid = document.getElementById('pageMediaPreviewGrid');
+    previewGrid.innerHTML = '';
+    previewGrid.style.display = 'grid';
+    
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.createElement('div');
+            preview.className = 'preview-item';
+            preview.style.position = 'relative';
+            preview.style.paddingTop = '100%';
+            preview.style.overflow = 'hidden';
+            preview.style.borderRadius = '8px';
+            preview.style.background = '#f0f0f0';
+            
+            if (file.type.startsWith('video/')) {
+                preview.innerHTML = `
+                    <video src="${e.target.result}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem;">VIDEO</div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                `;
+            }
+            
+            previewGrid.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Save page hero media
+window.savePageHeroMedia = async function() {
+    if (!currentPageName) {
+        alert('페이지를 먼저 선택하세요.');
+        return;
+    }
+    
+    if (pageHeroMediaFiles.length === 0) {
+        alert('업로드할 파일을 선택하세요.');
+        return;
+    }
+    
+    try {
+        const data = await window.getPageHeroSlider(currentPageName);
+        const startIndex = data.media ? data.media.length : 0;
+        
+        await window.savePageHeroMedia(currentPageName, pageHeroMediaFiles, startIndex);
+        
+        alert('✅ 미디어가 저장되었습니다!');
+        
+        // Clear preview
+        document.getElementById('pageMediaPreviewGrid').innerHTML = '';
+        document.getElementById('pageMediaPreviewGrid').style.display = 'none';
+        document.getElementById('pageHeroMediaInput').value = '';
+        pageHeroMediaFiles = [];
+        
+        // Reload list
+        loadPageHeroSlider(currentPageName);
+        
+    } catch (error) {
+        alert('❌ 저장 실패: ' + error.message);
+    }
+}
+
+// Render page hero list
+function renderPageHeroList(items) {
+    const listEl = document.getElementById('pageHeroItemsList');
+    
+    if (!items || items.length === 0) {
+        listEl.innerHTML = '<li style="padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #999;">항목이 없습니다. 이미지나 영상을 업로드하세요.</li>';
+        return;
+    }
+    
+    let html = '';
+    items.forEach((item, index) => {
+        const isVideo = item.mediaType === 'video';
+        html += `
+            <li style="display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px;">
+                <div style="width: 100px; height: 100px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                    ${isVideo ? 
+                        `<video src="${item.data}" style="width: 100%; height: 100%; object-fit: cover;"></video>` :
+                        `<img src="${item.data}" style="width: 100%; height: 100%; object-fit: cover;">`
+                    }
+                </div>
+                <div style="flex: 1;">
+                    <strong style="display: block; margin-bottom: 5px;">${isVideo ? '영상' : '이미지'} #${index + 1}</strong>
+                    <small style="color: #999;">${new Date(item.createdAt).toLocaleString()}</small>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="deletePageHeroItem('${item.id}')" class="btn btn-danger" style="padding: 8px 15px; white-space: nowrap;">🗑️ 삭제</button>
+                </div>
+            </li>
+        `;
+    });
+    
+    listEl.innerHTML = html;
+}
+
+// Delete page hero item
+window.deletePageHeroItem = async function(itemId) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deletePageHeroMedia(currentPageName, itemId);
+        alert('✅ 삭제되었습니다.');
+        loadPageHeroSlider(currentPageName);
+    } catch (error) {
+        alert('❌ 삭제 실패: ' + error.message);
+    }
+}
+
 // Logout (global function)
 window.logout = function() {
     sessionStorage.removeItem('admin_logged_in');

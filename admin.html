@@ -153,81 +153,96 @@
                 <div class="hero-images-list" id="heroImagesList"></div>
             </section>
 
-            <!-- Page Heroes Management -->
+            <!-- Page Hero Sliders Management -->
             <section class="admin-section" id="page-heroes">
-                <h2>페이지 히어로 이미지 관리 (파일 업로드)</h2>
-                <p style="color: #666; margin-bottom: 20px;">✅ 각 페이지의 히어로 이미지를 업로드하세요. 서버 DB에 자동 저장됩니다.</p>
+                <h2>페이지별 히어로 슬라이더 관리</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 각 페이지(ABOUT, PRODUCTS, CONTACT)의 히어로 슬라이더를 메인 페이지처럼 관리할 수 있습니다.</p>
                 
-                <!-- About Hero -->
-                <div class="page-hero-section">
-                    <h3>About 페이지</h3>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="aboutHeroEnabled"> 히어로 이미지 표시
-                        </label>
-                    </div>
-                    
-                    <div class="progress-bar" id="aboutHeroProgress" style="display: none;">
-                        <div class="progress-fill"></div>
-                        <div class="progress-text">0%</div>
-                    </div>
-                    
-                    <div class="upload-area small" id="aboutHeroUploadArea" style="border: 2px dashed #28a745;">
-                        <input type="file" id="aboutHeroInput" accept="image/*" style="display: none;">
-                        <div class="upload-placeholder">
-                            <p>📁 파일 선택 또는 드래그앤드롭</p>
-                        </div>
-                        <img id="aboutHeroPreview" class="upload-preview" style="display: none;">
-                    </div>
-                    <button class="btn btn-primary" onclick="savePageHero('about')">💾 저장</button>
+                <!-- Page Selector -->
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; display: block;">페이지 선택</label>
+                    <select id="pageHeroSelector" class="form-control" style="max-width: 300px; padding: 12px; font-size: 1rem;" onchange="loadPageHeroSlider(this.value)">
+                        <option value="">선택하세요</option>
+                        <option value="about">ABOUT 페이지</option>
+                        <option value="products">PRODUCTS 페이지</option>
+                        <option value="contact">CONTACT 페이지</option>
+                    </select>
                 </div>
-
-                <!-- Products Hero -->
-                <div class="page-hero-section">
-                    <h3>Products 페이지</h3>
+                
+                <!-- Page Hero Content (Hidden by default) -->
+                <div id="pageHeroContent" style="display: none;">
+                    <h3 id="pageHeroTitle" style="color: #007bff; margin-bottom: 20px;"></h3>
+                    
+                    <!-- Text Settings -->
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="productsHeroEnabled"> 히어로 이미지 표시
+                        <label style="display: block; margin-bottom: 15px; font-weight: 600; font-size: 1.1rem;">
+                            제목 설정
                         </label>
-                    </div>
-                    
-                    <div class="progress-bar" id="productsHeroProgress" style="display: none;">
-                        <div class="progress-fill"></div>
-                        <div class="progress-text">0%</div>
-                    </div>
-                    
-                    <div class="upload-area small" id="productsHeroUploadArea" style="border: 2px dashed #28a745;">
-                        <input type="file" id="productsHeroInput" accept="image/*" style="display: none;">
-                        <div class="upload-placeholder">
-                            <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <button class="title-type-btn active" data-type="text" onclick="selectPageTitleType('text')" style="flex: 1; padding: 15px; border: 2px solid #007bff; background: #007bff; color: white; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                                📝 텍스트
+                            </button>
+                            <button class="title-type-btn" data-type="logo" onclick="selectPageTitleType('logo')" style="flex: 1; padding: 15px; border: 2px solid #ddd; background: white; color: #666; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                                🖼️ 로고 이미지
+                            </button>
                         </div>
-                        <img id="productsHeroPreview" class="upload-preview" style="display: none;">
+                        
+                        <div id="pageTitleTextInput" style="margin-bottom: 15px;">
+                            <input type="text" id="pageSliderTitle" class="form-control" placeholder="제목 입력 (예: JWC)" style="padding: 12px; font-size: 1rem;">
+                        </div>
+                        
+                        <div id="pageTitleLogoInput" style="display: none; margin-bottom: 15px;">
+                            <input type="file" id="pageLogoInput" accept="image/*" style="display: none;">
+                            <button onclick="document.getElementById('pageLogoInput').click()" class="btn btn-secondary" style="width: 100%; padding: 12px;">
+                                📤 로고 이미지 업로드
+                            </button>
+                            <div id="pageLogoPreviewContainer" style="margin-top: 15px; display: none;">
+                                <img id="pageLogoPreview" style="max-width: 200px; max-height: 100px; display: block; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
+                                <button onclick="deletePageLogo()" class="btn btn-danger" style="width: 100%; margin-top: 10px;">🗑️ 로고 삭제</button>
+                            </div>
+                        </div>
+                        
+                        <label style="display: block; margin: 20px 0 10px 0; font-weight: 600;">내용</label>
+                        <textarea id="pageSliderContent" class="form-control" rows="3" placeholder="내용 입력 (여러 줄 가능)" style="padding: 12px; font-size: 1rem; resize: vertical;"></textarea>
+                        
+                        <button class="btn btn-success" onclick="savePageSliderText()" style="margin-top: 15px;">💾 텍스트 저장</button>
                     </div>
-                    <button class="btn btn-primary" onclick="savePageHero('products')">💾 저장</button>
-                </div>
-
-                <!-- Contact Hero -->
-                <div class="page-hero-section">
-                    <h3>Contact 페이지</h3>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="contactHeroEnabled"> 히어로 이미지 표시
+                    
+                    <!-- Media Upload -->
+                    <div class="form-group" style="margin-top: 40px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: 600; font-size: 1.1rem;">
+                            이미지/영상 업로드
                         </label>
-                    </div>
-                    
-                    <div class="progress-bar" id="contactHeroProgress" style="display: none;">
-                        <div class="progress-fill"></div>
-                        <div class="progress-text">0%</div>
-                    </div>
-                    
-                    <div class="upload-area small" id="contactHeroUploadArea" style="border: 2px dashed #28a745;">
-                        <input type="file" id="contactHeroInput" accept="image/*" style="display: none;">
-                        <div class="upload-placeholder">
-                            <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        
+                        <div class="progress-bar" id="pageHeroProgress" style="display: none;">
+                            <div class="progress-fill"></div>
+                            <div class="progress-text">0%</div>
                         </div>
-                        <img id="contactHeroPreview" class="upload-preview" style="display: none;">
+                        
+                        <div class="upload-area" id="pageHeroUploadArea" style="border: 2px dashed #007bff;">
+                            <input type="file" id="pageHeroMediaInput" accept="image/*,video/*" multiple style="display: none;">
+                            <div class="upload-placeholder">
+                                <p>📁 이미지/영상 선택 또는 드래그앤드롭</p>
+                                <p class="upload-hint">여러 파일 선택 가능 (이미지: JPG/PNG, 영상: MP4)</p>
+                            </div>
+                            <div id="pageMediaPreviewGrid" class="preview-grid" style="display: none;"></div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="savePageHeroMedia()" style="margin-top: 15px;">💾 미디어 저장</button>
                     </div>
-                    <button class="btn btn-primary" onclick="savePageHero('contact')">💾 저장</button>
+                    
+                    <!-- Current Slider Items -->
+                    <div class="form-group" style="margin-top: 40px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: 600; font-size: 1.1rem;">
+                            현재 슬라이더 항목
+                        </label>
+                        <ul id="pageHeroItemsList" class="hero-images-list" style="list-style: none; padding: 0;">
+                            <li style="padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #999;">
+                                항목이 없습니다. 이미지나 영상을 업로드하세요.
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </section>
 

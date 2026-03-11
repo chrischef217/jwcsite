@@ -216,6 +216,103 @@ async function deleteProduct(productId) {
     }
 }
 
+// ========== PAGE HERO SLIDERS ==========
+
+// Get page hero slider (about, products, contact)
+async function getPageHeroSlider(pageName) {
+    try {
+        const response = await fetch(`/api/hero/page/${pageName}`);
+        if (!response.ok) throw new Error('Failed to fetch page hero');
+        return await response.json();
+    } catch (error) {
+        console.error(`❌ Failed to load ${pageName} hero:`, error);
+        return { media: [], settings: {} };
+    }
+}
+
+// Save page hero media
+async function savePageHeroMedia(pageName, mediaFiles, startIndex = 0) {
+    try {
+        console.log(`💾 Saving ${pageName} hero media:`, mediaFiles.length, 'files');
+        
+        for (let i = 0; i < mediaFiles.length; i++) {
+            const file = mediaFiles[i];
+            const isVideo = file.type.startsWith('video/');
+            
+            let mediaData;
+            if (isVideo) {
+                mediaData = await videoToBase64(file);
+            } else {
+                mediaData = await compressImage(file);
+            }
+            
+            const response = await fetch(`/api/hero/page/${pageName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mediaType: isVideo ? 'video' : 'image',
+                    data: mediaData,
+                    order_index: startIndex + i
+                })
+            });
+            
+            if (!response.ok) throw new Error('Failed to save media');
+        }
+        
+        console.log('✅ Media saved');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to save page hero media:', error);
+        throw error;
+    }
+}
+
+// Delete page hero media item
+async function deletePageHeroMedia(pageName, mediaId) {
+    try {
+        const response = await fetch(`/api/hero/page/${pageName}/${mediaId}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Failed to delete media');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to delete page hero media:', error);
+        throw error;
+    }
+}
+
+// Update page hero order
+async function updatePageHeroOrder(pageName, mediaId, newOrder) {
+    try {
+        const response = await fetch(`/api/hero/page/${pageName}/${mediaId}/order`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_index: newOrder })
+        });
+        if (!response.ok) throw new Error('Failed to update order');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to update order:', error);
+        throw error;
+    }
+}
+
+// Save page hero settings (text, logo)
+async function savePageHeroSettings(pageName, settings) {
+    try {
+        const response = await fetch(`/api/hero/page/${pageName}/settings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        if (!response.ok) throw new Error('Failed to save settings');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to save page hero settings:', error);
+        throw error;
+    }
+}
+
 // Expose functions globally
 window.saveHeroMediaToDB = saveHeroMediaToDB;
 window.getHeroSliderMedia = getHeroSliderMedia;
@@ -226,3 +323,8 @@ window.saveSliderSettings = saveSliderSettings;
 window.getAllProducts = getAllProducts;
 window.saveProduct = saveProduct;
 window.deleteProduct = deleteProduct;
+window.getPageHeroSlider = getPageHeroSlider;
+window.savePageHeroMedia = savePageHeroMedia;
+window.deletePageHeroMedia = deletePageHeroMedia;
+window.updatePageHeroOrder = updatePageHeroOrder;
+window.savePageHeroSettings = savePageHeroSettings;
