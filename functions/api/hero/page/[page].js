@@ -57,6 +57,33 @@ export async function onRequest(context) {
             });
         }
 
+        // DELETE - Delete media item by ID
+        if (method === 'DELETE') {
+            const { itemId } = await request.json();
+            
+            if (!itemId) {
+                return new Response(JSON.stringify({ 
+                    error: 'Item ID is required' 
+                }), {
+                    status: 400,
+                    headers: corsHeaders
+                });
+            }
+            
+            const mediaJson = await env.KV.get(kvKey);
+            const media = mediaJson ? JSON.parse(mediaJson) : [];
+            
+            const filteredMedia = media.filter(item => item.id !== itemId);
+            await env.KV.put(kvKey, JSON.stringify(filteredMedia));
+            
+            return new Response(JSON.stringify({ 
+                success: true,
+                message: 'Item deleted successfully'
+            }), {
+                headers: corsHeaders
+            });
+        }
+
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
             status: 405,
             headers: corsHeaders

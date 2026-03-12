@@ -725,11 +725,17 @@
                 const media = data.media || [];
                 const settings = data.settings || {};
 
+                console.log('About hero data:', media.length, 'items');
+
                 if (!media || media.length === 0) {
                     // Keep default background - don't hide
                     console.log('No hero data - using default background');
                     return;
                 }
+
+                // Remove default background when we have data
+                const heroSection = document.getElementById('aboutHeroSlider');
+                heroSection.style.background = 'none';
 
                 const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                 renderPageHeroSlider(sortedMedia, settings);

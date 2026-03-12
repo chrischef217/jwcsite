@@ -24,7 +24,7 @@
 
     <main>
         <!-- Contact Hero Slider (70vh - 30% smaller than main) -->
-        <section class="page-hero-slider" style="background: url('/luxury-cosmetics-bg.jpg') center/cover;">
+        <section class="page-hero-slider" id="contactHeroSlider" style="background: url('/luxury-cosmetics-bg.jpg') center/cover;">
             <div class="page-hero-slider-container" id="pageHeroSliderContainer">
                 <!-- Slides will be loaded dynamically -->
             </div>
@@ -98,11 +98,17 @@
                 const media = data.media || [];
                 const settings = data.settings || {};
 
+                console.log('Contact hero data:', media.length, 'items');
+
                 if (!media || media.length === 0) {
                     // Keep default background - don't hide
                     console.log('No hero data - using default background');
                     return;
                 }
+
+                // Remove default background when we have data
+                const heroSection = document.getElementById('contactHeroSlider');
+                heroSection.style.background = 'none';
 
                 const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                 renderPageHeroSlider(sortedMedia, settings);

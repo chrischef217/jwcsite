@@ -1011,6 +1011,23 @@ function renderPageHeroList(items) {
     listEl.innerHTML = html;
 }
 
+// Delete page hero media function
+window.deletePageHeroMedia = async function(pageName, itemId) {
+    const response = await fetch(`/api/hero/page/${pageName}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ itemId })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to delete media');
+    }
+    
+    return await response.json();
+}
+
 // Delete page hero item
 window.deletePageHeroItem = async function(itemId) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
