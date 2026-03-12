@@ -24,7 +24,7 @@
 
     <main>
         <!-- Contact Hero Slider (70vh - 30% smaller than main) -->
-        <section class="page-hero-slider">
+        <section class="page-hero-slider" style="background: url('/luxury-cosmetics-bg.jpg') center/cover;">
             <div class="page-hero-slider-container" id="pageHeroSliderContainer">
                 <!-- Slides will be loaded dynamically -->
             </div>
@@ -99,7 +99,8 @@
                 const settings = data.settings || {};
 
                 if (!media || media.length === 0) {
-                    document.querySelector('.page-hero-slider').style.display = 'none';
+                    // Keep default background - don't hide
+                    console.log('No hero data - using default background');
                     return;
                 }
 
@@ -107,7 +108,7 @@
                 renderPageHeroSlider(sortedMedia, settings);
             } catch (error) {
                 console.error('Failed to load page hero slider:', error);
-                document.querySelector('.page-hero-slider').style.display = 'none';
+                // Keep default background on error
             }
         }
 
