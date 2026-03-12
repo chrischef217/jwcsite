@@ -33,8 +33,16 @@
         <a href="#contact">CONTACT</a>
     </nav>
 
-    <!-- Products Hero Slider -->
-    <section class="page-hero-slider">
+    <!-- Products Hero Section -->
+    <section class="products-hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 100px 20px; margin-top: 75px;">
+        <div class="container">
+            <h1 style="font-size: 2.5rem; margin-bottom: 20px;">PRODUCTS</h1>
+            <p style="font-size: 1.2rem;">Premium K-Beauty Packaging Solutions</p>
+        </div>
+    </section>
+
+    <!-- Page Hero Slider (Dynamic) -->
+    <section class="page-hero-slider" style="display: none;">
         <div class="page-hero-slider-container" id="pageHeroSliderContainer">
             <!-- Slides will be loaded dynamically -->
         </div>
@@ -96,9 +104,16 @@
                 const settings = data.settings || {};
 
                 if (!media || media.length === 0) {
-                    document.querySelector('.page-hero-slider').style.display = 'none';
+                    // Keep static hero visible
                     return;
                 }
+
+                // Hide static hero and show dynamic slider
+                const staticHero = document.querySelector('.products-hero');
+                const dynamicSlider = document.querySelector('.page-hero-slider');
+                
+                if (staticHero) staticHero.style.display = 'none';
+                if (dynamicSlider) dynamicSlider.style.display = 'block';
 
                 const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                 console.log('Page Hero Media:', sortedMedia);
@@ -107,7 +122,7 @@
                 renderPageHeroSlider(sortedMedia, settings);
             } catch (error) {
                 console.error('Failed to load page hero slider:', error);
-                document.querySelector('.page-hero-slider').style.display = 'none';
+                // Keep static hero visible on error
             }
         }
 

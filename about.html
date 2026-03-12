@@ -398,8 +398,13 @@
     </nav>
 
     <main>
-        <!-- Hero Slider -->
-        <section class="page-hero-slider" id="aboutHeroSlider">
+        <!-- Static Hero (Fallback) -->
+        <section class="page-hero" style="margin-top: 75px;">
+            <h1>ABOUT</h1>
+        </section>
+
+        <!-- Hero Slider (Dynamic) -->
+        <section class="page-hero-slider" id="aboutHeroSlider" style="display: none;">
             <div class="page-hero-slider-container">
                 <div class="page-hero-slider-wrapper" id="aboutHeroSliderWrapper">
                     <!-- Slider content loaded dynamically -->
@@ -724,9 +729,16 @@
                 const settings = data.settings || {};
 
                 if (!media || media.length === 0) {
-                    document.querySelector('.page-hero-slider').style.display = 'none';
+                    // Keep static hero visible
                     return;
                 }
+
+                // Hide static hero and show dynamic slider
+                const staticHero = document.querySelector('.page-hero');
+                const dynamicSlider = document.querySelector('.page-hero-slider');
+                
+                if (staticHero) staticHero.style.display = 'none';
+                if (dynamicSlider) dynamicSlider.style.display = 'block';
 
                 const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                 console.log('Page Hero Media:', sortedMedia);
@@ -735,7 +747,7 @@
                 renderPageHeroSlider(sortedMedia, settings);
             } catch (error) {
                 console.error('Failed to load page hero slider:', error);
-                document.querySelector('.page-hero-slider').style.display = 'none';
+                // Keep static hero visible on error
             }
         }
 
