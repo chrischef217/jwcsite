@@ -398,12 +398,11 @@
 
     <main>
         <!-- Hero Slider -->
-        <section class="hero" id="aboutHeroSlider" style="margin-top: 75px;">
-            <div class="hero-slider-container">
-                <div class="hero-slider-wrapper" id="aboutHeroSliderWrapper">
+        <section class="page-hero-slider" id="aboutHeroSlider">
+            <div class="page-hero-slider-container">
+                <div class="page-hero-slider-wrapper" id="aboutHeroSliderWrapper">
                     <!-- Slider content loaded dynamically -->
                 </div>
-                <div class="hero-slider-dots" id="aboutHeroSliderDots"></div>
             </div>
         </section>
 
@@ -711,151 +710,122 @@
             }
         });
         
-        // ========== HERO SLIDER ==========
-        let currentSlide = 0;
-        let sliderTimeout;
-        let heroMediaItems = [];
-        
-        // Load about page hero slider
-        async function loadAboutHeroSlider() {
+        // ========== PAGE HERO SLIDER ==========
+        let currentPageSlide = 0;
+        let pageSlideTimeout;
+
+        async function loadPageHeroSlider() {
             try {
-                const response = await fetch('/api/hero/page/about');
-                const data = await response.json();
-                
-                heroMediaItems = data.media || [];
-                const settings = data.settings || {};
-                
-                console.log('✅ About hero loaded:', heroMediaItems.length, 'items');
-                
-                if (heroMediaItems.length > 0) {
-                    renderHeroSlider(settings);
-                    if (heroMediaItems.length > 1) {
-                        scheduleNextSlide();
-                    }
+                const [mediaResponse, settingsResponse] = await Promise.all([
+                    fetch('/api/hero/page/about'),
+                    fetch('/api/hero/page/about/settings')
+                ]);
+
+                const media = await mediaResponse.json();
+                const settings = await settingsResponse.json();
+
+                if (!media || media.length === 0) {
+                    document.querySelector('.page-hero-slider').style.display = 'none';
+                    return;
                 }
+
+                const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                console.log('Page Hero Media:', sortedMedia);
+                console.log('Page Hero Settings:', settings);
+
+                renderPageHeroSlider(sortedMedia, settings);
             } catch (error) {
-                console.error('Failed to load about hero:', error);
+                console.error('Failed to load page hero slider:', error);
+                document.querySelector('.page-hero-slider').style.display = 'none';
             }
         }
-        
-        function renderHeroSlider(settings) {
-            const wrapper = document.getElementById('aboutHeroSliderWrapper');
-            const dots = document.getElementById('aboutHeroSliderDots');
-            
-            if (!wrapper || !dots) return;
-            
-            wrapper.innerHTML = '';
-            dots.innerHTML = '';
-            
-            const titleType = settings.titleType || 'text';
-            const title = settings.title || '';
-            const content = settings.content || '';
-            const logoUrl = settings.logoUrl || '';
-            
-            heroMediaItems.forEach((item, index) => {
+
+        function renderPageHeroSlider(media, settings) {
+            const container = document.getElementById('aboutHeroSliderWrapper');
+            container.innerHTML = '';
+
+            media.forEach((item, index) => {
                 const slide = document.createElement('div');
-                slide.className = 'hero-slide' + (index === 0 ? ' active' : '');
-                
-                if (item.mediaType === 'video') {
+                slide.className = `page-hero-slide${index === 0 ? ' active' : ''}`;
+
+                if (item.type === 'video') {
                     const video = document.createElement('video');
-                    video.className = 'hero-media';
-                    video.autoplay = true;
-                    video.loop = false;
+                    video.className = 'page-hero-video';
+                    video.src = item.url;
+                    video.autoplay = index === 0;
                     video.muted = true;
                     video.playsInline = true;
-                    
-                    const source = document.createElement('source');
-                    source.src = item.data;
-                    source.type = 'video/mp4';
-                    video.appendChild(source);
-                    
-                    video.addEventListener('ended', () => {
-                        if (index === currentSlide) {
-                            nextSlide();
-                        }
-                    });
-                    
+                    video.loop = false;
+                    video.addEventListener('ended', () => nextPageSlide());
                     slide.appendChild(video);
                 } else {
-                    slide.style.backgroundImage = `url(${item.data})`;
-                    slide.style.backgroundSize = 'cover';
-                    slide.style.backgroundPosition = 'center';
+                    slide.style.backgroundImage = `url(${item.url})`;
                 }
+
+                const overlay = document.createElement('div');
+                overlay.className = 'page-hero-overlay';
                 
-                // Add text overlay if configured
-                if ((titleType === 'text' && title) || (titleType === 'logo' && logoUrl) || content) {
-                    const textOverlay = document.createElement('div');
-                    textOverlay.className = 'hero-text-overlay';
-                    let html = '';
-                    
-                    if (titleType === 'text' && title) {
-                        html += `<h1>${title}</h1>`;
-                    } else if (titleType === 'logo' && logoUrl) {
-                        html += `<img src="${logoUrl}" class="hero-logo" alt="Logo">`;
-                    }
-                    
-                    if (content) {
-                        html += `<p>${content.replace(/\n/g, '<br>')}</p>`;
-                    }
-                    
-                    textOverlay.innerHTML = html;
-                    slide.appendChild(textOverlay);
+                if (settings.title_type === 'text' && settings.title_text) {
+                    const title = document.createElement('h1');
+                    title.textContent = settings.title_text;
+                    overlay.appendChild(title);
+                } else if (settings.title_type === 'logo' && settings.title_image) {
+                    const logo = document.createElement('img');
+                    logo.src = settings.title_image;
+                    logo.alt = 'Title';
+                    logo.style.maxWidth = '400px';
+                    logo.style.height = 'auto';
+                    overlay.appendChild(logo);
                 }
-                
-                wrapper.appendChild(slide);
-                
-                // Add dot
-                const dot = document.createElement('span');
-                dot.className = 'slider-dot' + (index === 0 ? ' active' : '');
-                dot.onclick = () => goToSlide(index);
-                dots.appendChild(dot);
+
+                if (settings.content) {
+                    const content = document.createElement('p');
+                    content.innerHTML = settings.content.replace(/\n/g, '<br>');
+                    overlay.appendChild(content);
+                }
+
+                slide.appendChild(overlay);
+                container.appendChild(slide);
             });
         }
-        
-        function goToSlide(index) {
-            const slides = document.querySelectorAll('.hero-slide');
-            const dots = document.querySelectorAll('.slider-dot');
+
+        function goToPageSlide(index) {
+            const slides = document.querySelectorAll('.page-hero-slide');
+            if (index >= slides.length) index = 0;
+            if (index < 0) index = slides.length - 1;
+
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+                const video = slide.querySelector('video');
+                if (video) {
+                    if (i === index) {
+                        video.currentTime = 0;
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+            });
+
+            currentPageSlide = index;
             
-            if (slides.length === 0) return;
-            
-            const currentVideo = slides[currentSlide].querySelector('video');
-            if (currentVideo) {
-                currentVideo.pause();
-                currentVideo.currentTime = 0;
-            }
-            
-            slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('active');
-            
-            currentSlide = index;
-            
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-            
-            const newVideo = slides[currentSlide].querySelector('video');
-            if (newVideo) {
-                newVideo.play();
-            } else {
-                scheduleNextSlide();
-            }
-        }
-        
-        function nextSlide() {
-            const nextIndex = (currentSlide + 1) % heroMediaItems.length;
-            goToSlide(nextIndex);
-        }
-        
-        function scheduleNextSlide() {
-            if (sliderTimeout) clearTimeout(sliderTimeout);
-            
-            const currentItem = heroMediaItems[currentSlide];
-            if (currentItem && currentItem.mediaType === 'image') {
-                sliderTimeout = setTimeout(nextSlide, 5000);
+            const activeSlide = slides[currentPageSlide];
+            const hasVideo = activeSlide.querySelector('video');
+            if (!hasVideo) {
+                scheduleNextPageSlide();
             }
         }
-        
-        // Load slider on page load
-        loadAboutHeroSlider();
+
+        function nextPageSlide() {
+            goToPageSlide(currentPageSlide + 1);
+        }
+
+        function scheduleNextPageSlide() {
+            clearTimeout(pageSlideTimeout);
+            pageSlideTimeout = setTimeout(nextPageSlide, 5000);
+        }
+
+        loadPageHeroSlider();
     </script>
 </body>
 </html>
