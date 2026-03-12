@@ -5,3 +5,4 @@ schema.json
 *.db
 *.sqlite
 wrangler.toml
+.wrangler/
