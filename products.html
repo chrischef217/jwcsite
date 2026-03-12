@@ -88,13 +88,11 @@
 
         async function loadPageHeroSlider() {
             try {
-                const [mediaResponse, settingsResponse] = await Promise.all([
-                    fetch('/api/hero/page/products'),
-                    fetch('/api/hero/page/products/settings')
-                ]);
-
-                const media = await mediaResponse.json();
-                const settings = await settingsResponse.json();
+                const response = await fetch('/api/hero/page/products');
+                const data = await response.json();
+                
+                const media = data.media || [];
+                const settings = data.settings || {};
 
                 if (!media || media.length === 0) {
                     document.querySelector('.page-hero-slider').style.display = 'none';
