@@ -747,10 +747,14 @@
                 const slide = document.createElement('div');
                 slide.className = `page-hero-slide${index === 0 ? ' active' : ''}`;
 
-                if (item.type === 'video') {
+                // API returns mediaType and data fields, support both old and new format
+                const isVideo = item.mediaType === 'video' || item.type === 'video';
+                const mediaUrl = item.data || item.url;
+
+                if (isVideo) {
                     const video = document.createElement('video');
                     video.className = 'page-hero-video';
-                    video.src = item.url;
+                    video.src = mediaUrl;
                     video.autoplay = index === 0;
                     video.muted = true;
                     video.playsInline = true;
@@ -758,7 +762,7 @@
                     video.addEventListener('ended', () => nextPageSlide());
                     slide.appendChild(video);
                 } else {
-                    slide.style.backgroundImage = `url(${item.url})`;
+                    slide.style.backgroundImage = `url(${mediaUrl})`;
                 }
 
                 const overlay = document.createElement('div');
