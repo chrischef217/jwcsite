@@ -397,8 +397,14 @@
     </nav>
 
     <main>
-        <section class="page-hero">
-            <h1>JANGWON 회사 소개</h1>
+        <!-- Hero Slider -->
+        <section class="hero" id="aboutHeroSlider" style="margin-top: 75px;">
+            <div class="hero-slider-container">
+                <div class="hero-slider-wrapper" id="aboutHeroSliderWrapper">
+                    <!-- Slider content loaded dynamically -->
+                </div>
+                <div class="hero-slider-dots" id="aboutHeroSliderDots"></div>
+            </div>
         </section>
 
         <!-- 내부 네비게이션 -->
@@ -704,6 +710,152 @@
                 });
             }
         });
+        
+        // ========== HERO SLIDER ==========
+        let currentSlide = 0;
+        let sliderTimeout;
+        let heroMediaItems = [];
+        
+        // Load about page hero slider
+        async function loadAboutHeroSlider() {
+            try {
+                const response = await fetch('/api/hero/page/about');
+                const data = await response.json();
+                
+                heroMediaItems = data.media || [];
+                const settings = data.settings || {};
+                
+                console.log('✅ About hero loaded:', heroMediaItems.length, 'items');
+                
+                if (heroMediaItems.length > 0) {
+                    renderHeroSlider(settings);
+                    if (heroMediaItems.length > 1) {
+                        scheduleNextSlide();
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load about hero:', error);
+            }
+        }
+        
+        function renderHeroSlider(settings) {
+            const wrapper = document.getElementById('aboutHeroSliderWrapper');
+            const dots = document.getElementById('aboutHeroSliderDots');
+            
+            if (!wrapper || !dots) return;
+            
+            wrapper.innerHTML = '';
+            dots.innerHTML = '';
+            
+            const titleType = settings.titleType || 'text';
+            const title = settings.title || '';
+            const content = settings.content || '';
+            const logoUrl = settings.logoUrl || '';
+            
+            heroMediaItems.forEach((item, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'hero-slide' + (index === 0 ? ' active' : '');
+                
+                if (item.mediaType === 'video') {
+                    const video = document.createElement('video');
+                    video.className = 'hero-media';
+                    video.autoplay = true;
+                    video.loop = false;
+                    video.muted = true;
+                    video.playsInline = true;
+                    
+                    const source = document.createElement('source');
+                    source.src = item.data;
+                    source.type = 'video/mp4';
+                    video.appendChild(source);
+                    
+                    video.addEventListener('ended', () => {
+                        if (index === currentSlide) {
+                            nextSlide();
+                        }
+                    });
+                    
+                    slide.appendChild(video);
+                } else {
+                    slide.style.backgroundImage = `url(${item.data})`;
+                    slide.style.backgroundSize = 'cover';
+                    slide.style.backgroundPosition = 'center';
+                }
+                
+                // Add text overlay if configured
+                if ((titleType === 'text' && title) || (titleType === 'logo' && logoUrl) || content) {
+                    const textOverlay = document.createElement('div');
+                    textOverlay.className = 'hero-text-overlay';
+                    let html = '';
+                    
+                    if (titleType === 'text' && title) {
+                        html += `<h1>${title}</h1>`;
+                    } else if (titleType === 'logo' && logoUrl) {
+                        html += `<img src="${logoUrl}" class="hero-logo" alt="Logo">`;
+                    }
+                    
+                    if (content) {
+                        html += `<p>${content.replace(/\n/g, '<br>')}</p>`;
+                    }
+                    
+                    textOverlay.innerHTML = html;
+                    slide.appendChild(textOverlay);
+                }
+                
+                wrapper.appendChild(slide);
+                
+                // Add dot
+                const dot = document.createElement('span');
+                dot.className = 'slider-dot' + (index === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(index);
+                dots.appendChild(dot);
+            });
+        }
+        
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.slider-dot');
+            
+            if (slides.length === 0) return;
+            
+            const currentVideo = slides[currentSlide].querySelector('video');
+            if (currentVideo) {
+                currentVideo.pause();
+                currentVideo.currentTime = 0;
+            }
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            const newVideo = slides[currentSlide].querySelector('video');
+            if (newVideo) {
+                newVideo.play();
+            } else {
+                scheduleNextSlide();
+            }
+        }
+        
+        function nextSlide() {
+            const nextIndex = (currentSlide + 1) % heroMediaItems.length;
+            goToSlide(nextIndex);
+        }
+        
+        function scheduleNextSlide() {
+            if (sliderTimeout) clearTimeout(sliderTimeout);
+            
+            const currentItem = heroMediaItems[currentSlide];
+            if (currentItem && currentItem.mediaType === 'image') {
+                sliderTimeout = setTimeout(nextSlide, 5000);
+            }
+        }
+        
+        // Load slider on page load
+        loadAboutHeroSlider();
     </script>
 </body>
 </html>

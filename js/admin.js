@@ -898,13 +898,68 @@ window.savePageHeroMedia = async function() {
         return;
     }
     
+    const progressBar = document.getElementById('pageHeroProgress');
+    const progressFill = progressBar.querySelector('.progress-fill');
+    const progressText = progressBar.querySelector('.progress-text');
+    
     try {
+        console.log(`🚀 Saving ${pageHeroMediaFiles.length} files to ${currentPageName} page`);
+        
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressText.textContent = '0%';
+        
         const data = await window.getPageHeroSlider(currentPageName);
         const startIndex = data.media ? data.media.length : 0;
         
-        await window.savePageHeroMedia(currentPageName, pageHeroMediaFiles, startIndex);
+        console.log(`📊 Current items: ${startIndex}, Adding: ${pageHeroMediaFiles.length}`);
         
+        // Process each file
+        for (let i = 0; i < pageHeroMediaFiles.length; i++) {
+            const file = pageHeroMediaFiles[i];
+            const isVideo = file.type.startsWith('video/');
+            
+            console.log(`📤 Uploading ${i + 1}/${pageHeroMediaFiles.length}: ${file.name} (${isVideo ? 'video' : 'image'})`);
+            
+            let mediaData;
+            if (isVideo) {
+                mediaData = await videoToBase64(file);
+            } else {
+                mediaData = await compressImage(file);
+            }
+            
+            // Save to API
+            const response = await fetch(`/api/hero/page/${currentPageName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mediaType: isVideo ? 'video' : 'image',
+                    data: mediaData,
+                    order_index: startIndex + i
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to save ${file.name}`);
+            }
+            
+            const result = await response.json();
+            console.log(`✅ Saved: ${result.item.id}`);
+            
+            // Update progress
+            const progress = Math.round(((i + 1) / pageHeroMediaFiles.length) * 100);
+            progressFill.style.width = progress + '%';
+            progressText.textContent = progress + '%';
+        }
+        
+        console.log('✅ All files saved successfully');
         alert('✅ 미디어가 저장되었습니다!');
+        
+        // Hide progress bar
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+        }, 1000);
         
         // Clear preview
         document.getElementById('pageMediaPreviewGrid').innerHTML = '';
@@ -916,7 +971,9 @@ window.savePageHeroMedia = async function() {
         loadPageHeroSlider(currentPageName);
         
     } catch (error) {
+        console.error('❌ Save failed:', error);
         alert('❌ 저장 실패: ' + error.message);
+        progressBar.style.display = 'none';
     }
 }
 
