@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Test</title>
+    <style>
+        .admin-nav-btn { 
+            display: block; 
+            padding: 10px; 
+            margin: 5px; 
+            background: #333; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .admin-nav-btn.active { background: #28a745; }
+        .admin-section { display: none; padding: 20px; border: 1px solid #ddd; }
+        .admin-section.active { display: block; }
+    </style>
+</head>
+<body>
+    <div>
+        <button class="admin-nav-btn active" data-section="dashboard">대시보드</button>
+        <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
+        <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
+        <button class="admin-nav-btn" data-section="products">제품 관리</button>
+    </div>
+    
+    <section class="admin-section active" id="dashboard">
+        <h2>대시보드</h2>
+        <p>Dashboard content</p>
+    </section>
+    
+    <section class="admin-section" id="hero-slider">
+        <h2>메인 히어로 슬라이더</h2>
+        <p>Hero slider content</p>
+    </section>
+    
+    <section class="admin-section" id="page-heroes">
+        <h2>페이지 히어로 슬라이더</h2>
+        <p>Page heroes content</p>
+    </section>
+    
+    <section class="admin-section" id="products">
+        <h2>제품 관리</h2>
+        <p>Products content</p>
+    </section>
+    
+    <script>
+        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('Button clicked:', btn.dataset.section);
+                
+                const section = btn.dataset.section;
+                if (!section) return;
+                
+                document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const sectionEl = document.getElementById(section);
+                if (sectionEl) {
+                    sectionEl.classList.add('active');
+                    console.log('Section activated:', section);
+                } else {
+                    console.error('Section not found:', section);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
