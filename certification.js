@@ -2,9 +2,44 @@
 let allCertifications = [];
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Load certifications from API
+    // Load categories first, then certifications
+    loadCertCategories();
     loadCertifications();
-    
+});
+
+// Load certification categories from API
+async function loadCertCategories() {
+    try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        
+        const data = await response.json();
+        const container = document.querySelector('.category-filter .container');
+        
+        // Keep "All Certifications" button (Korean)
+        container.innerHTML = '<button class="filter-btn active" data-category="all">전체 인증서</button>';
+        
+        // Add category buttons with Korean names
+        data.certifications.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.setAttribute('data-category', cat.id);
+            btn.textContent = cat.nameKo || cat.name; // Use Korean name (nameKo)
+            container.appendChild(btn);
+        });
+        
+        // Setup event listeners after buttons are created
+        setupCategoryFilters();
+        
+    } catch (error) {
+        console.error('❌ Failed to load categories:', error);
+        // Use default buttons if API fails
+        setupCategoryFilters();
+    }
+}
+
+// Setup category filter event listeners
+function setupCategoryFilters() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const certificationsGrid = document.getElementById('certificationsGrid');
 
@@ -39,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-});
+}
 
 // Load certifications from API
 async function loadCertifications() {
