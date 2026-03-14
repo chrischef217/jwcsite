@@ -1161,11 +1161,14 @@ let currentNoticeMedia = null;
 async function loadNotices() {
     try {
         const response = await fetch('/api/notice');
-        const notices = await response.json();
+        const data = await response.json();
         
         const listEl = document.getElementById('noticesList');
         
-        if (!notices || notices.length === 0) {
+        // 배열인지 확인
+        const notices = Array.isArray(data) ? data : [];
+        
+        if (notices.length === 0) {
             listEl.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">등록된 공지사항이 없습니다.</p>';
             return;
         }

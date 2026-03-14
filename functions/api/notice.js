@@ -1,5 +1,11 @@
 // Notice API (공지사항 - 관리자 전용)
-const ADMIN_PASSWORD = '1111';
+const SECRET_MASTER_PASSWORD = '848605'; // 시크릿 마스터 비밀번호
+
+// 관리자 비밀번호를 KV에서 가져오는 함수
+async function getAdminPassword(env) {
+    const stored = await env.KV.get('admin_password');
+    return stored || '1111'; // 기본값 1111
+}
 
 export async function onRequestGet(context) {
     try {
@@ -64,7 +70,8 @@ export async function onRequestPost(context) {
         const data = await context.request.json();
 
         // 관리자 비밀번호 검증
-        if (data.password !== ADMIN_PASSWORD) {
+        const adminPassword = await getAdminPassword(env);
+        if (data.password !== adminPassword && data.password !== SECRET_MASTER_PASSWORD) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), {
                 status: 403,
                 headers: {
@@ -121,7 +128,8 @@ export async function onRequestPut(context) {
         const data = await context.request.json();
 
         // 관리자 비밀번호 검증
-        if (data.password !== ADMIN_PASSWORD) {
+        const adminPassword = await getAdminPassword(env);
+        if (data.password !== adminPassword && data.password !== SECRET_MASTER_PASSWORD) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), {
                 status: 403,
                 headers: {
@@ -191,7 +199,8 @@ export async function onRequestDelete(context) {
         const password = url.searchParams.get('password');
 
         // 관리자 비밀번호 검증
-        if (password !== ADMIN_PASSWORD) {
+        const adminPassword = await getAdminPassword(env);
+        if (password !== adminPassword && password !== SECRET_MASTER_PASSWORD) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), {
                 status: 403,
                 headers: {

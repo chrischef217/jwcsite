@@ -101,14 +101,20 @@
         async function loadNotices() {
             try {
                 const response = await fetch('/api/notice');
-                const notices = await response.json();
+                const data = await response.json();
                 
                 const listEl = document.getElementById('noticeList');
+                
+                // 배열인지 확인
+                const notices = Array.isArray(data) ? data : [];
                 
                 if (notices.length === 0) {
                     listEl.innerHTML = '<div class="empty-state">등록된 공지사항이 없습니다.</div>';
                     return;
                 }
+                
+                // 최신순 정렬
+                notices.sort((a, b) => b.created_at - a.created_at);
                 
                 listEl.innerHTML = notices.map(notice => `
                     <div class="notice-item">
@@ -127,6 +133,7 @@
                 `).join('');
             } catch (error) {
                 console.error('Failed to load notices:', error);
+                listEl.innerHTML = '<div class="empty-state">공지사항을 불러오는데 실패했습니다.</div>';
             }
         }
 
