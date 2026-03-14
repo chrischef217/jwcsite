@@ -1771,11 +1771,6 @@ window.addProductCategory = async function() {
         alert('❌ 카테고리 추가 실패: ' + error.message);
     }
 }
-        
-    } catch (error) {
-        alert('❌ 카테고리 추가 실패: ' + error.message);
-    }
-}
 
 // Delete product category
 window.deleteProductCategory = async function(categoryId) {
@@ -1836,11 +1831,6 @@ window.addCertCategory = async function() {
         
         // Update certification category dropdown immediately
         await loadCertCategories();
-        
-    } catch (error) {
-        alert('❌ 카테고리 추가 실패: ' + error.message);
-    }
-}
         
     } catch (error) {
         alert('❌ 카테고리 추가 실패: ' + error.message);
