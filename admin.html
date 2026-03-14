@@ -10,19 +10,21 @@
 </head>
 <body>
     <div class="admin-layout">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <div class="admin-logo">JWC 관리자 v3.0</div>
-            <nav class="admin-nav">
-                <button class="admin-nav-btn" onclick="location.href='index.html'">🏠 홈으로</button>
-                <button class="admin-nav-btn active" data-section="dashboard">대시보드</button>
-                <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
-                <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
-                <button class="admin-nav-btn" data-section="products">제품 관리</button>
-                <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
-                <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
-            </nav>
-        </aside>
+        <!-- Top Navigation -->
+        <header class="admin-header">
+            <div class="admin-header-content">
+                <div class="admin-logo">JWC 관리자 v3.0</div>
+                <nav class="admin-nav">
+                    <button class="admin-nav-btn" onclick="location.href='index.html'">🏠 홈으로</button>
+                    <button class="admin-nav-btn active" data-section="dashboard">대시보드</button>
+                    <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
+                    <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
+                    <button class="admin-nav-btn" data-section="products">제품 관리</button>
+                    <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
+                    <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
+                </nav>
+            </div>
+        </header>
 
         <!-- Main Content -->
         <main class="admin-main">
