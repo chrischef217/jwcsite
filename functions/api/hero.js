@@ -54,17 +54,52 @@ export async function onRequestDelete(context) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     
+    console.log('[DELETE] Attempting to delete ID:', id);
+    
+    if (!id) {
+        return new Response(JSON.stringify({ error: 'ID parameter is required' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
+    }
+    
     try {
+        // Check if item exists first
+        const existing = await env.KV.get(id);
+        console.log('[DELETE] Existing item:', existing ? 'Found' : 'Not found');
+        
+        if (!existing) {
+            return new Response(JSON.stringify({ error: 'Item not found', id }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        // Delete from KV
         await env.KV.delete(id);
-        return new Response(JSON.stringify({ success: true }), {
+        console.log('[DELETE] Successfully deleted:', id);
+        
+        return new Response(JSON.stringify({ success: true, id, deleted: true }), {
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error('[DELETE] Error:', error.message);
+        return new Response(JSON.stringify({ error: error.message, id }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
     }
+}
+
+export async function onRequestOptions(context) {
+    return new Response(null, {
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '86400'
+        }
+    });
 }
 
 export async function onRequestPut(context) {
