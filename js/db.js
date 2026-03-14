@@ -202,7 +202,7 @@ async function deleteProduct(productId) {
     try {
         console.log('🗑️ Deleting product:', productId);
         
-        const response = await fetch(`/api/products/${productId}`, {
+        const response = await fetch(`/api/products?id=${productId}`, {
             method: 'DELETE'
         });
         
@@ -384,7 +384,7 @@ async function deleteCertification(certId) {
     try {
         console.log('🗑️ Deleting certification:', certId);
         
-        const response = await fetch(`/api/certification/${certId}`, {
+        const response = await fetch(`/api/certification?id=${certId}`, {
             method: 'DELETE'
         });
         

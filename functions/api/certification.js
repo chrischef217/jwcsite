@@ -64,10 +64,18 @@ export async function onRequest(context) {
             });
         }
 
-        // DELETE /api/certification/:id - Delete certification
+        // DELETE /api/certification?id=xxx - Delete certification
         if (method === 'DELETE') {
-            const pathParts = url.pathname.split('/');
-            const certId = pathParts[pathParts.length - 1];
+            const certId = url.searchParams.get('id');
+            
+            if (!certId) {
+                return new Response(JSON.stringify({ 
+                    error: 'Missing certification ID' 
+                }), {
+                    status: 400,
+                    headers: corsHeaders
+                });
+            }
             
             // Get existing certifications
             const certificationsJson = await env.KV.get('certifications');
@@ -75,6 +83,15 @@ export async function onRequest(context) {
             
             // Filter out the certification
             const filteredCertifications = certifications.filter(c => c.id !== certId);
+            
+            if (filteredCertifications.length === certifications.length) {
+                return new Response(JSON.stringify({ 
+                    error: 'Certification not found' 
+                }), {
+                    status: 404,
+                    headers: corsHeaders
+                });
+            }
             
             // Save to KV
             await env.KV.put('certifications', JSON.stringify(filteredCertifications));

@@ -64,10 +64,18 @@ export async function onRequest(context) {
             });
         }
 
-        // DELETE /api/products/:id - Delete product
+        // DELETE /api/products?id=xxx - Delete product
         if (method === 'DELETE') {
-            const pathParts = url.pathname.split('/');
-            const productId = pathParts[pathParts.length - 1];
+            const productId = url.searchParams.get('id');
+            
+            if (!productId) {
+                return new Response(JSON.stringify({ 
+                    error: 'Missing product ID' 
+                }), {
+                    status: 400,
+                    headers: corsHeaders
+                });
+            }
             
             // Get existing products
             const productsJson = await env.KV.get('products');
@@ -75,6 +83,15 @@ export async function onRequest(context) {
             
             // Filter out the product
             const filteredProducts = products.filter(p => p.id !== productId);
+            
+            if (filteredProducts.length === products.length) {
+                return new Response(JSON.stringify({ 
+                    error: 'Product not found' 
+                }), {
+                    status: 404,
+                    headers: corsHeaders
+                });
+            }
             
             // Save to KV
             await env.KV.put('products', JSON.stringify(filteredProducts));
