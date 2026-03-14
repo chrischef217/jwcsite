@@ -137,11 +137,11 @@
 ## 배포 상태
 - **플랫폼**: Cloudflare Pages
 - **상태**: ✅ Active
-- **최신 커밋**: `078a536` - "Revert to working admin.js and only add cache-busting"
+- **최신 커밋**: `57a8f69` - "Fix delete button: filter out invalid items"
 - **마지막 업데이트**: 2026-03-14
 
 ## 알려진 이슈
-- ✅ 모두 해결됨
+- ✅ 모두 해결됨 (배열 항목 필터링으로 삭제 기능 완벽 작동)
 
 ## 다음 단계
 1. Contact 페이지에 영상 업로드
