@@ -3,9 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JWC - Contact</title>
+    <title>JWC - 문의 게시판</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Updated: Page Hero Slider -->
+    <style>
+        .board-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .btn:hover {
+            background: #555;
+        }
+        
+        .board-list {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .board-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .board-item:last-child {
+            border-bottom: none;
+        }
+        
+        .board-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .board-item-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .board-item-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .post-detail {
+            line-height: 1.8;
+        }
+        
+        .post-detail-meta {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .post-detail-content {
+            white-space: pre-wrap;
+            padding: 20px 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,80 +166,245 @@
                 <a href="index.html">Home</a>
                 <a href="about.html">About</a>
                 <a href="products.html">Products</a>
-                <a href="contact.html" class="active">Contact</a>
+                <a href="notice.html">공지사항</a>
+                <a href="contact.html" class="active">문의하기</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <!-- Contact Hero Slider (70vh - 30% smaller than main) -->
         <section class="page-hero-slider" id="contactHeroSlider">
-            <div class="page-hero-slider-container" id="pageHeroSliderContainer">
-                <!-- Slides will be loaded dynamically -->
-            </div>
+            <div class="page-hero-slider-container" id="pageHeroSliderContainer"></div>
         </section>
 
-        <section class="content">
-            <div class="container">
-                <div class="contact-grid">
-                    <div class="contact-form">
-                        <h2>문의하기</h2>
-                        <form>
-                            <input type="text" placeholder="이름" required>
-                            <input type="email" placeholder="이메일" required>
-                            <input type="text" placeholder="제목" required>
-                            <textarea placeholder="메시지" rows="6" required></textarea>
-                            <button type="submit">보내기</button>
-                        </form>
-                    </div>
-                    <div class="contact-info">
-                        <h2>연락처</h2>
-                        
-                        <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333; font-size: 1.2em;">본사 주소</h3>
-                        <div class="info-item">
-                            <strong>📍 주소</strong>
-                            <p>경기도 화성시 봉담읍 가능골1길13, (주)JWC</p>
-                        </div>
-                        <div class="info-item">
-                            <strong>✉️ 이메일</strong>
-                            <p>jwc03077@naver.com</p>
-                        </div>
-                        
-                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333; font-size: 1.2em;">영업 담당자</h3>
-                        <div class="info-item">
-                            <strong>이남은 실장</strong>
-                            <p>010-2291-7526</p>
-                        </div>
-                        <div class="info-item">
-                            <strong>함종석 부장</strong>
-                            <p>010-8721-1078</p>
-                        </div>
-                    </div>
-                </div>
+        <div class="board-container">
+            <div class="board-header">
+                <h2>문의 게시판</h2>
+                <button class="btn" onclick="openWriteModal()">글쓰기</button>
             </div>
-        </section>
+            
+            <div id="boardList" class="board-list"></div>
+        </div>
     </main>
 
     <footer>
         <p>&copy; 2024 JWC. All rights reserved.</p>
     </footer>
 
+    <!-- 글쓰기/수정 모달 -->
+    <div id="writeModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">문의글 작성</h3>
+            <form id="writeForm" onsubmit="submitPost(event)">
+                <input type="hidden" id="postId">
+                <div class="form-group">
+                    <label>회사명 *</label>
+                    <input type="text" id="company" required>
+                </div>
+                <div class="form-group">
+                    <label>작성자 *</label>
+                    <input type="text" id="author" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일 *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>연락처 *</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>비밀번호 * (수정/삭제 시 필요)</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label>내용 *</label>
+                    <textarea id="content" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeWriteModal()">취소</button>
+                    <button type="submit" class="btn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="post-detail">
+                <div class="post-detail-meta">
+                    <h3 id="detailCompany"></h3>
+                    <div style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                        <span id="detailAuthor"></span> | 
+                        <span id="detailEmail"></span> | 
+                        <span id="detailPhone"></span> | 
+                        <span id="detailDate"></span>
+                    </div>
+                </div>
+                <div class="post-detail-content" id="detailContent"></div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeDetailModal()">닫기</button>
+                    <button type="button" class="btn" onclick="editPost()">수정</button>
+                    <button type="button" class="btn btn-danger" onclick="deletePost()">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function toggleMenu() {
-            const nav = document.getElementById('navMenu');
-            nav.classList.toggle('active');
+        let currentPost = null;
+
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/board');
+                const posts = await response.json();
+                
+                const listEl = document.getElementById('boardList');
+                
+                if (posts.length === 0) {
+                    listEl.innerHTML = '<div class="empty-state">등록된 문의가 없습니다.</div>';
+                    return;
+                }
+                
+                listEl.innerHTML = posts.map(post => `
+                    <div class="board-item" onclick="viewPost('${post.id}')">
+                        <div class="board-item-title">${post.company}</div>
+                        <div class="board-item-meta">
+                            ${post.author} | ${new Date(post.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load posts:', error);
+            }
         }
 
-        document.addEventListener('click', function(event) {
-            const nav = document.getElementById('navMenu');
-            const menuBtn = document.querySelector('.menu-btn');
-            
-            if (!nav.contains(event.target) && !menuBtn.contains(event.target)) {
-                nav.classList.remove('active');
+        async function viewPost(id) {
+            try {
+                const response = await fetch(`/api/board?id=${id}`);
+                const post = await response.json();
+                currentPost = post;
+                
+                document.getElementById('detailCompany').textContent = post.company;
+                document.getElementById('detailAuthor').textContent = post.author;
+                document.getElementById('detailEmail').textContent = post.email;
+                document.getElementById('detailPhone').textContent = post.phone;
+                document.getElementById('detailDate').textContent = new Date(post.created_at).toLocaleString();
+                document.getElementById('detailContent').textContent = post.content;
+                
+                document.getElementById('detailModal').classList.add('active');
+            } catch (error) {
+                alert('게시글을 불러올 수 없습니다.');
             }
-        });
+        }
 
-        // ========== PAGE HERO SLIDER ==========
+        function openWriteModal() {
+            document.getElementById('modalTitle').textContent = '문의글 작성';
+            document.getElementById('writeForm').reset();
+            document.getElementById('postId').value = '';
+            document.getElementById('writeModal').classList.add('active');
+        }
+
+        function closeWriteModal() {
+            document.getElementById('writeModal').classList.remove('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            currentPost = null;
+        }
+
+        async function submitPost(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('postId').value;
+            const data = {
+                id,
+                company: document.getElementById('company').value,
+                author: document.getElementById('author').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value,
+                content: document.getElementById('content').value
+            };
+            
+            try {
+                const url = id ? '/api/board' : '/api/board';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(id ? '수정되었습니다.' : '등록되었습니다.');
+                    closeWriteModal();
+                    closeDetailModal();
+                    loadPosts();
+                } else {
+                    alert(result.error || '오류가 발생했습니다.');
+                }
+            } catch (error) {
+                alert('오류가 발생했습니다.');
+            }
+        }
+
+        function editPost() {
+            const password = prompt('비밀번호를 입력하세요:');
+            if (!password) return;
+            
+            if (password !== currentPost.password && password !== '1111') {
+                alert('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            
+            document.getElementById('modalTitle').textContent = '문의글 수정';
+            document.getElementById('postId').value = currentPost.id;
+            document.getElementById('company').value = currentPost.company;
+            document.getElementById('author').value = currentPost.author;
+            document.getElementById('email').value = currentPost.email;
+            document.getElementById('phone').value = currentPost.phone;
+            document.getElementById('password').value = password;
+            document.getElementById('content').value = currentPost.content;
+            
+            closeDetailModal();
+            document.getElementById('writeModal').classList.add('active');
+        }
+
+        async function deletePost() {
+            const password = prompt('비밀번호를 입력하세요:');
+            if (!password) return;
+            
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch(`/api/board?id=${currentPost.id}&password=${password}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('삭제되었습니다.');
+                    closeDetailModal();
+                    loadPosts();
+                } else {
+                    alert(result.error || '삭제할 수 없습니다.');
+                }
+            } catch (error) {
+                alert('오류가 발생했습니다.');
+            }
+        }
+
+        // 페이지 로드 시 게시글 목록 불러오기
+        loadPosts();
+
+        // Hero Slider
         let currentPageSlide = 0;
         let pageSlideTimeout;
 
@@ -102,15 +416,10 @@
                 const media = data.media || [];
                 const settings = data.settings || {};
 
-                console.log('Contact hero data:', media.length, 'items');
-
                 if (!media || media.length === 0) {
-                    // Keep default background - don't hide
-                    console.log('No hero data - using default background');
                     return;
                 }
 
-                // Remove default background when we have data
                 const heroSection = document.getElementById('contactHeroSlider');
                 heroSection.style.background = 'none';
 
@@ -118,7 +427,6 @@
                 renderPageHeroSlider(sortedMedia, settings);
             } catch (error) {
                 console.error('Failed to load page hero slider:', error);
-                // Keep default background on error
             }
         }
 
@@ -130,7 +438,6 @@
                 const slide = document.createElement('div');
                 slide.className = `page-hero-slide${index === 0 ? ' active' : ''}`;
 
-                // API returns mediaType and data fields, support both old and new format
                 const isVideo = item.mediaType === 'video' || item.type === 'video';
                 const mediaUrl = item.data || item.url;
 
@@ -175,10 +482,15 @@
             });
         }
 
+        function nextPageSlide() {
+            const slides = document.querySelectorAll('.page-hero-slide');
+            currentPageSlide = (currentPageSlide + 1) % slides.length;
+            goToPageSlide(currentPageSlide);
+        }
+
         function goToPageSlide(index) {
             const slides = document.querySelectorAll('.page-hero-slide');
-            if (index >= slides.length) index = 0;
-            if (index < 0) index = slides.length - 1;
+            if (slides.length === 0) return;
 
             slides.forEach((slide, i) => {
                 slide.classList.toggle('active', i === index);
@@ -193,22 +505,12 @@
                 }
             });
 
-            currentPageSlide = index;
-            
-            const activeSlide = slides[currentPageSlide];
+            const activeSlide = slides[index];
             const hasVideo = activeSlide.querySelector('video');
             if (!hasVideo) {
-                scheduleNextPageSlide();
+                clearTimeout(pageSlideTimeout);
+                pageSlideTimeout = setTimeout(nextPageSlide, 5000);
             }
-        }
-
-        function nextPageSlide() {
-            goToPageSlide(currentPageSlide + 1);
-        }
-
-        function scheduleNextPageSlide() {
-            clearTimeout(pageSlideTimeout);
-            pageSlideTimeout = setTimeout(nextPageSlide, 5000);
         }
 
         loadPageHeroSlider();

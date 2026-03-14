@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWC - 공지사항</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .notice-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .notice-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .notice-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .notice-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .notice-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .notice-content {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            color: #555;
+            margin-top: 20px;
+        }
+        .notice-media {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .notice-media img,
+        .notice-media video {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="JWC">
+            </a>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="products.html">Products</a>
+                <a href="notice.html" class="active">공지사항</a>
+                <a href="contact.html">문의하기</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="notice-container">
+            <h2 style="margin-bottom: 30px;">공지사항</h2>
+            <div id="noticeList"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 JWC. All rights reserved.</p>
+    </footer>
+
+    <script>
+        async function loadNotices() {
+            try {
+                const response = await fetch('/api/notice');
+                const notices = await response.json();
+                
+                const listEl = document.getElementById('noticeList');
+                
+                if (notices.length === 0) {
+                    listEl.innerHTML = '<div class="empty-state">등록된 공지사항이 없습니다.</div>';
+                    return;
+                }
+                
+                listEl.innerHTML = notices.map(notice => `
+                    <div class="notice-item">
+                        <div class="notice-title">${notice.title}</div>
+                        <div class="notice-date">${new Date(notice.created_at).toLocaleDateString()}</div>
+                        <div class="notice-content">${notice.content}</div>
+                        ${notice.media ? `
+                            <div class="notice-media">
+                                ${notice.mediaType === 'video' ? 
+                                    `<video controls style="max-width:100%;"><source src="${notice.media}" type="video/mp4"></video>` :
+                                    `<img src="${notice.media}" alt="공지사항 이미지">`
+                                }
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load notices:', error);
+            }
+        }
+
+        loadNotices();
+    </script>
+</body>
+</html>

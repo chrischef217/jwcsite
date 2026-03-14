@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Hero Video</title>
+    <style>
+        video { width: 100%; max-width: 800px; }
+    </style>
+</head>
+<body>
+    <h1>Hero Slider Test</h1>
+    <div id="status">Loading...</div>
+    <div id="video-container"></div>
+    
+    <script>
+        async function test() {
+            const statusDiv = document.getElementById('status');
+            const container = document.getElementById('video-container');
+            
+            try {
+                // Fetch hero items
+                const response = await fetch('https://jwcsite.pages.dev/api/hero');
+                const items = await response.json();
+                
+                statusDiv.textContent = `Raw items: ${items.length}`;
+                
+                // Filter valid items
+                const validItems = items.filter(item => 
+                    item && 
+                    typeof item === 'object' && 
+                    !Array.isArray(item) &&
+                    item.id && 
+                    typeof item.id === 'string' && 
+                    item.id.startsWith('hero_')
+                );
+                
+                statusDiv.textContent += ` | Valid items: ${validItems.length}`;
+                
+                // Render first video
+                if (validItems.length > 0 && validItems[0].mediaType === 'video') {
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.autoplay = true;
+                    video.muted = true;
+                    
+                    const source = document.createElement('source');
+                    source.src = validItems[0].data;
+                    source.type = 'video/mp4';
+                    video.appendChild(source);
+                    
+                    container.appendChild(video);
+                    statusDiv.textContent += ' | Video rendered!';
+                } else {
+                    statusDiv.textContent += ' | No video found';
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
