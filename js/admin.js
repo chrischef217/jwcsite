@@ -161,7 +161,7 @@ window.saveHeroMedia = async function() {
         progressText.textContent = '50%';
         
         // Get existing media to append
-        const existing = await window.getHeroSliderMedia();
+        const existing = await getHeroSliderMedia();
         const startIndex = existing.length;
         
         await saveHeroMediaToDB(selectedMediaFiles, startIndex);
@@ -315,7 +315,7 @@ async function loadHeroSliderList() {
     const list = document.getElementById('heroImagesList');
     if (!list) return;
     
-    const mediaItems = await window.getHeroSliderMedia();
+    const mediaItems = await getHeroSliderMedia();
     
     if (mediaItems.length === 0) {
         list.innerHTML = '<p style="color: #999;">등록된 슬라이더가 없습니다.</p>';
@@ -361,7 +361,7 @@ async function loadHeroSliderList() {
 
 // Move item up in saved list
 window.moveItemUp = async function(index) {
-    const items = await window.getHeroSliderMedia();
+    const items = await getHeroSliderMedia();
     if (index === 0) return;
     
     // Swap order_index
@@ -377,7 +377,7 @@ window.moveItemUp = async function(index) {
 
 // Move item down in saved list
 window.moveItemDown = async function(index) {
-    const items = await window.getHeroSliderMedia();
+    const items = await getHeroSliderMedia();
     if (index >= items.length - 1) return;
     
     // Swap order_index
@@ -385,10 +385,23 @@ window.moveItemDown = async function(index) {
     items[index].order_index = items[index + 1].order_index;
     items[index + 1].order_index = temp;
     
-    await window.updateItemOrder(items[index].id, items[index].order_index);
-    await window.updateItemOrder(items[index + 1].id, items[index + 1].order_index);
+    await updateItemOrder(items[index].id, items[index].order_index);
+    await updateItemOrder(items[index + 1].id, items[index + 1].order_index);
     
     loadHeroSliderList();
+}
+
+// Delete hero media by ID (API call)
+window.deleteHeroMediaById = async function(id) {
+    const response = await fetch(`/api/hero?id=${id}`, {
+        method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to delete media');
+    }
+    
+    return await response.json();
 }
 
 // Delete hero media (global function)
@@ -404,27 +417,13 @@ window.deleteHeroMedia = async function(id) {
     }
 }
 
-// Delete hero media by ID
-window.deleteHeroMediaById = async function(id) {
-    const response = await fetch(`/api/hero?id=${id}`, {
-        method: 'DELETE'
-    });
-    
-    if (!response.ok) {
-        throw new Error('Failed to delete hero media');
-    }
-    
-    return await response.json();
-}
-
 // Get all hero slider media
 window.getHeroSliderMedia = async function() {
     const response = await fetch('/api/hero');
     if (!response.ok) {
         throw new Error('Failed to fetch hero media');
     }
-    const items = await response.json();
-    return items.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+    return await response.json();
 }
 
 // Update item order
@@ -868,4 +867,222 @@ document.addEventListener('DOMContentLoaded', function() {
     
     uploadArea.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        uploadArea.style.borderColor = '#007b
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#007bff';
+        uploadArea.style.background = '';
+        
+        const files = Array.from(e.dataTransfer.files).filter(f => 
+            f.type.startsWith('image/') || f.type.startsWith('video/')
+        );
+        
+        if (files.length > 0) {
+            mediaInput.files = e.dataTransfer.files;
+            handlePageMediaFiles({ target: { files } });
+        }
+    });
+});
+
+function handlePageMediaFiles(e) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    pageHeroMediaFiles = files;
+    
+    const previewGrid = document.getElementById('pageMediaPreviewGrid');
+    previewGrid.innerHTML = '';
+    previewGrid.style.display = 'grid';
+    
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.createElement('div');
+            preview.className = 'preview-item';
+            preview.style.position = 'relative';
+            preview.style.paddingTop = '100%';
+            preview.style.overflow = 'hidden';
+            preview.style.borderRadius = '8px';
+            preview.style.background = '#f0f0f0';
+            
+            if (file.type.startsWith('video/')) {
+                preview.innerHTML = `
+                    <video src="${e.target.result}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem;">VIDEO</div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                `;
+            }
+            
+            previewGrid.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Save page hero media
+window.savePageHeroMedia = async function() {
+    if (!currentPageName) {
+        alert('페이지를 먼저 선택하세요.');
+        return;
+    }
+    
+    if (pageHeroMediaFiles.length === 0) {
+        alert('업로드할 파일을 선택하세요.');
+        return;
+    }
+    
+    const progressBar = document.getElementById('pageHeroProgress');
+    const progressFill = progressBar.querySelector('.progress-fill');
+    const progressText = progressBar.querySelector('.progress-text');
+    
+    try {
+        console.log(`🚀 Saving ${pageHeroMediaFiles.length} files to ${currentPageName} page`);
+        
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressText.textContent = '0%';
+        
+        const data = await window.getPageHeroSlider(currentPageName);
+        const startIndex = data.media ? data.media.length : 0;
+        
+        console.log(`📊 Current items: ${startIndex}, Adding: ${pageHeroMediaFiles.length}`);
+        
+        // Process each file
+        for (let i = 0; i < pageHeroMediaFiles.length; i++) {
+            const file = pageHeroMediaFiles[i];
+            const isVideo = file.type.startsWith('video/');
+            
+            console.log(`📤 Uploading ${i + 1}/${pageHeroMediaFiles.length}: ${file.name} (${isVideo ? 'video' : 'image'})`);
+            
+            let mediaData;
+            if (isVideo) {
+                mediaData = await videoToBase64(file);
+            } else {
+                mediaData = await compressImage(file);
+            }
+            
+            // Save to API
+            const response = await fetch(`/api/hero/page/${currentPageName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mediaType: isVideo ? 'video' : 'image',
+                    data: mediaData,
+                    order_index: startIndex + i
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to save ${file.name}`);
+            }
+            
+            const result = await response.json();
+            console.log(`✅ Saved: ${result.item.id}`);
+            
+            // Update progress
+            const progress = Math.round(((i + 1) / pageHeroMediaFiles.length) * 100);
+            progressFill.style.width = progress + '%';
+            progressText.textContent = progress + '%';
+        }
+        
+        console.log('✅ All files saved successfully');
+        alert('✅ 미디어가 저장되었습니다!');
+        
+        // Hide progress bar
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+        }, 1000);
+        
+        // Clear preview
+        document.getElementById('pageMediaPreviewGrid').innerHTML = '';
+        document.getElementById('pageMediaPreviewGrid').style.display = 'none';
+        document.getElementById('pageHeroMediaInput').value = '';
+        pageHeroMediaFiles = [];
+        
+        // Reload list
+        loadPageHeroSlider(currentPageName);
+        
+    } catch (error) {
+        console.error('❌ Save failed:', error);
+        alert('❌ 저장 실패: ' + error.message);
+        progressBar.style.display = 'none';
+    }
+}
+
+// Render page hero list
+function renderPageHeroList(items) {
+    const listEl = document.getElementById('pageHeroItemsList');
+    
+    if (!items || items.length === 0) {
+        listEl.innerHTML = '<li style="padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #999;">항목이 없습니다. 이미지나 영상을 업로드하세요.</li>';
+        return;
+    }
+    
+    let html = '';
+    items.forEach((item, index) => {
+        const isVideo = item.mediaType === 'video';
+        html += `
+            <li style="display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px;">
+                <div style="width: 100px; height: 100px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                    ${isVideo ? 
+                        `<video src="${item.data}" style="width: 100%; height: 100%; object-fit: cover;"></video>` :
+                        `<img src="${item.data}" style="width: 100%; height: 100%; object-fit: cover;">`
+                    }
+                </div>
+                <div style="flex: 1;">
+                    <strong style="display: block; margin-bottom: 5px;">${isVideo ? '영상' : '이미지'} #${index + 1}</strong>
+                    <small style="color: #999;">${new Date(item.createdAt).toLocaleString()}</small>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="deletePageHeroItem('${item.id}')" class="btn btn-danger" style="padding: 8px 15px; white-space: nowrap;">🗑️ 삭제</button>
+                </div>
+            </li>
+        `;
+    });
+    
+    listEl.innerHTML = html;
+}
+
+// Delete page hero media function
+window.deletePageHeroMedia = async function(pageName, itemId) {
+    const response = await fetch(`/api/hero/page/${pageName}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ itemId })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to delete media');
+    }
+    
+    return await response.json();
+}
+
+// Delete page hero item
+window.deletePageHeroItem = async function(itemId) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deletePageHeroMedia(currentPageName, itemId);
+        alert('✅ 삭제되었습니다.');
+        loadPageHeroSlider(currentPageName);
+    } catch (error) {
+        alert('❌ 삭제 실패: ' + error.message);
+    }
+}
+
+// Logout (global function)
+window.logout = function() {
+    sessionStorage.removeItem('admin_logged_in');
+    window.location.href = 'admin-login.html';
+}
+
