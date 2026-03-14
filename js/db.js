@@ -362,6 +362,7 @@ async function saveCertification(certData) {
                 issuer: certData.issuer,
                 issueDate: certData.issueDate,
                 validUntil: certData.validUntil,
+                certNumber: certData.certNumber,
                 category: certData.category,
                 imageData: certData.imageData || certData.image,
                 createdAt: certData.createdAt || new Date().toISOString()
