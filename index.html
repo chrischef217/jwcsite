@@ -67,7 +67,18 @@
             try {
                 const response = await fetch('/api/hero');
                 const items = await response.json();
-                heroMediaItems = items.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                
+                // Filter out invalid items (arrays, null, items without hero_ IDs)
+                const validItems = items.filter(item => 
+                    item && 
+                    typeof item === 'object' && 
+                    !Array.isArray(item) &&
+                    item.id && 
+                    typeof item.id === 'string' && 
+                    item.id.startsWith('hero_')
+                );
+                
+                heroMediaItems = validItems.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                 
                 // Load settings
                 const settingsResponse = await fetch('/api/hero/settings');
