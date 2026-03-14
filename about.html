@@ -153,6 +153,15 @@
             font-size: 0.9rem;
         }
         
+        /* PC/Mobile text display */
+        .mobile-text {
+            display: none;
+        }
+        
+        .pc-text {
+            display: inline;
+        }
+        
         .quality-table {
             width: 100%;
             border-collapse: collapse;
@@ -313,6 +322,15 @@
             
             .business-step p {
                 font-size: 0.9rem;
+            }
+            
+            /* PC/Mobile text display for mobile */
+            .mobile-text {
+                display: inline;
+            }
+            
+            .pc-text {
+                display: none;
             }
             
             /* 표 모바일 최적화 */
@@ -484,13 +502,12 @@
                         <div class="highlight-box" style="background: transparent; border: none; padding: 40px 30px; margin: 40px 0;">
                             <div style="color: #333; line-height: 2;">
                                 <div style="font-weight: 600; margin-bottom: 25px; font-size: 1.15rem;">
-                                    금형개발 → 사출 → 코팅 →<br>
-                                    인쇄 → 조립을 본사 내 구축하여
+                                    <span class="pc-text">금형개발 → 사출 → 코팅 → 인쇄 → 조립을 본사 내 구축하여</span>
+                                    <span class="mobile-text">금형개발 → 사출 → 코팅 →<br>인쇄 → 조립을 본사 내 구축하여</span>
                                 </div>
                                 <div style="color: #555; font-size: 1.05rem;">
-                                    한발 앞선 더 나은 생각과<br>
-                                    더 좋은 품질로 고객의<br>
-                                    니즈를 만족시켜 드리겠습니다.
+                                    <span class="pc-text">한발 앞선 더 나은 생각과 더 좋은 품질로 고객의 니즈를 만족시켜 드리겠습니다.</span>
+                                    <span class="mobile-text">한발 앞선 더 나은 생각과<br>더 좋은 품질로 고객의<br>니즈를 만족시켜 드리겠습니다.</span>
                                 </div>
                             </div>
                         </div>
