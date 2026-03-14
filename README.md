@@ -137,11 +137,11 @@
 ## 배포 상태
 - **플랫폼**: Cloudflare Pages
 - **상태**: ✅ Active
-- **최신 커밋**: `6d32c45` - "Add cache-busting to hero API and admin.js to fix delete UI refresh"
+- **최신 커밋**: `fbdfa58` - "Fix undefined ID issue: flatten nested arrays and filter valid hero items"
 - **마지막 업데이트**: 2026-03-14
 
 ## 알려진 이슈
-- ✅ 모두 해결됨 (메인 히어로 슬라이더 삭제 기능 정상 작동)
+- ✅ 모두 해결됨 (메인 히어로 슬라이더 삭제 기능 완벽 작동)
 
 ## 다음 단계
 1. Contact 페이지에 영상 업로드
