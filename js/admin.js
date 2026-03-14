@@ -1563,11 +1563,6 @@ window.deleteCertificationItem = async function(certId) {
         alert('❌ 삭제 실패: ' + error.message);
     }
 }
-        
-    } catch (error) {
-        alert('❌ 인증서 삭제 실패: ' + error.message);
-    }
-}
 
 // Image upload handling for certifications
 document.addEventListener('DOMContentLoaded', function() {
