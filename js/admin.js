@@ -419,7 +419,8 @@ window.deleteHeroMedia = async function(id) {
 
 // Get all hero slider media
 window.getHeroSliderMedia = async function() {
-    const response = await fetch('/api/hero');
+    // Add timestamp to prevent caching
+    const response = await fetch('/api/hero?_t=' + Date.now());
     if (!response.ok) {
         throw new Error('Failed to fetch hero media');
     }

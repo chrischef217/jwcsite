@@ -4,11 +4,19 @@ export async function onRequestGet(context) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     
+    const headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    };
+    
     try {
         if (id) {
             const data = await env.KV.get(id);
             return new Response(data || JSON.stringify({ error: 'Not found' }), {
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         } else {
             const list = await env.KV.list({ prefix: 'hero_' });
@@ -19,13 +27,13 @@ export async function onRequestGet(context) {
                 })
             );
             return new Response(JSON.stringify(items), {
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            headers
         });
     }
 }
