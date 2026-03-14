@@ -53,20 +53,30 @@
 ## 현재 진행 상황
 
 ### ✅ 최근 수정 사항 (2026-03-14)
-1. **admin.js 구문 오류 수정**
-   - 파일이 중간에 잘린 오류 복구
-   - 누락된 함수 추가:
-     - `window.deleteHeroMediaById()` - DELETE API 호출
-     - `window.getHeroSliderMedia()` - 전체 미디어 목록 조회
-     - `window.updateItemOrder()` - 순서 변경 API 호출
 
-2. **Cloudflare Pages 배포 설정 수정**
-   - `wrangler.jsonc`에서 `pages_build_output_dir` 제거
-   - 정적 파일(JS/CSS) 정상 배포 확인
+#### 1. 메인 히어로 슬라이더 삭제 기능 수정
+- **문제**: 삭제 버튼 클릭 시 API는 성공하지만 UI에서 항목이 사라지지 않음
+- **원인**: 브라우저 및 서버 캐싱으로 인해 삭제 후 목록이 새로고침되지 않음
+- **해결**:
+  - API GET 요청에 캐시 방지 헤더 추가 (`Cache-Control: no-cache, no-store, must-revalidate`)
+  - JavaScript fetch에 타임스탬프 쿼리 파라미터 추가 (`/api/hero?_t=${Date.now()}`)
+  - DELETE API에 검증 로직 추가 (존재 확인, 404 반환)
+  - OPTIONS 핸들러 추가 (CORS preflight 지원)
 
-3. **히어로 슬라이더 API 호환성**
-   - `mediaType`/`type`, `data`/`url` 필드 모두 지원
-   - 관리자 업로드 영상이 각 페이지에 정상 표시
+#### 2. admin.js 구문 오류 수정 (이전)
+- 파일이 중간에 잘린 오류 복구
+- 누락된 함수 추가:
+  - `window.deleteHeroMediaById()` - DELETE API 호출
+  - `window.getHeroSliderMedia()` - 전체 미디어 목록 조회
+  - `window.updateItemOrder()` - 순서 변경 API 호출
+
+#### 3. Cloudflare Pages 배포 설정 수정 (이전)
+- `wrangler.jsonc`에서 `pages_build_output_dir` 제거
+- 정적 파일(JS/CSS) 정상 배포 확인
+
+#### 4. 히어로 슬라이더 API 호환성 (이전)
+- `mediaType`/`type`, `data`/`url` 필드 모두 지원
+- 관리자 업로드 영상이 각 페이지에 정상 표시
 
 ## 데이터 구조
 
@@ -127,11 +137,11 @@
 ## 배포 상태
 - **플랫폼**: Cloudflare Pages
 - **상태**: ✅ Active
-- **최신 커밋**: `72604c3` - "Fix admin.js syntax error and restore missing functions"
+- **최신 커밋**: `6d32c45` - "Add cache-busting to hero API and admin.js to fix delete UI refresh"
 - **마지막 업데이트**: 2026-03-14
 
 ## 알려진 이슈
-- ✅ 모두 해결됨
+- ✅ 모두 해결됨 (메인 히어로 슬라이더 삭제 기능 정상 작동)
 
 ## 다음 단계
 1. Contact 페이지에 영상 업로드
