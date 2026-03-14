@@ -101,26 +101,39 @@
         async function loadNotices() {
             try {
                 const response = await fetch('/api/notice');
+                
+                // 응답 상태 확인
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 const listEl = document.getElementById('noticeList');
                 
-                // 배열인지 확인
-                const notices = Array.isArray(data) ? data : [];
+                // 에러 응답 처리
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    listEl.innerHTML = '<div class="empty-state">공지사항을 불러오는데 실패했습니다: ' + data.error + '</div>';
+                    return;
+                }
+                
+                // 배열인지 확인 (에러 응답의 경우 data.notices가 있을 수 있음)
+                const notices = Array.isArray(data) ? data : (Array.isArray(data.notices) ? data.notices : []);
                 
                 if (notices.length === 0) {
                     listEl.innerHTML = '<div class="empty-state">등록된 공지사항이 없습니다.</div>';
                     return;
                 }
                 
-                // 최신순 정렬
-                notices.sort((a, b) => b.created_at - a.created_at);
+                // 최신순 정렬 (안전하게)
+                const sortedNotices = notices.filter(n => n && n.id).sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
                 
-                listEl.innerHTML = notices.map(notice => `
+                listEl.innerHTML = sortedNotices.map(notice => `
                     <div class="notice-item">
-                        <div class="notice-title">${notice.title}</div>
-                        <div class="notice-date">${new Date(notice.created_at).toLocaleDateString()}</div>
-                        <div class="notice-content">${notice.content}</div>
+                        <div class="notice-title">${notice.title || '제목 없음'}</div>
+                        <div class="notice-date">${notice.created_at ? new Date(notice.created_at).toLocaleDateString() : ''}</div>
+                        <div class="notice-content">${notice.content || ''}</div>
                         ${notice.media ? `
                             <div class="notice-media">
                                 ${notice.mediaType === 'video' ? 
@@ -133,7 +146,10 @@
                 `).join('');
             } catch (error) {
                 console.error('Failed to load notices:', error);
-                listEl.innerHTML = '<div class="empty-state">공지사항을 불러오는데 실패했습니다.</div>';
+                const listEl = document.getElementById('noticeList');
+                if (listEl) {
+                    listEl.innerHTML = '<div class="empty-state">공지사항을 불러오는데 실패했습니다: ' + error.message + '</div>';
+                }
             }
         }
 

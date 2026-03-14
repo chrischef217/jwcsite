@@ -1161,38 +1161,54 @@ let currentNoticeMedia = null;
 async function loadNotices() {
     try {
         const response = await fetch('/api/notice');
+        
+        // 응답 상태 확인
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
         const listEl = document.getElementById('noticesList');
         
-        // 배열인지 확인
-        const notices = Array.isArray(data) ? data : [];
+        // 에러 응답 처리
+        if (data.error) {
+            console.error('API Error:', data.error);
+            listEl.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">공지사항을 불러오는데 실패했습니다: ' + data.error + '</p>';
+            return;
+        }
+        
+        // 배열인지 확인 (에러 응답의 경우 data.notices가 있을 수 있음)
+        const notices = Array.isArray(data) ? data : (Array.isArray(data.notices) ? data.notices : []);
         
         if (notices.length === 0) {
             listEl.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">등록된 공지사항이 없습니다.</p>';
             return;
         }
         
-        // 최신순 정렬
-        notices.sort((a, b) => b.created_at - a.created_at);
+        // 최신순 정렬 (안전하게)
+        const sortedNotices = notices.filter(n => n && n.id).sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
         
-        listEl.innerHTML = notices.map(notice => `
+        listEl.innerHTML = sortedNotices.map(notice => `
             <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                    <h3 style="margin: 0; color: #333;">${notice.title}</h3>
+                    <h3 style="margin: 0; color: #333;">${notice.title || '제목 없음'}</h3>
                     <div style="display: flex; gap: 8px;">
                         <button onclick="editNotice('${notice.id}')" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">수정</button>
                         <button onclick="deleteNotice('${notice.id}')" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">삭제</button>
                     </div>
                 </div>
-                <p style="color: #666; white-space: pre-wrap; margin: 10px 0;">${notice.content.substring(0, 100)}${notice.content.length > 100 ? '...' : ''}</p>
+                <p style="color: #666; white-space: pre-wrap; margin: 10px 0;">${(notice.content || '').substring(0, 100)}${(notice.content || '').length > 100 ? '...' : ''}</p>
                 ${notice.media ? `<p style="color: #999; font-size: 0.9rem;">📎 미디어 첨부됨</p>` : ''}
-                <small style="color: #999;">${new Date(notice.created_at).toLocaleString()}</small>
+                <small style="color: #999;">${notice.created_at ? new Date(notice.created_at).toLocaleString() : ''}</small>
             </div>
         `).join('');
     } catch (error) {
         console.error('Failed to load notices:', error);
-        document.getElementById('noticesList').innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">공지사항을 불러오는데 실패했습니다.</p>';
+        const listEl = document.getElementById('noticesList');
+        if (listEl) {
+            listEl.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">공지사항을 불러오는데 실패했습니다: ' + error.message + '</p>';
+        }
     }
 }
 
