@@ -1110,6 +1110,46 @@ window.deletePageHeroItem = async function(itemId) {
 // Logout (global function)
 window.logout = function() {
     sessionStorage.removeItem('admin_logged_in');
+    sessionStorage.removeItem('admin_password');
     window.location.href = 'admin-login.html';
 }
+
+// Password change form handler
+document.getElementById('passwordChangeForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('❌ 새 비밀번호가 일치하지 않습니다.');
+        return;
+    }
+    
+    if (newPassword.length < 4) {
+        alert('❌ 비밀번호는 최소 4자 이상이어야 합니다.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            alert('✅ 비밀번호가 성공적으로 변경되었습니다.');
+            document.getElementById('passwordChangeForm').reset();
+        } else {
+            alert('❌ ' + (result.error || '비밀번호 변경에 실패했습니다.'));
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        alert('❌ 비밀번호 변경 중 오류가 발생했습니다.');
+    }
+});
 

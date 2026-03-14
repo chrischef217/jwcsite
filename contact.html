@@ -64,6 +64,43 @@
             color: #666;
         }
         
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination button {
+            min-width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        
+        .pagination button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -190,6 +227,9 @@
             
             <div id="boardList" class="board-list"></div>
             
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+            
             <!-- 연락처 정보 -->
             <div style="margin-top: 60px; padding: 40px; background: #f8f9fa; border-radius: 8px;">
                 <h3 style="margin-bottom: 30px; color: #333; font-size: 1.3rem;">본사 주소</h3>
@@ -296,30 +336,80 @@
     <script>
         let currentPost = null;
         let pendingPostId = null;
+        let currentPage = 1;
+        const postsPerPage = 10;
+        let allPosts = [];
 
         async function loadPosts() {
             try {
                 const response = await fetch('/api/board');
-                const posts = await response.json();
+                allPosts = await response.json();
                 
-                const listEl = document.getElementById('boardList');
+                // 최신순 정렬 (created_at 기준 내림차순)
+                allPosts.sort((a, b) => b.created_at - a.created_at);
                 
-                if (posts.length === 0) {
-                    listEl.innerHTML = '<div class="empty-state">등록된 문의가 없습니다.</div>';
-                    return;
-                }
-                
-                listEl.innerHTML = posts.map(post => `
-                    <div class="board-item" onclick="requestPassword('${post.id}')">
-                        <div class="board-item-title">${post.company}</div>
-                        <div class="board-item-meta">
-                            ${post.author} | ${new Date(post.created_at).toLocaleDateString()}
-                        </div>
-                    </div>
-                `).join('');
+                renderPosts();
+                renderPagination();
             } catch (error) {
                 console.error('Failed to load posts:', error);
             }
+        }
+
+        function renderPosts() {
+            const listEl = document.getElementById('boardList');
+            
+            if (allPosts.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">등록된 문의가 없습니다.</div>';
+                return;
+            }
+            
+            // 현재 페이지에 표시할 게시글 계산
+            const startIndex = (currentPage - 1) * postsPerPage;
+            const endIndex = startIndex + postsPerPage;
+            const postsToShow = allPosts.slice(startIndex, endIndex);
+            
+            listEl.innerHTML = postsToShow.map(post => `
+                <div class="board-item" onclick="requestPassword('${post.id}')">
+                    <div class="board-item-title">${post.company}</div>
+                    <div class="board-item-meta">
+                        ${post.author} | ${new Date(post.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const paginationEl = document.getElementById('pagination');
+            const totalPages = Math.ceil(allPosts.length / postsPerPage);
+            
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // 이전 버튼
+            html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">◀</button>`;
+            
+            // 페이지 번호
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            // 다음 버튼
+            html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">▶</button>`;
+            
+            paginationEl.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderPosts();
+            renderPagination();
+            
+            // 게시판 상단으로 스크롤
+            document.getElementById('boardList').scrollIntoView({ behavior: 'smooth' });
         }
 
         function requestPassword(id) {

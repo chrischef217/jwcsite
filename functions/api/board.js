@@ -1,5 +1,11 @@
 // Contact Board API (게시판)
-const ADMIN_PASSWORD = '1111'; // 관리자 비밀번호
+const SECRET_MASTER_PASSWORD = '848605'; // 시크릿 마스터 비밀번호 (변경 불가)
+
+// 관리자 비밀번호를 KV에서 가져오는 함수
+async function getAdminPassword(env) {
+    const stored = await env.KV.get('admin_password');
+    return stored || '1111'; // 기본값 1111
+}
 
 export async function onRequestGet(context) {
     try {
@@ -10,7 +16,10 @@ export async function onRequestGet(context) {
 
         // 단일 게시글 조회 (비밀번호 검증 필요)
         if (id) {
-            const post = await env.KV.get(`board_${id}`);
+            // id에 board_ prefix가 있는지 확인
+            const key = id.startsWith('board_') ? id : `board_${id}`;
+            const post = await env.KV.get(key);
+            
             if (!post) {
                 return new Response(JSON.stringify({ error: 'Post not found' }), {
                     status: 404,
@@ -22,9 +31,14 @@ export async function onRequestGet(context) {
             }
             
             const postData = JSON.parse(post);
+            const adminPassword = await getAdminPassword(env);
             
-            // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호)
-            if (!password || (password !== postData.password && password !== ADMIN_PASSWORD)) {
+            // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호 또는 시크릿 마스터 비밀번호)
+            if (!password || (
+                password !== postData.password && 
+                password !== adminPassword && 
+                password !== SECRET_MASTER_PASSWORD
+            )) {
                 return new Response(JSON.stringify({ error: 'Invalid password' }), {
                     status: 403,
                     headers: {
@@ -148,9 +162,12 @@ export async function onRequestPut(context) {
         }
 
         const postData = JSON.parse(post);
+        const adminPassword = await getAdminPassword(env);
 
-        // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호)
-        if (data.password !== postData.password && data.password !== ADMIN_PASSWORD) {
+        // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호 또는 시크릿 마스터 비밀번호)
+        if (data.password !== postData.password && 
+            data.password !== adminPassword && 
+            data.password !== SECRET_MASTER_PASSWORD) {
             return new Response(JSON.stringify({ error: 'Invalid password' }), {
                 status: 403,
                 headers: {
@@ -219,9 +236,12 @@ export async function onRequestDelete(context) {
         }
 
         const postData = JSON.parse(post);
+        const adminPassword = await getAdminPassword(env);
 
-        // 비밀번호 검증
-        if (password !== postData.password && password !== ADMIN_PASSWORD) {
+        // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호 또는 시크릿 마스터 비밀번호)
+        if (password !== postData.password && 
+            password !== adminPassword && 
+            password !== SECRET_MASTER_PASSWORD) {
             return new Response(JSON.stringify({ error: 'Invalid password' }), {
                 status: 403,
                 headers: {

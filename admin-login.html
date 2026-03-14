@@ -70,15 +70,40 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const SECRET_MASTER_PASSWORD = '848605'; // 시크릿 마스터 비밀번호
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const password = document.getElementById('password').value;
             
-            if (password === '1111') {
+            // 시크릿 마스터 비밀번호 확인
+            if (password === SECRET_MASTER_PASSWORD) {
                 sessionStorage.setItem('admin_logged_in', 'true');
+                sessionStorage.setItem('admin_password', password);
                 window.location.href = 'admin.html';
-            } else {
-                alert('비밀번호가 잘못되었습니다.');
+                return;
+            }
+            
+            // KV에서 관리자 비밀번호 확인
+            try {
+                const response = await fetch('/api/admin/check-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.valid) {
+                    sessionStorage.setItem('admin_logged_in', 'true');
+                    sessionStorage.setItem('admin_password', password);
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('비밀번호가 잘못되었습니다.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('로그인 중 오류가 발생했습니다.');
             }
         });
 
