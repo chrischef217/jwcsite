@@ -6,8 +6,9 @@ export async function onRequestGet(context) {
         const { env } = context;
         const url = new URL(context.request.url);
         const id = url.searchParams.get('id');
+        const password = url.searchParams.get('password');
 
-        // 단일 게시글 조회
+        // 단일 게시글 조회 (비밀번호 검증 필요)
         if (id) {
             const post = await env.KV.get(`board_${id}`);
             if (!post) {
@@ -19,6 +20,20 @@ export async function onRequestGet(context) {
                     }
                 });
             }
+            
+            const postData = JSON.parse(post);
+            
+            // 비밀번호 검증 (일반 비밀번호 또는 관리자 비밀번호)
+            if (!password || (password !== postData.password && password !== ADMIN_PASSWORD)) {
+                return new Response(JSON.stringify({ error: 'Invalid password' }), {
+                    status: 403,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+            }
+            
             return new Response(post, {
                 headers: {
                     'Content-Type': 'application/json',

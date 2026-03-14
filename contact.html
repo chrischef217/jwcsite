@@ -189,6 +189,25 @@
             </div>
             
             <div id="boardList" class="board-list"></div>
+            
+            <!-- 연락처 정보 -->
+            <div style="margin-top: 60px; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+                <h3 style="margin-bottom: 30px; color: #333; font-size: 1.3rem;">본사 주소</h3>
+                <div style="margin-bottom: 15px; line-height: 1.8;">
+                    <strong>📍 주소:</strong> 경기도 화성시 봉담읍 가능골1길13, (주)JWC
+                </div>
+                <div style="margin-bottom: 40px; line-height: 1.8;">
+                    <strong>✉️ 이메일:</strong> jwc03077@naver.com
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: #333; font-size: 1.3rem;">영업 담당자</h3>
+                <div style="margin-bottom: 10px; line-height: 1.8;">
+                    <strong>이남은 실장:</strong> 010-2291-7526
+                </div>
+                <div style="line-height: 1.8;">
+                    <strong>함종석 부장:</strong> 010-8721-1078
+                </div>
+            </div>
         </div>
     </main>
 
@@ -257,8 +276,26 @@
         </div>
     </div>
 
+    <!-- 비밀번호 확인 모달 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>비밀번호 확인</h3>
+            <p style="color: #666; margin: 15px 0;">게시글을 보려면 비밀번호를 입력하세요</p>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <input type="password" id="viewPassword" placeholder="비밀번호" required style="width: 100%;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closePasswordModal()">취소</button>
+                    <button type="submit" class="btn">확인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let currentPost = null;
+        let pendingPostId = null;
 
         async function loadPosts() {
             try {
@@ -273,7 +310,7 @@
                 }
                 
                 listEl.innerHTML = posts.map(post => `
-                    <div class="board-item" onclick="viewPost('${post.id}')">
+                    <div class="board-item" onclick="requestPassword('${post.id}')">
                         <div class="board-item-title">${post.company}</div>
                         <div class="board-item-meta">
                             ${post.author} | ${new Date(post.created_at).toLocaleDateString()}
@@ -285,9 +322,33 @@
             }
         }
 
-        async function viewPost(id) {
+        function requestPassword(id) {
+            pendingPostId = id;
+            document.getElementById('viewPassword').value = '';
+            document.getElementById('passwordModal').classList.add('active');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            pendingPostId = null;
+        }
+
+        async function checkPasswordAndView(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('viewPassword').value;
+            
             try {
-                const response = await fetch(`/api/board?id=${id}`);
+                const response = await fetch(`/api/board?id=${pendingPostId}&password=${encodeURIComponent(password)}`);
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                        return;
+                    }
+                    throw new Error('Failed to load post');
+                }
+                
                 const post = await response.json();
                 currentPost = post;
                 
@@ -298,11 +359,15 @@
                 document.getElementById('detailDate').textContent = new Date(post.created_at).toLocaleString();
                 document.getElementById('detailContent').textContent = post.content;
                 
+                closePasswordModal();
                 document.getElementById('detailModal').classList.add('active');
             } catch (error) {
+                console.error('Failed to load post:', error);
                 alert('게시글을 불러올 수 없습니다.');
             }
         }
+
+        document.getElementById('passwordForm').addEventListener('submit', checkPasswordAndView);
 
         function openWriteModal() {
             document.getElementById('modalTitle').textContent = '문의글 작성';
