@@ -328,3 +328,76 @@ window.savePageHeroMedia = savePageHeroMedia;
 window.deletePageHeroMedia = deletePageHeroMedia;
 window.updatePageHeroOrder = updatePageHeroOrder;
 window.savePageHeroSettings = savePageHeroSettings;
+
+// ========== CERTIFICATION MANAGEMENT ==========
+
+// Get all certifications
+async function getAllCertifications() {
+    try {
+        const response = await fetch('/api/certification');
+        if (!response.ok) throw new Error('Failed to fetch certifications');
+        return await response.json();
+    } catch (error) {
+        console.error('❌ Failed to load certifications:', error);
+        return [];
+    }
+}
+
+// Save certification (create or update)
+async function saveCertification(certData) {
+    try {
+        console.log('💾 Saving certification:', certData.name);
+        
+        // Compress image if it's a file
+        if (certData.image && certData.image instanceof File) {
+            certData.imageData = await compressImage(certData.image, 800, 0.85);
+        }
+        
+        const response = await fetch('/api/certification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: certData.id || Date.now().toString(),
+                name: certData.name,
+                issuer: certData.issuer,
+                issueDate: certData.issueDate,
+                validUntil: certData.validUntil,
+                category: certData.category,
+                imageData: certData.imageData || certData.image,
+                createdAt: certData.createdAt || new Date().toISOString()
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save certification');
+        
+        const result = await response.json();
+        console.log('✅ Certification saved:', result);
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to save certification:', error);
+        throw error;
+    }
+}
+
+// Delete certification
+async function deleteCertification(certId) {
+    try {
+        console.log('🗑️ Deleting certification:', certId);
+        
+        const response = await fetch(`/api/certification/${certId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete certification');
+        
+        console.log('✅ Certification deleted');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to delete certification:', error);
+        throw error;
+    }
+}
+
+window.getAllCertifications = getAllCertifications;
+window.saveCertification = saveCertification;
+window.deleteCertification = deleteCertification;

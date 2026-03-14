@@ -1531,33 +1531,23 @@ window.saveCertificationData = async function() {
         };
         
         // Handle image
-        if (imageInput.files.length > 0) {
-            const file = imageInput.files[0];
-            const imageData = await uploadFileToServer(file);
-            certData.imageData = imageData;
+        if (imageInput.files && imageInput.files[0]) {
+            certData.image = imageInput.files[0];
         } else if (currentEditingCertification && (currentEditingCertification.imageData || currentEditingCertification.image)) {
             certData.imageData = currentEditingCertification.imageData || currentEditingCertification.image;
-        }
-        
-        if (!certData.imageData) {
+        } else {
             alert('인증서 이미지를 선택해주세요.');
             return;
         }
         
-        const response = await fetch('/api/certification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(certData)
-        });
+        await window.saveCertification(certData);
         
-        if (!response.ok) throw new Error('Failed to save certification');
-        
-        alert('✅ 인증서가 저장되었습니다.');
+        alert('✅ 인증서가 저장되었습니다!');
         cancelCertificationForm();
         loadCertificationsList();
         
     } catch (error) {
-        alert('❌ 인증서 저장 실패: ' + error.message);
+        alert('❌ 저장 실패: ' + error.message);
     }
 }
 
@@ -1566,14 +1556,13 @@ window.deleteCertificationItem = async function(certId) {
     if (!confirm('정말 이 인증서를 삭제하시겠습니까?')) return;
     
     try {
-        const response = await fetch(`/api/certification/${certId}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete certification');
-        
+        await window.deleteCertification(certId);
         alert('✅ 인증서가 삭제되었습니다.');
         loadCertificationsList();
+    } catch (error) {
+        alert('❌ 삭제 실패: ' + error.message);
+    }
+}
         
     } catch (error) {
         alert('❌ 인증서 삭제 실패: ' + error.message);
