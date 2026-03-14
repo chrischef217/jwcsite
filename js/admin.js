@@ -315,15 +315,7 @@ async function loadHeroSliderList() {
     const list = document.getElementById('heroImagesList');
     if (!list) return;
     
-    let mediaItems = await getHeroSliderMedia();
-    
-    // Flatten nested arrays (fix API double-array issue)
-    if (Array.isArray(mediaItems) && mediaItems.length > 0 && Array.isArray(mediaItems[0])) {
-        mediaItems = mediaItems.flat();
-    }
-    
-    // Filter only items with valid IDs starting with "hero_"
-    mediaItems = mediaItems.filter(item => item && item.id && item.id.startsWith('hero_'));
+    const mediaItems = await getHeroSliderMedia();
     
     if (mediaItems.length === 0) {
         list.innerHTML = '<p style="color: #999;">등록된 슬라이더가 없습니다.</p>';
@@ -334,43 +326,6 @@ async function loadHeroSliderList() {
     mediaItems.forEach((item, index) => {
         const itemDiv = document.createElement('div');
         itemDiv.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center;';
-        
-        // Debug log
-        console.log('Rendering item:', item.id, item.mediaType || item.type);
-        
-        if (item.mediaType === 'video' || item.type === 'video') {
-            itemDiv.innerHTML = `
-                <video src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;" controls></video>
-                <div style="flex: 1;">
-                    <p><strong>🎥 동영상 ${index + 1}</strong></p>
-                    <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
-                    <p style="color: #999; font-size: 12px;">ID: ${item.id}</p>
-                </div>
-                <div>
-                    <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
-                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
-                    <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
-                </div>
-            `;
-        } else {
-            itemDiv.innerHTML = `
-                <img src="${item.data}" style="width: 200px; height: 120px; object-fit: cover; border-radius: 5px;">
-                <div style="flex: 1;">
-                    <p><strong>📷 이미지 ${index + 1}</strong></p>
-                    <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
-                    <p style="color: #999; font-size: 12px;">ID: ${item.id}</p>
-                </div>
-                <div>
-                    <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
-                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
-                    <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
-                </div>
-            `;
-        }
-        
-        list.appendChild(itemDiv);
-    });
-}
         
         if (item.mediaType === 'video') {
             itemDiv.innerHTML = `
