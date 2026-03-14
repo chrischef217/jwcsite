@@ -1506,7 +1506,8 @@ async function loadCertificationsList() {
                         <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${cert.name}</h4>
                         ${cert.issuer ? `<p style="color: #007bff; font-weight: 600; margin: 5px 0;">${cert.issuer}</p>` : ''}
                         ${cert.issueDate ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">발급: ${cert.issueDate}</p>` : ''}
-                        ${cert.validUntil ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">유효: ${cert.validUntil}</p>` : ''}
+                        ${cert.validUntil ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">유효기간: ${cert.validUntil}</p>` : ''}
+                        ${cert.certNumber ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">발급번호: ${cert.certNumber}</p>` : ''}
                         <div style="display: flex; gap: 8px; margin-top: 12px;">
                             <button onclick="editCertification('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
                             <button onclick="deleteCertificationItem('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>
@@ -1537,6 +1538,7 @@ window.showCertificationForm = async function() {
     document.getElementById('certIssuer').value = '';
     document.getElementById('certIssueDate').value = '';
     document.getElementById('certValidUntil').value = '';
+    document.getElementById('certNumber').value = '';
     document.getElementById('certCategory').value = '';
     document.getElementById('certImagePreview').style.display = 'none';
     document.getElementById('certImagePreview').src = '';
@@ -1575,6 +1577,7 @@ window.editCertification = async function(certId) {
         document.getElementById('certIssuer').value = cert.issuer || '';
         document.getElementById('certIssueDate').value = cert.issueDate || '';
         document.getElementById('certValidUntil').value = cert.validUntil || '';
+        document.getElementById('certNumber').value = cert.certNumber || '';
         document.getElementById('certCategory').value = cert.category;
         
         if (cert.imageData || cert.image) {
@@ -1597,6 +1600,7 @@ window.saveCertificationData = async function() {
         const issuer = document.getElementById('certIssuer').value.trim();
         const issueDate = document.getElementById('certIssueDate').value.trim();
         const validUntil = document.getElementById('certValidUntil').value.trim();
+        const certNumber = document.getElementById('certNumber').value.trim();
         const category = document.getElementById('certCategory').value;
         const imageInput = document.getElementById('certImageInput');
         
@@ -1611,6 +1615,7 @@ window.saveCertificationData = async function() {
             issuer,
             issueDate,
             validUntil,
+            certNumber,
             category,
             createdAt: currentEditingCertification ? currentEditingCertification.createdAt : new Date().toISOString()
         };
