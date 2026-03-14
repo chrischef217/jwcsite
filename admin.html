@@ -20,6 +20,7 @@
                     <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="products">제품 관리</button>
+                    <button class="admin-nav-btn" data-section="notices">📢 공지사항 관리</button>
                     <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
                     <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
                 </nav>
@@ -319,6 +320,58 @@
                     <p style="color: #999; text-align: center; padding: 40px;">제품 목록을 불러오는 중...</p>
                 </div>
             </section>
+
+            <!-- Notices Management -->
+            <section class="admin-section" id="notices">
+                <h2>📢 공지사항 관리</h2>
+                
+                <div style="margin-bottom: 30px;">
+                    <button onclick="openNoticeModal()" class="btn-primary" style="padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+                        + 새 공지사항 작성
+                    </button>
+                </div>
+                
+                <!-- Notices List -->
+                <div id="noticesList">
+                    <p style="color: #999; text-align: center; padding: 40px;">공지사항을 불러오는 중...</p>
+                </div>
+            </section>
+
+            <!-- Notice Modal -->
+            <div id="noticeModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto;">
+                <div class="modal-content" style="background: white; margin: 50px auto; padding: 30px; max-width: 800px; border-radius: 8px; position: relative;">
+                    <button onclick="closeNoticeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+                    
+                    <h3 id="noticeModalTitle">새 공지사항 작성</h3>
+                    
+                    <form id="noticeForm" style="margin-top: 20px;">
+                        <input type="hidden" id="noticeId">
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">제목 *</label>
+                            <input type="text" id="noticeTitle" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">내용 *</label>
+                            <textarea id="noticeContent" required style="width: 100%; min-height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">이미지/동영상 (선택)</label>
+                            <input type="file" id="noticeMedia" accept="image/*,video/*" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <small style="color: #666;">이미지 또는 동영상 파일을 선택하세요</small>
+                        </div>
+                        
+                        <div id="noticeMediaPreview" style="margin-bottom: 20px;"></div>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" onclick="closeNoticeModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+                            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <!-- Password Settings -->
             <section class="admin-section" id="password-settings">

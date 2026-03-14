@@ -1153,3 +1153,197 @@ document.getElementById('passwordChangeForm')?.addEventListener('submit', async 
     }
 });
 
+// ========== Notices Management ==========
+
+let currentNoticeMedia = null;
+
+// Load notices list
+async function loadNotices() {
+    try {
+        const response = await fetch('/api/notice');
+        const notices = await response.json();
+        
+        const listEl = document.getElementById('noticesList');
+        
+        if (!notices || notices.length === 0) {
+            listEl.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">등록된 공지사항이 없습니다.</p>';
+            return;
+        }
+        
+        // 최신순 정렬
+        notices.sort((a, b) => b.created_at - a.created_at);
+        
+        listEl.innerHTML = notices.map(notice => `
+            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <h3 style="margin: 0; color: #333;">${notice.title}</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="editNotice('${notice.id}')" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">수정</button>
+                        <button onclick="deleteNotice('${notice.id}')" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">삭제</button>
+                    </div>
+                </div>
+                <p style="color: #666; white-space: pre-wrap; margin: 10px 0;">${notice.content.substring(0, 100)}${notice.content.length > 100 ? '...' : ''}</p>
+                ${notice.media ? `<p style="color: #999; font-size: 0.9rem;">📎 미디어 첨부됨</p>` : ''}
+                <small style="color: #999;">${new Date(notice.created_at).toLocaleString()}</small>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load notices:', error);
+        document.getElementById('noticesList').innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">공지사항을 불러오는데 실패했습니다.</p>';
+    }
+}
+
+// Open notice modal
+window.openNoticeModal = function(noticeId = null) {
+    document.getElementById('noticeModal').style.display = 'block';
+    document.getElementById('noticeForm').reset();
+    document.getElementById('noticeId').value = '';
+    document.getElementById('noticeMediaPreview').innerHTML = '';
+    currentNoticeMedia = null;
+    
+    if (noticeId) {
+        document.getElementById('noticeModalTitle').textContent = '공지사항 수정';
+        loadNoticeForEdit(noticeId);
+    } else {
+        document.getElementById('noticeModalTitle').textContent = '새 공지사항 작성';
+    }
+}
+
+// Close notice modal
+window.closeNoticeModal = function() {
+    document.getElementById('noticeModal').style.display = 'none';
+}
+
+// Load notice for edit
+async function loadNoticeForEdit(noticeId) {
+    try {
+        const response = await fetch(`/api/notice?id=${noticeId}`);
+        const notice = await response.json();
+        
+        document.getElementById('noticeId').value = notice.id;
+        document.getElementById('noticeTitle').value = notice.title;
+        document.getElementById('noticeContent').value = notice.content;
+        
+        if (notice.media) {
+            const previewEl = document.getElementById('noticeMediaPreview');
+            if (notice.mediaType === 'video') {
+                previewEl.innerHTML = `<video src="${notice.media}" controls style="max-width: 100%; max-height: 300px; border-radius: 4px;"></video>`;
+            } else {
+                previewEl.innerHTML = `<img src="${notice.media}" style="max-width: 100%; max-height: 300px; border-radius: 4px;">`;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load notice:', error);
+        alert('❌ 공지사항을 불러오는데 실패했습니다.');
+    }
+}
+
+// Edit notice
+window.editNotice = function(noticeId) {
+    openNoticeModal(noticeId);
+}
+
+// Delete notice
+window.deleteNotice = async function(noticeId) {
+    if (!confirm('정말 이 공지사항을 삭제하시겠습니까?')) return;
+    
+    const password = sessionStorage.getItem('admin_password') || prompt('관리자 비밀번호를 입력하세요:');
+    if (!password) return;
+    
+    try {
+        const response = await fetch(`/api/notice?id=${noticeId}&password=${encodeURIComponent(password)}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete notice');
+        }
+        
+        alert('✅ 공지사항이 삭제되었습니다.');
+        loadNotices();
+    } catch (error) {
+        console.error('Failed to delete notice:', error);
+        alert('❌ 공지사항 삭제에 실패했습니다.');
+    }
+}
+
+// Handle media file selection
+document.getElementById('noticeMedia')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        currentNoticeMedia = {
+            data: event.target.result,
+            type: file.type.startsWith('video/') ? 'video' : 'image',
+            filename: file.name
+        };
+        
+        const previewEl = document.getElementById('noticeMediaPreview');
+        if (currentNoticeMedia.type === 'video') {
+            previewEl.innerHTML = `<video src="${event.target.result}" controls style="max-width: 100%; max-height: 300px; border-radius: 4px;"></video>`;
+        } else {
+            previewEl.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 300px; border-radius: 4px;">`;
+        }
+    };
+    reader.readAsDataURL(file);
+});
+
+// Submit notice form
+document.getElementById('noticeForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const password = sessionStorage.getItem('admin_password') || prompt('관리자 비밀번호를 입력하세요:');
+    if (!password) return;
+    
+    const noticeId = document.getElementById('noticeId').value;
+    const title = document.getElementById('noticeTitle').value;
+    const content = document.getElementById('noticeContent').value;
+    
+    const data = {
+        title,
+        content,
+        password
+    };
+    
+    if (noticeId) {
+        data.id = noticeId;
+    }
+    
+    if (currentNoticeMedia) {
+        data.media = currentNoticeMedia.data;
+        data.mediaType = currentNoticeMedia.type;
+    }
+    
+    try {
+        const method = noticeId ? 'PUT' : 'POST';
+        const response = await fetch('/api/notice', {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save notice');
+        }
+        
+        alert('✅ 공지사항이 저장되었습니다.');
+        closeNoticeModal();
+        loadNotices();
+    } catch (error) {
+        console.error('Failed to save notice:', error);
+        alert('❌ 공지사항 저장에 실패했습니다.');
+    }
+});
+
+// Load notices when section is active
+document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        if (section === 'notices') {
+            loadNotices();
+        }
+    });
+});
+
