@@ -322,7 +322,9 @@ async function loadHeroSliderList() {
     console.log('[DEBUG] Type:', typeof mediaItems, 'Is Array:', Array.isArray(mediaItems));
     if (Array.isArray(mediaItems) && mediaItems.length > 0) {
         console.log('[DEBUG] First item:', mediaItems[0]);
-        console.log('[DEBUG] First item ID:', mediaItems[0].id);
+        if (mediaItems[0] && typeof mediaItems[0] === 'object' && !Array.isArray(mediaItems[0])) {
+            console.log('[DEBUG] First item ID:', mediaItems[0].id);
+        }
     }
     
     // CRITICAL FIX: Filter out non-object items and items without valid IDs
