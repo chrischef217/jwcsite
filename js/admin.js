@@ -325,13 +325,25 @@ async function loadHeroSliderList() {
         console.log('[DEBUG] First item ID:', mediaItems[0].id);
     }
     
-    if (mediaItems.length === 0) {
+    // CRITICAL FIX: Filter out non-object items and items without valid IDs
+    const validItems = mediaItems.filter(item => 
+        item && 
+        typeof item === 'object' && 
+        !Array.isArray(item) && 
+        item.id && 
+        typeof item.id === 'string' &&
+        item.id.startsWith('hero_')
+    );
+    
+    console.log('[DEBUG] Valid items after filtering:', validItems.length, validItems);
+    
+    if (validItems.length === 0) {
         list.innerHTML = '<p style="color: #999;">등록된 슬라이더가 없습니다.</p>';
         return;
     }
     
     list.innerHTML = '';
-    mediaItems.forEach((item, index) => {
+    validItems.forEach((item, index) => {
         console.log(`[DEBUG] Rendering item ${index}:`, item.id, item.mediaType);
         const itemDiv = document.createElement('div');
         itemDiv.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center;';
@@ -346,7 +358,7 @@ async function loadHeroSliderList() {
                 </div>
                 <div>
                     <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
-                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === validItems.length - 1 ? 'disabled' : ''}>↓</button>
                     <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                 </div>
             `;
@@ -360,7 +372,7 @@ async function loadHeroSliderList() {
                 </div>
                 <div>
                     <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
-                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === mediaItems.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button class="btn btn-secondary" onclick="moveItemDown(${index})" ${index === validItems.length - 1 ? 'disabled' : ''}>↓</button>
                     <button class="btn btn-secondary" onclick="deleteHeroMedia('${item.id}')">삭제</button>
                 </div>
             `;
