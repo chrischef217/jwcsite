@@ -1570,29 +1570,39 @@ window.deleteCertificationItem = async function(certId) {
 }
 
 // Image upload handling for certifications
-document.getElementById('certImageArea').addEventListener('click', function() {
-    document.getElementById('certImageInput').click();
-});
-
-document.getElementById('certImageInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            document.getElementById('certImagePreview').src = event.target.result;
-            document.getElementById('certImagePreview').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+document.addEventListener('DOMContentLoaded', function() {
+    const certImageArea = document.getElementById('certImageArea');
+    const certImageInput = document.getElementById('certImageInput');
+    const certImagePreview = document.getElementById('certImagePreview');
+    
+    if (certImageArea && certImageInput) {
+        certImageArea.addEventListener('click', function() {
+            certImageInput.click();
+        });
+        
+        certImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    if (certImagePreview) {
+                        certImagePreview.src = event.target.result;
+                        certImagePreview.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
-});
-
-// Load certifications when section is active
-document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const section = this.getAttribute('data-section');
-        if (section === 'certifications') {
-            loadCertificationsList();
-        }
+    
+    // Load certifications when section is active
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const section = this.getAttribute('data-section');
+            if (section === 'certifications') {
+                loadCertificationsList();
+            }
+        });
     });
 });
 
