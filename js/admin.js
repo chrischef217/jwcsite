@@ -473,6 +473,27 @@ window.updateItemOrder = async function(id, orderIndex) {
 
 let currentEditingProduct = null;
 
+// Load product categories into select
+async function loadProductCategories() {
+    try {
+        const categories = await window.getAllCategories();
+        const select = document.getElementById('productCategory');
+        
+        // Keep first option (선택하세요)
+        select.innerHTML = '<option value="">선택하세요</option>';
+        
+        // Add categories
+        categories.products.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = `${cat.name} (${cat.nameKo})`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to load product categories:', error);
+    }
+}
+
 // Load products list
 async function loadProductsList() {
     try {
@@ -545,7 +566,7 @@ async function loadProductsList() {
 }
 
 // Show product form
-window.showProductForm = function() {
+window.showProductForm = async function() {
     currentEditingProduct = null;
     document.getElementById('formTitle').textContent = '새 제품 추가';
     document.getElementById('productName').value = '';
@@ -556,6 +577,9 @@ window.showProductForm = function() {
     document.getElementById('productImagePreview').style.display = 'none';
     document.getElementById('productImagePreview').src = '';
     document.getElementById('productForm').style.display = 'block';
+    
+    // Load categories
+    await loadProductCategories();
     
     // Scroll to form
     document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1373,6 +1397,28 @@ document.querySelectorAll('.admin-nav-btn').forEach(btn => {
 
 let currentEditingCertification = null;
 
+// Load certification categories into select
+async function loadCertCategories() {
+    try {
+        const categories = await window.getAllCategories();
+        const select = document.getElementById('certCategory');
+        
+        // Keep first option (선택하세요)
+        select.innerHTML = '<option value="">선택하세요</option>';
+        
+        // Add categories
+        categories.certifications.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = `${cat.name} (${cat.nameKo})`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to load certification categories:', error);
+    }
+}
+
+
 // Load certifications list
 async function loadCertificationsList() {
     try {
@@ -1448,7 +1494,7 @@ async function loadCertificationsList() {
 }
 
 // Show certification form
-window.showCertificationForm = function() {
+window.showCertificationForm = async function() {
     currentEditingCertification = null;
     document.getElementById('certFormTitle').textContent = '새 인증서 추가';
     document.getElementById('certName').value = '';
@@ -1459,6 +1505,9 @@ window.showCertificationForm = function() {
     document.getElementById('certImagePreview').style.display = 'none';
     document.getElementById('certImagePreview').src = '';
     document.getElementById('certificationForm').style.display = 'block';
+    
+    // Load categories
+    await loadCertCategories();
     
     // Scroll to form
     document.getElementById('certificationForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1596,6 +1645,213 @@ document.addEventListener('DOMContentLoaded', function() {
             const section = this.getAttribute('data-section');
             if (section === 'certifications') {
                 loadCertificationsList();
+            }
+        });
+    });
+});
+
+
+// ========================================
+// CATEGORY MANAGEMENT
+// ========================================
+
+let currentCategories = null;
+
+// Load categories
+async function loadCategories() {
+    try {
+        currentCategories = await window.getAllCategories();
+        
+        // Render products categories
+        renderProductCategories();
+        
+        // Render certification categories
+        renderCertCategories();
+        
+    } catch (error) {
+        console.error('Failed to load categories:', error);
+        document.getElementById('productCategoriesList').innerHTML = '<p style="color: red; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오지 못했습니다.</p>';
+        document.getElementById('certCategoriesList').innerHTML = '<p style="color: red; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오지 못했습니다.</p>';
+    }
+}
+
+// Render product categories
+function renderProductCategories() {
+    const container = document.getElementById('productCategoriesList');
+    
+    if (!currentCategories || !currentCategories.products || currentCategories.products.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">등록된 카테고리가 없습니다.</p>';
+        return;
+    }
+    
+    let html = '';
+    currentCategories.products.forEach(cat => {
+        html += `
+            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: between; align-items: start; gap: 8px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${cat.nameKo}</div>
+                        <div style="color: #666; font-size: 0.85rem;">${cat.name}</div>
+                        <div style="color: #999; font-size: 0.75rem; margin-top: 4px;">ID: ${cat.id}</div>
+                    </div>
+                    <button onclick="deleteProductCategory('${cat.id}')" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">삭제</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Render certification categories
+function renderCertCategories() {
+    const container = document.getElementById('certCategoriesList');
+    
+    if (!currentCategories || !currentCategories.certifications || currentCategories.certifications.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">등록된 카테고리가 없습니다.</p>';
+        return;
+    }
+    
+    let html = '';
+    currentCategories.certifications.forEach(cat => {
+        html += `
+            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: between; align-items: start; gap: 8px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${cat.nameKo}</div>
+                        <div style="color: #666; font-size: 0.85rem;">${cat.name}</div>
+                        <div style="color: #999; font-size: 0.75rem; margin-top: 4px;">ID: ${cat.id}</div>
+                    </div>
+                    <button onclick="deleteCertCategory('${cat.id}')" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">삭제</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Add product category
+window.addProductCategory = async function() {
+    try {
+        const id = document.getElementById('newProductCategoryId').value.trim();
+        const name = document.getElementById('newProductCategoryName').value.trim();
+        const nameKo = document.getElementById('newProductCategoryNameKo').value.trim();
+        
+        if (!id || !name || !nameKo) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+        
+        // Check if ID already exists
+        if (currentCategories.products.find(c => c.id === id)) {
+            alert('이미 존재하는 카테고리 ID입니다.');
+            return;
+        }
+        
+        // Add new category
+        currentCategories.products.push({ id, name, nameKo });
+        
+        // Save to server
+        await window.saveCategories('products', currentCategories.products);
+        
+        alert('✅ 카테고리가 추가되었습니다!');
+        
+        // Clear inputs
+        document.getElementById('newProductCategoryId').value = '';
+        document.getElementById('newProductCategoryName').value = '';
+        document.getElementById('newProductCategoryNameKo').value = '';
+        
+        // Reload
+        renderProductCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 추가 실패: ' + error.message);
+    }
+}
+
+// Delete product category
+window.deleteProductCategory = async function(categoryId) {
+    if (!confirm('정말 이 카테고리를 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deleteCategory('products', categoryId);
+        
+        // Update local cache
+        currentCategories.products = currentCategories.products.filter(c => c.id !== categoryId);
+        
+        alert('✅ 카테고리가 삭제되었습니다.');
+        renderProductCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 삭제 실패: ' + error.message);
+    }
+}
+
+// Add certification category
+window.addCertCategory = async function() {
+    try {
+        const id = document.getElementById('newCertCategoryId').value.trim();
+        const name = document.getElementById('newCertCategoryName').value.trim();
+        const nameKo = document.getElementById('newCertCategoryNameKo').value.trim();
+        
+        if (!id || !name || !nameKo) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+        
+        // Check if ID already exists
+        if (currentCategories.certifications.find(c => c.id === id)) {
+            alert('이미 존재하는 카테고리 ID입니다.');
+            return;
+        }
+        
+        // Add new category
+        currentCategories.certifications.push({ id, name, nameKo });
+        
+        // Save to server
+        await window.saveCategories('certifications', currentCategories.certifications);
+        
+        alert('✅ 카테고리가 추가되었습니다!');
+        
+        // Clear inputs
+        document.getElementById('newCertCategoryId').value = '';
+        document.getElementById('newCertCategoryName').value = '';
+        document.getElementById('newCertCategoryNameKo').value = '';
+        
+        // Reload
+        renderCertCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 추가 실패: ' + error.message);
+    }
+}
+
+// Delete certification category
+window.deleteCertCategory = async function(categoryId) {
+    if (!confirm('정말 이 카테고리를 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deleteCategory('certifications', categoryId);
+        
+        // Update local cache
+        currentCategories.certifications = currentCategories.certifications.filter(c => c.id !== categoryId);
+        
+        alert('✅ 카테고리가 삭제되었습니다.');
+        renderCertCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 삭제 실패: ' + error.message);
+    }
+}
+
+// Load categories when section is active
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const section = this.getAttribute('data-section');
+            if (section === 'categories') {
+                loadCategories();
             }
         });
     });

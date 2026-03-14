@@ -401,3 +401,79 @@ async function deleteCertification(certId) {
 window.getAllCertifications = getAllCertifications;
 window.saveCertification = saveCertification;
 window.deleteCertification = deleteCertification;
+
+// ========== CATEGORY MANAGEMENT ==========
+
+// Get all categories
+async function getAllCategories() {
+    try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        return await response.json();
+    } catch (error) {
+        console.error('❌ Failed to load categories:', error);
+        // Return default categories
+        return {
+            products: [
+                { id: 'cream', name: 'Cream Jars', nameKo: '크림 용기' },
+                { id: 'essence', name: 'Essence & Serum', nameKo: '에센스/세럼' },
+                { id: 'lotion', name: 'Lotion', nameKo: '로션' },
+                { id: 'eco', name: 'Eco-Friendly', nameKo: '친환경' }
+            ],
+            certifications: [
+                { id: 'iso', name: 'ISO', nameKo: 'ISO' },
+                { id: 'patent', name: 'Patent', nameKo: '특허' },
+                { id: 'quality', name: 'Quality', nameKo: '품질인증' },
+                { id: 'others', name: 'Others', nameKo: '기타' }
+            ]
+        };
+    }
+}
+
+// Save categories (update)
+async function saveCategories(type, categories) {
+    try {
+        console.log(`💾 Saving ${type} categories:`, categories);
+        
+        const response = await fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: type,
+                categories: categories
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save categories');
+        
+        const result = await response.json();
+        console.log('✅ Categories saved:', result);
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to save categories:', error);
+        throw error;
+    }
+}
+
+// Delete category
+async function deleteCategory(type, categoryId) {
+    try {
+        console.log(`🗑️ Deleting ${type} category:`, categoryId);
+        
+        const response = await fetch(`/api/categories?type=${type}&id=${categoryId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete category');
+        
+        console.log('✅ Category deleted');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to delete category:', error);
+        throw error;
+    }
+}
+
+window.getAllCategories = getAllCategories;
+window.saveCategories = saveCategories;
+window.deleteCategory = deleteCategory;

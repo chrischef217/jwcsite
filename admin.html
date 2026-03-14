@@ -21,6 +21,7 @@
                     <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="products">제품 관리</button>
                     <button class="admin-nav-btn" data-section="certifications">📜 인증서 관리</button>
+                    <button class="admin-nav-btn" data-section="categories">🏷️ 카테고리 관리</button>
                     <button class="admin-nav-btn" data-section="notices">📢 공지사항 관리</button>
                     <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
                     <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
@@ -287,10 +288,7 @@
                         <label>카테고리 *</label>
                         <select id="productCategory" class="form-control" required>
                             <option value="">선택하세요</option>
-                            <option value="cream">Cream Jars (크림 용기)</option>
-                            <option value="essence">Essence & Serum (에센스/세럼)</option>
-                            <option value="lotion">Lotion (로션)</option>
-                            <option value="eco">Eco-Friendly (친환경)</option>
+                            <!-- Options will be loaded dynamically -->
                         </select>
                     </div>
                     
@@ -356,10 +354,7 @@
                         <label>카테고리 *</label>
                         <select id="certCategory" class="form-control" required>
                             <option value="">선택하세요</option>
-                            <option value="iso">ISO</option>
-                            <option value="patent">Patent (특허)</option>
-                            <option value="quality">Quality (품질인증)</option>
-                            <option value="others">Others (기타)</option>
+                            <!-- Options will be loaded dynamically -->
                         </select>
                     </div>
                     
@@ -389,6 +384,44 @@
                 <!-- Certifications List -->
                 <div class="certifications-list" id="certificationsList">
                     <p style="color: #999; text-align: center; padding: 40px;">인증서 목록을 불러오는 중...</p>
+                </div>
+            </section>
+
+            <!-- Categories Management -->
+            <section class="admin-section" id="categories">
+                <h2>🏷️ 카테고리 관리</h2>
+                <p style="color: #666; margin-bottom: 30px;">✅ 제품과 인증서의 카테고리를 추가/수정/삭제할 수 있습니다.</p>
+                
+                <!-- Products Categories -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 20px;">제품 카테고리</h3>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="newProductCategoryId" placeholder="카테고리 ID (예: luxury)" class="form-control" style="flex: 1; padding: 10px;">
+                        <input type="text" id="newProductCategoryName" placeholder="영문명 (예: Luxury)" class="form-control" style="flex: 1; padding: 10px;">
+                        <input type="text" id="newProductCategoryNameKo" placeholder="한글명 (예: 럭셔리)" class="form-control" style="flex: 1; padding: 10px;">
+                        <button onclick="addProductCategory()" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap;">➕ 추가</button>
+                    </div>
+                    
+                    <div id="productCategoriesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        <p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오는 중...</p>
+                    </div>
+                </div>
+                
+                <!-- Certification Categories -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+                    <h3 style="color: #333; margin-bottom: 20px;">인증서 카테고리</h3>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="newCertCategoryId" placeholder="카테고리 ID (예: safety)" class="form-control" style="flex: 1; padding: 10px;">
+                        <input type="text" id="newCertCategoryName" placeholder="영문명 (예: Safety)" class="form-control" style="flex: 1; padding: 10px;">
+                        <input type="text" id="newCertCategoryNameKo" placeholder="한글명 (예: 안전인증)" class="form-control" style="flex: 1; padding: 10px;">
+                        <button onclick="addCertCategory()" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap;">➕ 추가</button>
+                    </div>
+                    
+                    <div id="certCategoriesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        <p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오는 중...</p>
+                    </div>
                 </div>
             </section>
 
