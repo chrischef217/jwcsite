@@ -792,4 +792,39 @@ footer a:hover {
         padding: 18px;
         font-size: 1.1rem;
     }
+    
+    /* Highlight Box 모바일 반응형 */
+    .highlight-box {
+        padding: 20px !important;
+        margin: 20px 0;
+    }
+    
+    .highlight-box > div {
+        padding: 20px !important;
+    }
+    
+    .highlight-box div[style*="font-size: 2.5rem"] {
+        font-size: 2rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .highlight-box div[style*="font-size: 1.3rem"] {
+        font-size: 1.1rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .highlight-box div[style*="font-size: 1.1rem"] {
+        font-size: 1rem !important;
+    }
+}
+
+/* 태블릿 전용 (768px ~ 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .highlight-box div[style*="font-size: 2.5rem"] {
+        font-size: 2.3rem !important;
+    }
+    
+    .highlight-box div[style*="font-size: 1.3rem"] {
+        font-size: 1.2rem !important;
+    }
 }
