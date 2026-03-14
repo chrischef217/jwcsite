@@ -15,7 +15,8 @@ export async function onRequestGet(context) {
 
         // 단일 공지사항 조회
         if (id) {
-            const notice = await env.KV.get(`notice_${id}`);
+            const key = id.startsWith('notice_') ? id : `notice_${id}`;
+            const notice = await env.KV.get(key);
             if (!notice) {
                 return new Response(JSON.stringify({ error: 'Notice not found' }), {
                     status: 404,
@@ -36,15 +37,54 @@ export async function onRequestGet(context) {
 
         // 전체 공지사항 목록 조회
         const list = await env.KV.list({ prefix: 'notice_' });
-        const notices = await Promise.all(
-            list.keys.map(async (key) => {
+        const notices = [];
+        
+        // KV.list()가 null이거나 keys가 없는 경우 처리
+        if (!list || !list.keys || !Array.isArray(list.keys)) {
+            console.log('No keys found in KV for prefix notice_');
+            return new Response(JSON.stringify([]), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate'
+                }
+            });
+        }
+        
+        for (const key of list.keys) {
+            try {
+                if (!key || !key.name) {
+                    console.warn('Invalid key object:', key);
+                    continue;
+                }
+                
                 const data = await env.KV.get(key.name);
-                return JSON.parse(data);
-            })
-        );
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        // notice_ prefix가 있는 id만 추가
+                        if (parsed && parsed.id && parsed.id.startsWith('notice_')) {
+                            notices.push(parsed);
+                        }
+                    } catch (parseError) {
+                        console.error(`Failed to parse notice ${key.name}:`, parseError);
+                        // 파싱 실패한 항목은 건너뜀
+                        continue;
+                    }
+                }
+            } catch (e) {
+                console.error(`Failed to get notice ${key.name}:`, e);
+                // 항목 가져오기 실패는 건너뜀
+                continue;
+            }
+        }
 
-        // 최신순 정렬
-        notices.sort((a, b) => b.created_at - a.created_at);
+        // 최신순 정렬 (안전하게)
+        notices.sort((a, b) => {
+            const timeA = a.created_at || 0;
+            const timeB = b.created_at || 0;
+            return timeB - timeA;
+        });
 
         return new Response(JSON.stringify(notices), {
             headers: {
@@ -54,7 +94,9 @@ export async function onRequestGet(context) {
             }
         });
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error('Notice API Error:', error);
+        console.error('Error stack:', error.stack);
+        return new Response(JSON.stringify({ error: error.message || 'Unknown error', stack: error.stack }), {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
