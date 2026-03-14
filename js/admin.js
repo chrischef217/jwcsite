@@ -747,7 +747,8 @@ window.loadPageHeroSlider = async function(pageName) {
     const pageNames = {
         'about': 'ABOUT',
         'products': 'PRODUCTS',
-        'contact': 'CONTACT'
+        'contact': 'CONTACT',
+        'notice': 'NOTICE'
     };
     document.getElementById('pageHeroTitle').textContent = `${pageNames[pageName]} 페이지 히어로 슬라이더`;
     

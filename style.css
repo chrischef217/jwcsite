@@ -430,7 +430,7 @@ main {
 
 .page-hero-overlay p {
     color: white;
-    font-size: 1.05rem;
+    font-size: 1.6rem;
     font-weight: 300;
     margin-top: 4px;
     text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
@@ -751,7 +751,7 @@ footer a:hover {
     }
     
     .page-hero-overlay p {
-        font-size: 0.78rem;
+        font-size: 1.17rem;
         margin-top: 3px;
     }
     

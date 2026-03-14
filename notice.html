@@ -74,6 +74,13 @@
     </header>
 
     <main>
+        <!-- Notice Hero Slider (70vh) -->
+        <section class="page-hero-slider" id="noticeHeroSlider">
+            <div class="page-hero-slider-container" id="pageHeroSliderContainer">
+                <!-- Slides will be loaded dynamically -->
+            </div>
+        </section>
+
         <div class="notice-container">
             <h2 style="margin-bottom: 30px;">공지사항</h2>
             <div id="noticeList"></div>
@@ -118,6 +125,124 @@
         }
 
         loadNotices();
+
+        // ========== PAGE HERO SLIDER ==========
+        let currentPageSlide = 0;
+        let pageSlideTimeout;
+
+        async function loadPageHeroSlider() {
+            try {
+                const response = await fetch('/api/hero/page/notice');
+                const data = await response.json();
+                
+                const media = data.media || [];
+                const settings = data.settings || {};
+
+                console.log('Notice hero data:', media.length, 'items');
+
+                if (!media || media.length === 0) {
+                    return;
+                }
+
+                const heroSection = document.getElementById('noticeHeroSlider');
+                heroSection.style.background = 'none';
+
+                const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                renderPageHeroSlider(sortedMedia, settings);
+            } catch (error) {
+                console.error('Failed to load page hero slider:', error);
+            }
+        }
+
+        function renderPageHeroSlider(media, settings) {
+            const container = document.getElementById('pageHeroSliderContainer');
+            container.innerHTML = '';
+
+            media.forEach((item, index) => {
+                const slide = document.createElement('div');
+                slide.className = `page-hero-slide${index === 0 ? ' active' : ''}`;
+
+                const isVideo = item.mediaType === 'video' || item.type === 'video';
+                const mediaUrl = item.data || item.url;
+
+                if (isVideo) {
+                    const video = document.createElement('video');
+                    video.className = 'page-hero-video';
+                    video.src = mediaUrl;
+                    video.autoplay = index === 0;
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.loop = false;
+                    video.addEventListener('ended', () => nextPageSlide());
+                    slide.appendChild(video);
+                } else {
+                    slide.style.backgroundImage = `url(${mediaUrl})`;
+                }
+
+                const overlay = document.createElement('div');
+                overlay.className = 'page-hero-overlay';
+                
+                if (settings.title_type === 'text' && settings.title_text) {
+                    const title = document.createElement('h1');
+                    title.textContent = settings.title_text;
+                    overlay.appendChild(title);
+                } else if (settings.title_type === 'logo' && settings.title_image) {
+                    const logo = document.createElement('img');
+                    logo.src = settings.title_image;
+                    logo.alt = 'Title';
+                    logo.style.maxWidth = '400px';
+                    logo.style.height = 'auto';
+                    overlay.appendChild(logo);
+                }
+
+                if (settings.content) {
+                    const content = document.createElement('p');
+                    content.innerHTML = settings.content.replace(/\n/g, '<br>');
+                    overlay.appendChild(content);
+                }
+
+                slide.appendChild(overlay);
+                container.appendChild(slide);
+            });
+        }
+
+        function goToPageSlide(index) {
+            const slides = document.querySelectorAll('.page-hero-slide');
+            if (index >= slides.length) index = 0;
+            if (index < 0) index = slides.length - 1;
+
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+                const video = slide.querySelector('video');
+                if (video) {
+                    if (i === index) {
+                        video.currentTime = 0;
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+            });
+
+            currentPageSlide = index;
+            
+            const activeSlide = slides[currentPageSlide];
+            const hasVideo = activeSlide.querySelector('video');
+            if (!hasVideo) {
+                scheduleNextPageSlide();
+            }
+        }
+
+        function nextPageSlide() {
+            goToPageSlide(currentPageSlide + 1);
+        }
+
+        function scheduleNextPageSlide() {
+            clearTimeout(pageSlideTimeout);
+            pageSlideTimeout = setTimeout(nextPageSlide, 5000);
+        }
+
+        loadPageHeroSlider();
     </script>
 </body>
 </html>
