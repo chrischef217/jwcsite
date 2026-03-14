@@ -317,6 +317,14 @@ async function loadHeroSliderList() {
     
     const mediaItems = await getHeroSliderMedia();
     
+    // Debug logging
+    console.log('[DEBUG] Raw API response:', mediaItems);
+    console.log('[DEBUG] Type:', typeof mediaItems, 'Is Array:', Array.isArray(mediaItems));
+    if (Array.isArray(mediaItems) && mediaItems.length > 0) {
+        console.log('[DEBUG] First item:', mediaItems[0]);
+        console.log('[DEBUG] First item ID:', mediaItems[0].id);
+    }
+    
     if (mediaItems.length === 0) {
         list.innerHTML = '<p style="color: #999;">등록된 슬라이더가 없습니다.</p>';
         return;
@@ -324,6 +332,7 @@ async function loadHeroSliderList() {
     
     list.innerHTML = '';
     mediaItems.forEach((item, index) => {
+        console.log(`[DEBUG] Rendering item ${index}:`, item.id, item.mediaType);
         const itemDiv = document.createElement('div');
         itemDiv.style.cssText = 'border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center;';
         
@@ -333,6 +342,7 @@ async function loadHeroSliderList() {
                 <div style="flex: 1;">
                     <p><strong>🎥 동영상 ${index + 1}</strong></p>
                     <p style="color: #666; font-size: 14px;">${item.filename || 'video'}</p>
+                    <p style="color: #999; font-size: 12px;">ID: ${item.id}</p>
                 </div>
                 <div>
                     <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
@@ -346,6 +356,7 @@ async function loadHeroSliderList() {
                 <div style="flex: 1;">
                     <p><strong>📷 이미지 ${index + 1}</strong></p>
                     <p style="color: #666; font-size: 14px;">${item.filename || 'image'}</p>
+                    <p style="color: #999; font-size: 12px;">ID: ${item.id}</p>
                 </div>
                 <div>
                     <button class="btn btn-secondary" onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
