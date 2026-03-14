@@ -20,6 +20,7 @@
                     <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="products">제품 관리</button>
+                    <button class="admin-nav-btn" data-section="certifications">📜 인증서 관리</button>
                     <button class="admin-nav-btn" data-section="notices">📢 공지사항 관리</button>
                     <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
                     <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
@@ -169,6 +170,7 @@
                         <option value="">선택하세요</option>
                         <option value="about">ABOUT 페이지</option>
                         <option value="products">PRODUCTS 페이지</option>
+                        <option value="certification">CERTIFICATION 페이지</option>
                         <option value="notice">NOTICE 페이지</option>
                         <option value="contact">CONTACT 페이지</option>
                     </select>
@@ -318,6 +320,75 @@
                 <!-- Products List -->
                 <div class="products-list" id="productsList">
                     <p style="color: #999; text-align: center; padding: 40px;">제품 목록을 불러오는 중...</p>
+                </div>
+            </section>
+
+            <!-- Certifications Management -->
+            <section class="admin-section" id="certifications">
+                <h2>📜 인증서 관리</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 인증서를 추가/수정/삭제하고 카테고리를 관리할 수 있습니다.</p>
+                
+                <!-- Certification Form -->
+                <div class="certification-form" id="certificationForm" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+                    <h3 id="certFormTitle">새 인증서 추가</h3>
+                    
+                    <div class="form-group">
+                        <label>인증서명 *</label>
+                        <input type="text" id="certName" class="form-control" placeholder="예: ISO 9001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>발급기관</label>
+                        <input type="text" id="certIssuer" class="form-control" placeholder="예: 한국품질재단">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>발급일</label>
+                        <input type="text" id="certIssueDate" class="form-control" placeholder="예: 2024-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>유효기간</label>
+                        <input type="text" id="certValidUntil" class="form-control" placeholder="예: 2027-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>카테고리 *</label>
+                        <select id="certCategory" class="form-control" required>
+                            <option value="">선택하세요</option>
+                            <option value="iso">ISO</option>
+                            <option value="patent">Patent (특허)</option>
+                            <option value="quality">Quality (품질인증)</option>
+                            <option value="others">Others (기타)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>인증서 이미지 *</label>
+                        <div class="upload-area" id="certImageArea" style="border: 2px dashed #007bff; min-height: 200px;">
+                            <input type="file" id="certImageInput" accept="image/*" style="display: none;">
+                            <div class="upload-placeholder">
+                                <p>📷 이미지 선택 또는 드래그앤드롭</p>
+                                <p class="upload-hint">권장: 800x800px (JPG, PNG)</p>
+                            </div>
+                            <img id="certImagePreview" class="upload-preview" style="display: none; max-width: 400px; max-height: 400px; object-fit: contain;">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-actions" style="margin-top: 20px;">
+                        <button class="btn btn-success" onclick="saveCertificationData()">💾 저장</button>
+                        <button class="btn btn-secondary" onclick="cancelCertificationForm()">취소</button>
+                    </div>
+                </div>
+                
+                <!-- Add Certification Button -->
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="showCertificationForm()">➕ 인증서 추가</button>
+                </div>
+                
+                <!-- Certifications List -->
+                <div class="certifications-list" id="certificationsList">
+                    <p style="color: #999; text-align: center; padding: 40px;">인증서 목록을 불러오는 중...</p>
                 </div>
             </section>
 

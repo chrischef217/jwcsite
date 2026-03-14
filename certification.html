@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - JWC</title>
+    <title>Certification - JWC</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="products.css">
     <!-- Updated: Page Hero Slider -->
@@ -28,14 +28,14 @@
     <!-- Navigation Menu -->
     <nav id="nav">
         <a href="about.html">ABOUT</a>
-        <a href="products.html" class="active">PRODUCTS</a>
-        <a href="certification.html">CERTIFICATION</a>
+        <a href="products.html">PRODUCTS</a>
+        <a href="certification.html" class="active">CERTIFICATION</a>
         <a href="notice.html">NOTICE</a>
         <a href="contact.html">CONTACT</a>
     </nav>
 
-    <!-- Products Hero Slider (70vh - 30% smaller than main) -->
-    <section class="page-hero-slider" id="productsHeroSlider">
+    <!-- Certification Hero Slider (70vh - 30% smaller than main) -->
+    <section class="page-hero-slider" id="certificationHeroSlider">
         <div class="page-hero-slider-container" id="pageHeroSliderContainer">
             <!-- Slides will be loaded dynamically -->
         </div>
@@ -44,20 +44,20 @@
     <!-- Category Filter -->
     <section class="category-filter">
         <div class="container">
-            <button class="filter-btn active" data-category="all">All Products</button>
-            <button class="filter-btn" data-category="cream">Cream Jars</button>
-            <button class="filter-btn" data-category="essence">Essence & Serum</button>
-            <button class="filter-btn" data-category="lotion">Lotion</button>
-            <button class="filter-btn" data-category="eco">Eco-Friendly</button>
+            <button class="filter-btn active" data-category="all">All Certifications</button>
+            <button class="filter-btn" data-category="iso">ISO</button>
+            <button class="filter-btn" data-category="patent">Patent</button>
+            <button class="filter-btn" data-category="quality">Quality</button>
+            <button class="filter-btn" data-category="others">Others</button>
         </div>
     </section>
 
-    <!-- Products Grid -->
+    <!-- Certifications Grid -->
     <section class="products-section">
         <div class="container">
-            <div class="products-grid" id="productsGrid">
-                <!-- Products will be loaded dynamically -->
-                <p style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">제품 목록을 불러오는 중...</p>
+            <div class="products-grid" id="certificationsGrid">
+                <!-- Certifications will be loaded dynamically -->
+                <p style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #999;">인증서 목록을 불러오는 중...</p>
             </div>
         </div>
     </section>
@@ -68,7 +68,7 @@
         <a href="admin-login.html" style="opacity: 0.3; font-size: 12px;">⚙️</a>
     </footer>
 
-    <script src="products.js"></script>
+    <script src="certification.js"></script>
     <script>
         function toggleMenu() {
             const nav = document.getElementById('nav');
@@ -90,13 +90,13 @@
 
         async function loadPageHeroSlider() {
             try {
-                const response = await fetch('/api/hero/page/products');
+                const response = await fetch('/api/hero/page/certification');
                 const data = await response.json();
                 
                 const media = data.media || [];
                 const settings = data.settings || {};
 
-                console.log('Products hero data:', media.length, 'items');
+                console.log('Certification hero data:', media.length, 'items');
 
                 if (!media || media.length === 0) {
                     // Keep default background - don't hide
@@ -105,7 +105,7 @@
                 }
 
                 // Remove default background when we have data
-                const heroSection = document.getElementById('productsHeroSlider');
+                const heroSection = document.getElementById('certificationHeroSlider');
                 heroSection.style.background = 'none';
 
                 const sortedMedia = media.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));

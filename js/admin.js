@@ -1366,3 +1366,244 @@ document.querySelectorAll('.admin-nav-btn').forEach(btn => {
     });
 });
 
+
+// ========================================
+// CERTIFICATION MANAGEMENT
+// ========================================
+
+let currentEditingCertification = null;
+
+// Load certifications list
+async function loadCertificationsList() {
+    try {
+        const response = await fetch('/api/certification');
+        if (!response.ok) throw new Error('Failed to fetch certifications');
+        
+        const certifications = await response.json();
+        const container = document.getElementById('certificationsList');
+        
+        if (!certifications || certifications.length === 0) {
+            container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">등록된 인증서가 없습니다.</p>';
+            return;
+        }
+        
+        // Group by category
+        const grouped = certifications.reduce((acc, cert) => {
+            const cat = cert.category || 'uncategorized';
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(cert);
+            return acc;
+        }, {});
+        
+        const categoryNames = {
+            'iso': 'ISO',
+            'patent': 'Patent (특허)',
+            'quality': 'Quality (품질인증)',
+            'others': 'Others (기타)',
+            'uncategorized': '미분류'
+        };
+        
+        let html = '';
+        
+        Object.keys(grouped).forEach(category => {
+            html += `
+                <div class="certification-category-group" style="margin-bottom: 30px;">
+                    <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
+                        ${categoryNames[category] || category} (${grouped[category].length})
+                    </h3>
+                    <div class="certifications-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+            `;
+            
+            grouped[category].forEach(cert => {
+                html += `
+                    <div class="certification-item" style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="width: 100%; padding-top: 100%; position: relative; overflow: hidden; border-radius: 8px; background: #f8f9fa; margin-bottom: 12px;">
+                            <img src="${cert.imageData || cert.image}" alt="${cert.name}" 
+                                 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; object-fit: contain;">
+                        </div>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${cert.name}</h4>
+                        ${cert.issuer ? `<p style="color: #007bff; font-weight: 600; margin: 5px 0;">${cert.issuer}</p>` : ''}
+                        ${cert.issueDate ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">발급: ${cert.issueDate}</p>` : ''}
+                        ${cert.validUntil ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">유효: ${cert.validUntil}</p>` : ''}
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button onclick="editCertification('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
+                            <button onclick="deleteCertificationItem('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Failed to load certifications:', error);
+        document.getElementById('certificationsList').innerHTML = '<p style="color: red; text-align: center; padding: 40px;">인증서 목록을 불러오지 못했습니다.</p>';
+    }
+}
+
+// Show certification form
+window.showCertificationForm = function() {
+    currentEditingCertification = null;
+    document.getElementById('certFormTitle').textContent = '새 인증서 추가';
+    document.getElementById('certName').value = '';
+    document.getElementById('certIssuer').value = '';
+    document.getElementById('certIssueDate').value = '';
+    document.getElementById('certValidUntil').value = '';
+    document.getElementById('certCategory').value = '';
+    document.getElementById('certImagePreview').style.display = 'none';
+    document.getElementById('certImagePreview').src = '';
+    document.getElementById('certificationForm').style.display = 'block';
+    
+    // Scroll to form
+    document.getElementById('certificationForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Cancel certification form
+window.cancelCertificationForm = function() {
+    currentEditingCertification = null;
+    document.getElementById('certificationForm').style.display = 'none';
+}
+
+// Edit certification
+window.editCertification = async function(certId) {
+    try {
+        const response = await fetch('/api/certification');
+        if (!response.ok) throw new Error('Failed to fetch certifications');
+        
+        const certifications = await response.json();
+        const cert = certifications.find(c => c.id === certId);
+        
+        if (!cert) {
+            alert('인증서를 찾을 수 없습니다.');
+            return;
+        }
+        
+        currentEditingCertification = cert;
+        document.getElementById('certFormTitle').textContent = '인증서 수정';
+        document.getElementById('certName').value = cert.name;
+        document.getElementById('certIssuer').value = cert.issuer || '';
+        document.getElementById('certIssueDate').value = cert.issueDate || '';
+        document.getElementById('certValidUntil').value = cert.validUntil || '';
+        document.getElementById('certCategory').value = cert.category;
+        
+        if (cert.imageData || cert.image) {
+            document.getElementById('certImagePreview').src = cert.imageData || cert.image;
+            document.getElementById('certImagePreview').style.display = 'block';
+        }
+        
+        document.getElementById('certificationForm').style.display = 'block';
+        document.getElementById('certificationForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+    } catch (error) {
+        alert('인증서 로드 실패: ' + error.message);
+    }
+}
+
+// Save certification
+window.saveCertificationData = async function() {
+    try {
+        const name = document.getElementById('certName').value.trim();
+        const issuer = document.getElementById('certIssuer').value.trim();
+        const issueDate = document.getElementById('certIssueDate').value.trim();
+        const validUntil = document.getElementById('certValidUntil').value.trim();
+        const category = document.getElementById('certCategory').value;
+        const imageInput = document.getElementById('certImageInput');
+        
+        if (!name || !category) {
+            alert('필수 항목(인증서명, 카테고리)을 모두 입력해주세요.');
+            return;
+        }
+        
+        const certData = {
+            id: currentEditingCertification ? currentEditingCertification.id : Date.now().toString(),
+            name,
+            issuer,
+            issueDate,
+            validUntil,
+            category,
+            createdAt: currentEditingCertification ? currentEditingCertification.createdAt : new Date().toISOString()
+        };
+        
+        // Handle image
+        if (imageInput.files.length > 0) {
+            const file = imageInput.files[0];
+            const imageData = await uploadFileToServer(file);
+            certData.imageData = imageData;
+        } else if (currentEditingCertification && (currentEditingCertification.imageData || currentEditingCertification.image)) {
+            certData.imageData = currentEditingCertification.imageData || currentEditingCertification.image;
+        }
+        
+        if (!certData.imageData) {
+            alert('인증서 이미지를 선택해주세요.');
+            return;
+        }
+        
+        const response = await fetch('/api/certification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(certData)
+        });
+        
+        if (!response.ok) throw new Error('Failed to save certification');
+        
+        alert('✅ 인증서가 저장되었습니다.');
+        cancelCertificationForm();
+        loadCertificationsList();
+        
+    } catch (error) {
+        alert('❌ 인증서 저장 실패: ' + error.message);
+    }
+}
+
+// Delete certification
+window.deleteCertificationItem = async function(certId) {
+    if (!confirm('정말 이 인증서를 삭제하시겠습니까?')) return;
+    
+    try {
+        const response = await fetch(`/api/certification/${certId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete certification');
+        
+        alert('✅ 인증서가 삭제되었습니다.');
+        loadCertificationsList();
+        
+    } catch (error) {
+        alert('❌ 인증서 삭제 실패: ' + error.message);
+    }
+}
+
+// Image upload handling for certifications
+document.getElementById('certImageArea').addEventListener('click', function() {
+    document.getElementById('certImageInput').click();
+});
+
+document.getElementById('certImageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            document.getElementById('certImagePreview').src = event.target.result;
+            document.getElementById('certImagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Load certifications when section is active
+document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        if (section === 'certifications') {
+            loadCertificationsList();
+        }
+    });
+});
+
