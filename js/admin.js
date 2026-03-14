@@ -29,6 +29,9 @@ function initAdmin() {
             if (sectionEl) {
                 sectionEl.classList.add('active');
             }
+            
+            // Load section-specific data when section opens
+            handleSectionLoad(section);
         });
     });
 
@@ -69,9 +72,149 @@ function initAdmin() {
         });
     }
 
+    // Setup product image upload
+    setupProductImageUpload();
+
+    // Setup certification image upload
+    const certImageArea = document.getElementById('certImageArea');
+    const certImageInput = document.getElementById('certImageInput');
+    const certImagePreview = document.getElementById('certImagePreview');
+    
+    if (certImageArea && certImageInput) {
+        certImageArea.addEventListener('click', function() {
+            certImageInput.click();
+        });
+        
+        certImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    if (certImagePreview) {
+                        certImagePreview.src = event.target.result;
+                        certImagePreview.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Setup page logo upload
+    const pageLogoInput = document.getElementById('pageLogoInput');
+    if (pageLogoInput) {
+        pageLogoInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentPageLogoData = e.target.result;
+                    document.getElementById('pageLogoPreview').src = currentPageLogoData;
+                    document.getElementById('pageLogoPreviewContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Setup page hero media upload
+    const pageHeroUploadArea = document.getElementById('pageHeroUploadArea');
+    const pageHeroMediaInput = document.getElementById('pageHeroMediaInput');
+    
+    if (pageHeroUploadArea && pageHeroMediaInput) {
+        pageHeroUploadArea.addEventListener('click', (e) => {
+            if (!e.target.closest('.preview-grid')) {
+                pageHeroMediaInput.click();
+            }
+        });
+        
+        pageHeroMediaInput.addEventListener('change', handlePageMediaFiles);
+        
+        pageHeroUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            pageHeroUploadArea.style.borderColor = '#007bff';
+            pageHeroUploadArea.style.background = '#f0f8ff';
+        });
+        
+        pageHeroUploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            pageHeroUploadArea.style.borderColor = '#007bff';
+            pageHeroUploadArea.style.background = '';
+        });
+        
+        pageHeroUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            pageHeroUploadArea.style.borderColor = '#007bff';
+            pageHeroUploadArea.style.background = '';
+            
+            const files = Array.from(e.dataTransfer.files).filter(f => 
+                f.type.startsWith('image/') || f.type.startsWith('video/')
+            );
+            
+            if (files.length > 0) {
+                pageHeroMediaInput.files = e.dataTransfer.files;
+                handlePageMediaFiles({ target: { files } });
+            }
+        });
+    }
+
+    // Handle logo upload
+    const logoInput = document.getElementById('sliderLogoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const logoUrl = event.target.result;
+                const settings = await getSliderSettings() || {};
+                settings.titleType = 'logo';
+                settings.logoUrl = logoUrl;
+                await saveSliderSettings(settings);
+                
+                displayCurrentLogo(logoUrl);
+                alert('✅ 로고가 업로드되었습니다!');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
     // Load data
     loadHeroSliderList();
     loadSliderSettings();
+}
+
+// Handle section-specific data loading
+function handleSectionLoad(section) {
+    switch(section) {
+        case 'hero-slider':
+            loadHeroSliderList();
+            loadSliderSettings();
+            break;
+        case 'page-heroes':
+            loadPageHeroes();
+            break;
+        case 'products':
+            loadProductsList();
+            loadProductCategories();
+            break;
+        case 'certifications':
+            loadCertificationsList();
+            loadCertCategories();
+            break;
+        case 'categories':
+            loadCategories();
+            break;
+        case 'notices':
+            loadNotices();
+            break;
+    }
 }
 
 // Handle selected media files
@@ -264,35 +407,6 @@ window.deleteSliderLogo = async function() {
     selectTitleType('text');
     alert('✅ 로고가 삭제되었습니다!');
 }
-
-// Handle logo upload
-document.addEventListener('DOMContentLoaded', function() {
-    const logoInput = document.getElementById('sliderLogoInput');
-    if (logoInput) {
-        logoInput.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (!file.type.startsWith('image/')) {
-                alert('이미지 파일만 업로드 가능합니다.');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                const logoUrl = event.target.result;
-                const settings = await getSliderSettings() || {};
-                settings.titleType = 'logo';
-                settings.logoUrl = logoUrl;
-                await saveSliderSettings(settings);
-                
-                displayCurrentLogo(logoUrl);
-                alert('✅ 로고가 업로드되었습니다!');
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-});
 
 // Save slider text
 window.saveSliderText = async function() {
@@ -735,26 +849,6 @@ function setupProductImageUpload() {
     });
 }
 
-// Initialize products management on page load
-document.addEventListener('DOMContentLoaded', function() {
-    setupProductImageUpload();
-    
-    // Load products when navigating to products section
-    const productsNav = document.querySelector('[data-section="products"]');
-    if (productsNav) {
-        productsNav.addEventListener('click', function() {
-            loadProductsList();
-            loadProductCategories(); // Load categories when opening products section
-        });
-    }
-    
-    // Load products if already on products section
-    if (window.location.hash === '#products') {
-        loadProductsList();
-        loadProductCategories();
-    }
-});
-
 // ========== PAGE HERO SLIDERS MANAGEMENT ==========
 
 let currentPageName = '';
@@ -849,25 +943,6 @@ window.selectPageTitleType = function(type) {
     }
 }
 
-// Setup page logo upload
-document.addEventListener('DOMContentLoaded', function() {
-    const logoInput = document.getElementById('pageLogoInput');
-    if (logoInput) {
-        logoInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentPageLogoData = e.target.result;
-                    document.getElementById('pageLogoPreview').src = currentPageLogoData;
-                    document.getElementById('pageLogoPreviewContainer').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-});
-
 // Delete page logo
 window.deletePageLogo = function() {
     currentPageLogoData = '';
@@ -898,49 +973,6 @@ window.savePageSliderText = async function() {
         alert('❌ 저장 실패: ' + error.message);
     }
 }
-
-// Setup page hero media upload
-document.addEventListener('DOMContentLoaded', function() {
-    const uploadArea = document.getElementById('pageHeroUploadArea');
-    const mediaInput = document.getElementById('pageHeroMediaInput');
-    
-    if (!uploadArea || !mediaInput) return;
-    
-    uploadArea.addEventListener('click', (e) => {
-        if (!e.target.closest('.preview-grid')) {
-            mediaInput.click();
-        }
-    });
-    
-    mediaInput.addEventListener('change', handlePageMediaFiles);
-    
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '#f0f8ff';
-    });
-    
-    uploadArea.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '';
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '';
-        
-        const files = Array.from(e.dataTransfer.files).filter(f => 
-            f.type.startsWith('image/') || f.type.startsWith('video/')
-        );
-        
-        if (files.length > 0) {
-            mediaInput.files = e.dataTransfer.files;
-            handlePageMediaFiles({ target: { files } });
-        }
-    });
-});
 
 function handlePageMediaFiles(e) {
     const files = Array.from(e.target.files);
@@ -1617,44 +1649,6 @@ window.deleteCertificationItem = async function(certId) {
     }
 }
 
-// Image upload handling for certifications
-document.addEventListener('DOMContentLoaded', function() {
-    const certImageArea = document.getElementById('certImageArea');
-    const certImageInput = document.getElementById('certImageInput');
-    const certImagePreview = document.getElementById('certImagePreview');
-    
-    if (certImageArea && certImageInput) {
-        certImageArea.addEventListener('click', function() {
-            certImageInput.click();
-        });
-        
-        certImageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    if (certImagePreview) {
-                        certImagePreview.src = event.target.result;
-                        certImagePreview.style.display = 'block';
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    // Load certifications when section is active
-    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const section = this.getAttribute('data-section');
-            if (section === 'certifications') {
-                loadCertificationsList();
-                loadCertCategories(); // Load categories when opening certifications section
-            }
-        });
-    });
-});
-
 
 // ========================================
 // CATEGORY MANAGEMENT
@@ -1875,16 +1869,4 @@ window.deleteCertCategory = async function(categoryId) {
         alert('❌ 카테고리 삭제 실패: ' + error.message);
     }
 }
-
-// Load categories when section is active
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const section = this.getAttribute('data-section');
-            if (section === 'categories') {
-                loadCategories();
-            }
-        });
-    });
-});
 
