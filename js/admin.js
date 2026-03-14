@@ -1506,8 +1506,8 @@ async function loadCertificationsList() {
                         <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${cert.name}</h4>
                         ${cert.issuer ? `<p style="color: #007bff; font-weight: 600; margin: 5px 0;">${cert.issuer}</p>` : ''}
                         ${cert.issueDate ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">발급: ${cert.issueDate}</p>` : ''}
-                        ${cert.validUntil ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">유효기간: ${cert.validUntil}</p>` : ''}
-                        ${cert.certNumber ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">발급번호: ${cert.certNumber}</p>` : ''}
+                        ${cert.validUntil && cert.validUntil.trim() ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">유효기간: ${cert.validUntil}</p>` : ''}
+                        ${cert.certNumber && cert.certNumber.trim() ? `<p style="color: #555; font-size: 0.85rem; margin: 3px 0;">발급번호: ${cert.certNumber}</p>` : ''}
                         <div style="display: flex; gap: 8px; margin-top: 12px;">
                             <button onclick="editCertification('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
                             <button onclick="deleteCertificationItem('${cert.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>

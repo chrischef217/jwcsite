@@ -131,8 +131,8 @@ function renderCertifications(certifications) {
                     <h3>${cert.name}</h3>
                     ${cert.issuer ? `<p class="product-model">${cert.issuer}</p>` : ''}
                     ${cert.issueDate ? `<p class="product-size">발급일: ${cert.issueDate}</p>` : ''}
-                    ${cert.validUntil ? `<p class="product-volume">유효기간: ${cert.validUntil}</p>` : ''}
-                    ${cert.certNumber ? `<p class="product-volume">발급번호: ${cert.certNumber}</p>` : ''}
+                    ${cert.validUntil && cert.validUntil.trim() ? `<p class="product-volume">유효기간: ${cert.validUntil}</p>` : ''}
+                    ${cert.certNumber && cert.certNumber.trim() ? `<p class="product-volume">발급번호: ${cert.certNumber}</p>` : ''}
                 </div>
             </div>
         `;
