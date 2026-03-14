@@ -742,12 +742,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load products when navigating to products section
     const productsNav = document.querySelector('[data-section="products"]');
     if (productsNav) {
-        productsNav.addEventListener('click', loadProductsList);
+        productsNav.addEventListener('click', function() {
+            loadProductsList();
+            loadProductCategories(); // Load categories when opening products section
+        });
     }
     
     // Load products if already on products section
     if (window.location.hash === '#products') {
         loadProductsList();
+        loadProductCategories();
     }
 });
 
@@ -1645,6 +1649,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const section = this.getAttribute('data-section');
             if (section === 'certifications') {
                 loadCertificationsList();
+                loadCertCategories(); // Load categories when opening certifications section
             }
         });
     });
@@ -1762,8 +1767,16 @@ window.addProductCategory = async function() {
         document.getElementById('newProductCategoryName').value = '';
         document.getElementById('newProductCategoryNameKo').value = '';
         
-        // Reload
+        // Reload category list display
         renderProductCategories();
+        
+        // Update product category dropdown immediately
+        await loadProductCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 추가 실패: ' + error.message);
+    }
+}
         
     } catch (error) {
         alert('❌ 카테고리 추가 실패: ' + error.message);
@@ -1781,7 +1794,12 @@ window.deleteProductCategory = async function(categoryId) {
         currentCategories.products = currentCategories.products.filter(c => c.id !== categoryId);
         
         alert('✅ 카테고리가 삭제되었습니다.');
+        
+        // Reload category list display
         renderProductCategories();
+        
+        // Update product category dropdown immediately
+        await loadProductCategories();
         
     } catch (error) {
         alert('❌ 카테고리 삭제 실패: ' + error.message);
@@ -1819,8 +1837,16 @@ window.addCertCategory = async function() {
         document.getElementById('newCertCategoryName').value = '';
         document.getElementById('newCertCategoryNameKo').value = '';
         
-        // Reload
+        // Reload category list display
         renderCertCategories();
+        
+        // Update certification category dropdown immediately
+        await loadCertCategories();
+        
+    } catch (error) {
+        alert('❌ 카테고리 추가 실패: ' + error.message);
+    }
+}
         
     } catch (error) {
         alert('❌ 카테고리 추가 실패: ' + error.message);
@@ -1838,7 +1864,12 @@ window.deleteCertCategory = async function(categoryId) {
         currentCategories.certifications = currentCategories.certifications.filter(c => c.id !== categoryId);
         
         alert('✅ 카테고리가 삭제되었습니다.');
+        
+        // Reload category list display
         renderCertCategories();
+        
+        // Update certification category dropdown immediately
+        await loadCertCategories();
         
     } catch (error) {
         alert('❌ 카테고리 삭제 실패: ' + error.message);
