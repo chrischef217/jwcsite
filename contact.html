@@ -318,7 +318,7 @@
         </div>
     </div>
 
-    <!-- 비밀번호 확인 모달 -->
+    <!-- 비밀번호 확인 모달 (게시글 보기) -->
     <div id="passwordModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
             <h3>비밀번호 확인</h3>
@@ -329,6 +329,23 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-cancel" onclick="closePasswordModal()">취소</button>
+                    <button type="submit" class="btn">확인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 비밀번호 확인 모달 (수정/삭제) -->
+    <div id="actionPasswordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>비밀번호 확인</h3>
+            <p style="color: #666; margin: 15px 0;">작업을 진행하려면 비밀번호를 입력하세요</p>
+            <form id="actionPasswordForm">
+                <div class="form-group">
+                    <input type="password" id="actionPassword" placeholder="비밀번호" required style="width: 100%;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeActionPasswordModal()">취소</button>
                     <button type="submit" class="btn">확인</button>
                 </div>
             </form>
@@ -517,51 +534,73 @@
         }
 
         function editPost() {
-            const password = prompt('비밀번호를 입력하세요:');
-            if (!password) return;
-            
-            if (password !== currentPost.password && password !== '1111') {
-                alert('비밀번호가 일치하지 않습니다.');
-                return;
-            }
-            
-            document.getElementById('modalTitle').textContent = '문의글 수정';
-            document.getElementById('postId').value = currentPost.id;
-            document.getElementById('company').value = currentPost.company;
-            document.getElementById('author').value = currentPost.author;
-            document.getElementById('email').value = currentPost.email;
-            document.getElementById('phone').value = currentPost.phone;
-            document.getElementById('password').value = password;
-            document.getElementById('content').value = currentPost.content;
-            
-            closeDetailModal();
-            document.getElementById('writeModal').classList.add('active');
+            pendingAction = 'edit';
+            document.getElementById('actionPasswordModal').classList.add('active');
         }
 
         async function deletePost() {
-            const password = prompt('비밀번호를 입력하세요:');
-            if (!password) return;
-            
-            if (!confirm('정말 삭제하시겠습니까?')) return;
-            
-            try {
-                const response = await fetch(`/api/board?id=${currentPost.id}&password=${password}`, {
-                    method: 'DELETE'
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('삭제되었습니다.');
-                    closeDetailModal();
-                    loadPosts();
-                } else {
-                    alert(result.error || '삭제할 수 없습니다.');
+            pendingAction = 'delete';
+            document.getElementById('actionPasswordModal').classList.add('active');
+        }
+
+        let pendingAction = null;
+
+        function closeActionPasswordModal() {
+            document.getElementById('actionPasswordModal').classList.remove('active');
+            document.getElementById('actionPassword').value = '';
+            pendingAction = null;
+        }
+
+        async function executeAction(event) {
+            event.preventDefault();
+            const password = document.getElementById('actionPassword').value;
+
+            if (pendingAction === 'edit') {
+                if (password !== currentPost.password && password !== '1111') {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    return;
                 }
-            } catch (error) {
-                alert('오류가 발생했습니다.');
+                
+                document.getElementById('modalTitle').textContent = '문의글 수정';
+                document.getElementById('postId').value = currentPost.id;
+                document.getElementById('company').value = currentPost.company;
+                document.getElementById('author').value = currentPost.author;
+                document.getElementById('email').value = currentPost.email;
+                document.getElementById('phone').value = currentPost.phone;
+                document.getElementById('password').value = password;
+                document.getElementById('content').value = currentPost.content;
+                
+                closeActionPasswordModal();
+                closeDetailModal();
+                document.getElementById('writeModal').classList.add('active');
+            } else if (pendingAction === 'delete') {
+                if (!confirm('정말 삭제하시겠습니까?')) {
+                    closeActionPasswordModal();
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/board?id=${currentPost.id}&password=${password}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('삭제되었습니다.');
+                        closeActionPasswordModal();
+                        closeDetailModal();
+                        loadPosts();
+                    } else {
+                        alert(result.error || '삭제할 수 없습니다.');
+                    }
+                } catch (error) {
+                    alert('오류가 발생했습니다.');
+                }
             }
         }
+
+        document.getElementById('actionPasswordForm').addEventListener('submit', executeAction);
 
         // 페이지 로드 시 게시글 목록 불러오기
         loadPosts();
