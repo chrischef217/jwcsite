@@ -185,9 +185,8 @@ function initAdmin() {
         });
     }
 
-    // Load data
-    loadHeroSliderList();
-    loadSliderSettings();
+    // Load initial data - 공지사항을 기본으로 로드
+    handleSectionLoad('notices');
 }
 
 // Handle section-specific data loading

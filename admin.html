@@ -16,12 +16,12 @@
                 <div class="admin-logo">JWC 관리자 v3.0</div>
                 <nav class="admin-nav">
                     <button class="admin-nav-btn" onclick="location.href='index.html'">🏠 홈으로</button>
-                    <button class="admin-nav-btn active" data-section="hero-slider">메인 히어로 슬라이더</button>
+                    <button class="admin-nav-btn" data-section="hero-slider">메인 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="page-heroes">페이지 히어로 슬라이더</button>
                     <button class="admin-nav-btn" data-section="products">제품 관리</button>
                     <button class="admin-nav-btn" data-section="certifications">📜 인증서 관리</button>
                     <button class="admin-nav-btn" data-section="categories">🏷️ 카테고리 관리</button>
-                    <button class="admin-nav-btn" data-section="notices">📢 공지사항 관리</button>
+                    <button class="admin-nav-btn active" data-section="notices">📢 공지사항 관리</button>
                     <button class="admin-nav-btn" data-section="password-settings">🔐 비밀번호 설정</button>
                     <button class="admin-nav-btn logout-btn" onclick="logout()">로그아웃</button>
                 </nav>
@@ -31,7 +31,7 @@
         <!-- Main Content -->
         <main class="admin-main">
             <!-- Hero Slider Management -->
-            <section class="admin-section active" id="hero-slider">
+            <section class="admin-section" id="hero-slider">
                 <h2>메인 히어로 슬라이더 관리</h2>
                 <p style="color: #666; margin-bottom: 20px;">✅ 파일을 선택하거나 드래그앤드롭으로 업로드하세요. 서버 DB에 자동 저장됩니다.</p>
                 
@@ -403,7 +403,7 @@
             </section>
 
             <!-- Notices Management -->
-            <section class="admin-section" id="notices">
+            <section class="admin-section active" id="notices">
                 <h2>📢 공지사항 관리</h2>
                 
                 <div style="margin-bottom: 30px;">
