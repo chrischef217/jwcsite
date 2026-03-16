@@ -241,8 +241,11 @@ function renderProducts(products) {
     let html = '';
     
     products.forEach(product => {
-        // Get all component materials
-        const materials = product.components?.map(c => c.material).filter(Boolean).join(', ') || '-';
+        // Get all component materials - handle both old and new format
+        const materials = product.components?.map(c => {
+            const mats = c.materials || (c.material ? [c.material] : []);
+            return mats.join(', ');
+        }).filter(Boolean).join(' / ') || '-';
         
         html += `
             <div class="product-card" data-category="${product.category}" onclick='openProductModal(${JSON.stringify(product).replace(/'/g, "&apos;")})'>
@@ -372,10 +375,14 @@ function openProductModal(product) {
     if (product.components && product.components.length > 0) {
         let componentsHTML = '<div style="display: grid; gap: 8px;">';
         product.components.forEach(comp => {
+            // Handle both old (single material) and new (multiple materials) format
+            const materials = comp.materials || (comp.material ? [comp.material] : []);
+            const materialsText = materials.join(', ') || '-';
+            
             componentsHTML += `
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
                     <span style="font-weight: 600; color: #495057;">${comp.name}</span>
-                    <span style="color: #6c757d; background: white; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem;">${comp.material}</span>
+                    <span style="color: #6c757d; background: white; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem;">${materialsText}</span>
                 </div>
             `;
         });
@@ -441,8 +448,11 @@ function openSampleRequestModal() {
     const sampleModal = document.getElementById('sampleRequestModal');
     const productDetailsDiv = document.getElementById('sampleProductDetails');
     
-    // Get material name
-    const materials = currentProduct.components?.map(c => `${c.name}: ${c.material}`).join(', ') || '-';
+    // Get material name - handle both old and new format
+    const materials = currentProduct.components?.map(c => {
+        const mats = c.materials || (c.material ? [c.material] : []);
+        return `${c.name}: ${mats.join(', ')}`;
+    }).join(', ') || '-';
     
     // Populate product details
     productDetailsDiv.innerHTML = `

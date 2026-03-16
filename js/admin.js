@@ -784,12 +784,25 @@ window.editProduct = async function(productId) {
         if (product.components && product.components.length > 0) {
             product.components.forEach(comp => {
                 const checkbox = document.getElementById('comp_' + comp.type);
-                const materialSelect = document.getElementById('material_' + comp.type);
+                const materialsContainer = document.getElementById('materials_' + comp.type);
                 
-                if (checkbox && materialSelect) {
+                if (checkbox && materialsContainer) {
+                    // Check the component checkbox
                     checkbox.checked = true;
-                    materialSelect.disabled = false;
-                    materialSelect.value = comp.material;
+                    checkbox.dispatchEvent(new Event('change'));  // Trigger change event to show materials
+                    
+                    // Wait for materials to be displayed, then check the material checkboxes
+                    setTimeout(() => {
+                        // Handle both old (single material) and new (multiple materials) format
+                        const materials = comp.materials || (comp.material ? [comp.material] : []);
+                        
+                        materials.forEach(materialId => {
+                            const materialCheckbox = materialsContainer.querySelector(`input[value="${materialId}"]`);
+                            if (materialCheckbox) {
+                                materialCheckbox.checked = true;
+                            }
+                        });
+                    }, 100);
                 }
             });
         }
@@ -847,14 +860,22 @@ window.saveProductData = async function() {
         
         componentTypes.forEach(type => {
             const checkbox = document.getElementById('comp_' + type);
-            const materialSelect = document.getElementById('material_' + type);
+            const materialsContainer = document.getElementById('materials_' + type);
             
-            if (checkbox && checkbox.checked && materialSelect.value) {
-                components.push({
-                    type: type,
-                    name: componentNames[type],
-                    material: materialSelect.value
+            if (checkbox && checkbox.checked && materialsContainer) {
+                // Collect all checked materials for this component
+                const checkedMaterials = [];
+                materialsContainer.querySelectorAll('.material-checkbox:checked').forEach(cb => {
+                    checkedMaterials.push(cb.value);
                 });
+                
+                if (checkedMaterials.length > 0) {
+                    components.push({
+                        type: type,
+                        name: componentNames[type],
+                        materials: checkedMaterials  // Changed to array
+                    });
+                }
             }
         });
         
@@ -2147,35 +2168,48 @@ window.deleteMaterial = async function(materialId) {
     }
 }
 
-// Load product materials dropdown
+// Load product materials as checkboxes
 async function loadProductMaterials() {
     try {
         const categories = await window.getAllCategories();
         
-        // Load materials for all component dropdowns
+        // Load materials for all component checkboxes
         const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container', 'decoration', 'over_cap', 'shoulder', 'pump', 'nameplate', 'cap_decoration', 'cap'];
         
         componentTypes.forEach(type => {
-            const select = document.getElementById('material_' + type);
+            const container = document.getElementById('materials_' + type);
             
-            if (select) {
-                select.innerHTML = '<option value="">원료 선택</option>';
+            if (container && categories.materials && categories.materials.length > 0) {
+                container.innerHTML = '';
                 
-                if (categories.materials && categories.materials.length > 0) {
-                    categories.materials.forEach(mat => {
-                        const option = document.createElement('option');
-                        option.value = mat.id;
-                        option.textContent = mat.nameKo || mat.name || mat.id;
-                        select.appendChild(option);
-                    });
-                }
+                categories.materials.forEach(mat => {
+                    const checkboxWrapper = document.createElement('div');
+                    checkboxWrapper.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:#f8f9fa;margin-bottom:6px;';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `mat_${type}_${mat.id}`;
+                    checkbox.value = mat.id;
+                    checkbox.className = 'material-checkbox';
+                    checkbox.dataset.component = type;
+                    checkbox.style.cssText = 'width:18px;height:18px;cursor:pointer;';
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `mat_${type}_${mat.id}`;
+                    label.textContent = mat.nameKo || mat.name || mat.id;
+                    label.style.cssText = 'margin:0;font-size:0.95rem;cursor:pointer;flex:1;';
+                    
+                    checkboxWrapper.appendChild(checkbox);
+                    checkboxWrapper.appendChild(label);
+                    container.appendChild(checkboxWrapper);
+                });
             }
         });
         
         // Setup checkbox event listeners
         setupComponentCheckboxes();
         
-        console.log('✅ Loaded materials for all component dropdowns');
+        console.log('✅ Loaded material checkboxes for all components');
     } catch (error) {
         console.error('Failed to load materials:', error);
     }
@@ -2187,23 +2221,25 @@ function setupComponentCheckboxes() {
     
     componentTypes.forEach(type => {
         const checkbox = document.getElementById('comp_' + type);
-        const materialSelect = document.getElementById('material_' + type);
+        const materialsContainer = document.getElementById('materials_' + type);
         
-        if (checkbox && materialSelect) {
+        if (checkbox && materialsContainer) {
             // Remove existing listener if any
-            checkbox.removeEventListener('change', handleCheckboxChange);
+            checkbox.replaceWith(checkbox.cloneNode(true));
+            const newCheckbox = document.getElementById('comp_' + type);
             
             // Add new listener
-            checkbox.addEventListener('change', function() {
+            newCheckbox.addEventListener('change', function() {
                 if (this.checked) {
-                    materialSelect.disabled = false;
-                    materialSelect.parentElement.style.borderColor = '#667eea';
-                    materialSelect.parentElement.style.backgroundColor = '#f8f9ff';
+                    materialsContainer.style.display = 'block';
+                    materialsContainer.parentElement.style.borderColor = '#667eea';
+                    materialsContainer.parentElement.style.backgroundColor = '#f8f9ff';
                 } else {
-                    materialSelect.disabled = true;
-                    materialSelect.value = '';
-                    materialSelect.parentElement.style.borderColor = '#e0e0e0';
-                    materialSelect.parentElement.style.backgroundColor = 'transparent';
+                    materialsContainer.style.display = 'none';
+                    // Uncheck all material checkboxes
+                    materialsContainer.querySelectorAll('.material-checkbox').forEach(cb => cb.checked = false);
+                    materialsContainer.parentElement.style.borderColor = '#e0e0e0';
+                    materialsContainer.parentElement.style.backgroundColor = 'transparent';
                 }
             });
         }
@@ -2211,9 +2247,6 @@ function setupComponentCheckboxes() {
     
     console.log('✅ Setup component checkbox listeners');
 }
-
-// Dummy function for removeEventListener
-function handleCheckboxChange() {}
 
 // ========== SAMPLE REQUESTS MANAGEMENT ==========
 
@@ -2386,7 +2419,10 @@ window.showSampleDetail = function(sampleId) {
                     ${sample.product?.diameter ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>직경:</strong> ${sample.product.diameter}mm</p>` : ''}
                     ${sample.product?.bodySize ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>BODY SIZE:</strong> ${sample.product.bodySize}mm</p>` : ''}
                     ${sample.product?.totalHeight ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>TOTAL HEIGHT:</strong> ${sample.product.totalHeight}mm</p>` : ''}
-                    ${sample.product?.components ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>부품/재질:</strong> ${sample.product.components.map(c => `${c.name}: ${c.material}`).join(', ')}</p>` : ''}
+                    ${sample.product?.components ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>부품/재질:</strong> ${sample.product.components.map(c => {
+                        const mats = c.materials || (c.material ? [c.material] : []);
+                        return `${c.name}: ${mats.join(', ')}`;
+                    }).join(' / ')}</p>` : ''}
                 </div>
             </div>
             
