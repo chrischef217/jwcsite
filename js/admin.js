@@ -724,17 +724,26 @@ window.editProduct = async function(productId) {
         document.getElementById('productModel').value = product.model;
         document.getElementById('productSize').value = product.size || '';
         document.getElementById('productVolume').value = product.volume;
-        document.getElementById('productCategory').value = product.category;
-        document.getElementById('productMaterial').value = product.material || '';
         
         if (product.imageData || product.image) {
             document.getElementById('productImagePreview').src = product.imageData || product.image;
             document.getElementById('productImagePreview').style.display = 'block';
         }
         
-        // Load categories and materials
+        // Load categories and materials FIRST, then set values
         await loadProductCategories();
         await loadProductMaterials();
+        
+        // Set category and material AFTER dropdowns are loaded
+        document.getElementById('productCategory').value = product.category;
+        document.getElementById('productMaterial').value = product.material || '';
+        
+        console.log('Loaded product for edit:', { 
+            category: product.category, 
+            material: product.material,
+            categorySet: document.getElementById('productCategory').value,
+            materialSet: document.getElementById('productMaterial').value
+        });
         
         document.getElementById('productForm').style.display = 'block';
         document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
