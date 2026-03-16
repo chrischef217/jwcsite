@@ -723,95 +723,150 @@ window.editProduct = async function(productId) {
         
         currentEditingProduct = product;
         document.getElementById('formTitle').textContent = '제품 수정';
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productModel').value = product.model;
-        document.getElementById('productSize').value = product.size || '';
-        document.getElementById('productVolume').value = product.volume;
         
+        // Load basic info
+        document.getElementById('productCode').value = product.code || '';
+        document.getElementById('productName').value = product.name || '';
+        document.getElementById('productVolume').value = product.volume || '';
+        document.getElementById('productDiameter').value = product.diameter || '';
+        document.getElementById('productBodySize').value = product.bodySize || '';
+        document.getElementById('productTotalHeight').value = product.totalHeight || '';
+        document.getElementById('productAssembly').value = product.assembly || '';
+        document.getElementById('productDeliverySet').value = product.deliverySet || '';
+        
+        // Load images
         if (product.imageData || product.image) {
             document.getElementById('productImagePreview').src = product.imageData || product.image;
             document.getElementById('productImagePreview').style.display = 'block';
         }
         
-        // Load categories and materials FIRST, then set values
+        if (product.crossSectionImageData) {
+            document.getElementById('productCrossSectionPreview').src = product.crossSectionImageData;
+            document.getElementById('productCrossSectionPreview').style.display = 'block';
+        }
+        
+        // Load categories and materials FIRST
         await loadProductCategories();
         await loadProductMaterials();
         
-        // Set category and material AFTER dropdowns are loaded
-        document.getElementById('productCategory').value = product.category;
-        document.getElementById('productMaterial').value = product.material || '';
+        // Set category
+        document.getElementById('productCategory').value = product.category || '';
         
-        console.log('Loaded product for edit:', { 
-            category: product.category, 
-            material: product.material,
-            categorySet: document.getElementById('productCategory').value,
-            materialSet: document.getElementById('productMaterial').value
-        });
+        // Load components
+        if (product.components && product.components.length > 0) {
+            product.components.forEach(comp => {
+                const checkbox = document.getElementById('comp_' + comp.type);
+                const materialSelect = document.getElementById('material_' + comp.type);
+                
+                if (checkbox && materialSelect) {
+                    checkbox.checked = true;
+                    materialSelect.disabled = false;
+                    materialSelect.value = comp.material;
+                }
+            });
+        }
+        
+        console.log('Loaded product for edit:', product);
         
         document.getElementById('productForm').style.display = 'block';
         document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         
     } catch (error) {
         alert('제품 로드 실패: ' + error.message);
+        console.error('Edit error:', error);
     }
 }
 
 // Save product
 window.saveProductData = async function() {
     try {
+        const code = document.getElementById('productCode').value.trim();
         const name = document.getElementById('productName').value.trim();
-        const model = document.getElementById('productModel').value.trim();
-        const size = document.getElementById('productSize').value.trim();
         const volume = document.getElementById('productVolume').value.trim();
+        const diameter = document.getElementById('productDiameter').value.trim();
+        const bodySize = document.getElementById('productBodySize').value.trim();
+        const totalHeight = document.getElementById('productTotalHeight').value.trim();
         const category = document.getElementById('productCategory').value;
-        const material = document.getElementById('productMaterial').value;
+        const assembly = document.getElementById('productAssembly').value.trim();
+        const deliverySet = document.getElementById('productDeliverySet').value.trim();
         const imageInput = document.getElementById('productImageInput');
+        const crossSectionInput = document.getElementById('productCrossSectionInput');
         
-        console.log('Saving product:', { name, model, size, volume, category, material });
+        console.log('Saving product:', { code, name, volume, category });
         
-        if (!name || !model || !volume || !category || !material) {
-            alert('필수 항목을 모두 입력해주세요.');
-            console.error('Missing required fields:', { 
-                name: !!name, 
-                model: !!model, 
-                volume: !!volume, 
-                category: !!category, 
-                material: !!material 
-            });
+        if (!code || !volume || !category) {
+            alert('필수 항목(제품 코드, 용량, 카테고리)을 모두 입력해주세요.');
             return;
         }
         
+        // Collect components
+        const components = [];
+        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+        const componentNames = {
+            'outer_cap': '외캡',
+            'inner_cap': '내캡',
+            'single_cap': '단캡',
+            'lid': '리드',
+            'outer_container': '외용기',
+            'inner_container': '내용기'
+        };
+        
+        componentTypes.forEach(type => {
+            const checkbox = document.getElementById('comp_' + type);
+            const materialSelect = document.getElementById('material_' + type);
+            
+            if (checkbox && checkbox.checked && materialSelect.value) {
+                components.push({
+                    type: type,
+                    name: componentNames[type],
+                    material: materialSelect.value
+                });
+            }
+        });
+        
         const productData = {
             id: currentEditingProduct ? currentEditingProduct.id : Date.now().toString(),
+            code,
             name,
-            model,
-            size,
             volume,
+            diameter,
+            bodySize,
+            totalHeight,
             category,
-            material,
+            components,
+            assembly,
+            deliverySet,
             createdAt: currentEditingProduct ? currentEditingProduct.createdAt : new Date().toISOString()
         };
         
         console.log('Product data before save:', productData);
         
-        // Handle image
+        // Handle main image
         if (imageInput.files && imageInput.files[0]) {
             productData.image = imageInput.files[0];
         } else if (currentEditingProduct && (currentEditingProduct.imageData || currentEditingProduct.image)) {
             productData.imageData = currentEditingProduct.imageData || currentEditingProduct.image;
         } else {
-            alert('제품 이미지를 선택해주세요.');
+            alert('제품 사진을 선택해주세요.');
             return;
+        }
+        
+        // Handle cross section image (optional)
+        if (crossSectionInput.files && crossSectionInput.files[0]) {
+            productData.crossSectionImage = crossSectionInput.files[0];
+        } else if (currentEditingProduct && currentEditingProduct.crossSectionImageData) {
+            productData.crossSectionImageData = currentEditingProduct.crossSectionImageData;
         }
         
         await window.saveProduct(productData);
         
-        alert('✅ 제품이 저장되었습니다!');
+        showToast('✅ 제품이 저장되었습니다!');
         cancelProductForm();
         loadProductsList();
         
     } catch (error) {
         alert('❌ 저장 실패: ' + error.message);
+        console.error('Save error:', error);
     }
 }
 
@@ -830,55 +885,107 @@ window.deleteProductItem = async function(productId) {
 
 // Setup product image upload
 function setupProductImageUpload() {
+    // Main product image
     const uploadArea = document.getElementById('productImageArea');
     const imageInput = document.getElementById('productImageInput');
     const preview = document.getElementById('productImagePreview');
     
-    if (!uploadArea || !imageInput) return;
-    
-    uploadArea.addEventListener('click', () => imageInput.click());
-    
-    imageInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-    
-    // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '#f0f8ff';
-    });
-    
-    uploadArea.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '';
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#007bff';
-        uploadArea.style.background = '';
+    if (uploadArea && imageInput) {
+        uploadArea.addEventListener('click', () => imageInput.click());
         
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            imageInput.files = e.dataTransfer.files;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+            uploadArea.style.background = '#f0f8ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+            uploadArea.style.background = '';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+            uploadArea.style.background = '';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                imageInput.files = e.dataTransfer.files;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Cross section image (optional)
+    const crossSectionArea = document.getElementById('productCrossSectionArea');
+    const crossSectionInput = document.getElementById('productCrossSectionInput');
+    const crossSectionPreview = document.getElementById('productCrossSectionPreview');
+    
+    if (crossSectionArea && crossSectionInput) {
+        crossSectionArea.addEventListener('click', () => crossSectionInput.click());
+        
+        crossSectionInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    crossSectionPreview.src = e.target.result;
+                    crossSectionPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Drag and drop for cross section
+        crossSectionArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            crossSectionArea.style.borderColor = '#6c757d';
+            crossSectionArea.style.background = '#f8f9fa';
+        });
+        
+        crossSectionArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            crossSectionArea.style.borderColor = '#6c757d';
+            crossSectionArea.style.background = '';
+        });
+        
+        crossSectionArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            crossSectionArea.style.borderColor = '#6c757d';
+            crossSectionArea.style.background = '';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                crossSectionInput.files = e.dataTransfer.files;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    crossSectionPreview.src = e.target.result;
+                    crossSectionPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 // ========== PAGE HERO SLIDERS MANAGEMENT ==========
@@ -2001,26 +2108,28 @@ window.deleteMaterial = async function(materialId) {
 async function loadProductMaterials() {
     try {
         const categories = await window.getAllCategories();
-        const select = document.getElementById('productMaterial');
         
-        if (!select) {
-            console.error('productMaterial select element not found!');
-            return;
-        }
+        // Load materials for all component dropdowns
+        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
         
-        select.innerHTML = '<option value="">선택하세요</option>';
+        componentTypes.forEach(type => {
+            const select = document.getElementById('material_' + type);
+            
+            if (select) {
+                select.innerHTML = '<option value="">원료 선택</option>';
+                
+                if (categories.materials && categories.materials.length > 0) {
+                    categories.materials.forEach(mat => {
+                        const option = document.createElement('option');
+                        option.value = mat.id;
+                        option.textContent = mat.nameKo || mat.name || mat.id;
+                        select.appendChild(option);
+                    });
+                }
+            }
+        });
         
-        if (categories.materials && categories.materials.length > 0) {
-            categories.materials.forEach(mat => {
-                const option = document.createElement('option');
-                option.value = mat.id;
-                option.textContent = mat.nameKo || mat.name;
-                select.appendChild(option);
-            });
-            console.log('✅ Loaded materials:', categories.materials.length);
-        } else {
-            console.warn('⚠️ No materials found in categories');
-        }
+        console.log('✅ Loaded materials for all component dropdowns');
     } catch (error) {
         console.error('Failed to load materials:', error);
     }

@@ -237,51 +237,163 @@
                 <div class="product-form" id="productForm" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
                     <h3 id="formTitle">새 제품 추가</h3>
                     
-                    <div class="form-group">
-                        <label>제품명 *</label>
-                        <input type="text" id="productName" class="form-control" placeholder="예: 사각 크림 용기" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>제품 모델 *</label>
-                        <input type="text" id="productModel" class="form-control" placeholder="예: J3-C50" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>사이즈</label>
-                        <input type="text" id="productSize" class="form-control" placeholder="예: 62.6 x 62.6 x 62.6">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>용량 *</label>
-                        <input type="text" id="productVolume" class="form-control" placeholder="예: 50g, 30g" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>카테고리 *</label>
-                        <select id="productCategory" class="form-control" required>
-                            <option value="">선택하세요</option>
-                            <!-- Options will be loaded dynamically -->
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>재질 (MATERIAL) *</label>
-                        <select id="productMaterial" class="form-control" required>
-                            <option value="">선택하세요</option>
-                            <!-- Options will be loaded dynamically -->
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>제품 이미지 *</label>
-                        <div class="upload-area" id="productImageArea" style="border: 2px dashed #007bff; min-height: 200px;">
-                            <input type="file" id="productImageInput" accept="image/*" style="display: none;">
-                            <div class="upload-placeholder">
-                                <p>📷 이미지 선택 또는 드래그앤드롭</p>
-                                <p class="upload-hint">권장: 800x800px (JPG, PNG)</p>
+                    <!-- 기본 정보 -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: #667eea;">기본 정보</h4>
+                        
+                        <div class="form-group">
+                            <label>제품 코드 *</label>
+                            <input type="text" id="productCode" class="form-control" placeholder="예: J1-C15" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>제품명</label>
+                            <input type="text" id="productName" class="form-control" placeholder="예: 원형 크림 용기">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>용량 *</label>
+                            <input type="text" id="productVolume" class="form-control" placeholder="예: 15g" required>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                            <div class="form-group">
+                                <label>직경 (Ø)</label>
+                                <input type="text" id="productDiameter" class="form-control" placeholder="예: 52.7">
                             </div>
-                            <img id="productImagePreview" class="upload-preview" style="display: none; max-width: 400px; max-height: 400px; object-fit: contain;">
+                            <div class="form-group">
+                                <label>BODY SIZE (mm)</label>
+                                <input type="text" id="productBodySize" class="form-control" placeholder="예: 25.65">
+                            </div>
+                            <div class="form-group">
+                                <label>TOTAL HEIGHT (mm)</label>
+                                <input type="text" id="productTotalHeight" class="form-control" placeholder="예: 44.45">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>카테고리 *</label>
+                            <select id="productCategory" class="form-control" required>
+                                <option value="">선택하세요</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 부품 구성 -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: #667eea;">부품 구성 및 원료</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">각 부품에 사용되는 원료를 선택하세요</p>
+                        
+                        <div id="componentsContainer" style="display: flex; flex-direction: column; gap: 15px;">
+                            <!-- 외캡 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_outer_cap" onchange="toggleComponent(this)">
+                                    <label for="comp_outer_cap" style="margin: 0 0 0 8px; font-weight: 600;">외캡</label>
+                                </div>
+                                <select id="material_outer_cap" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 내캡 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_inner_cap" onchange="toggleComponent(this)">
+                                    <label for="comp_inner_cap" style="margin: 0 0 0 8px; font-weight: 600;">내캡</label>
+                                </div>
+                                <select id="material_inner_cap" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 단캡 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_single_cap" onchange="toggleComponent(this)">
+                                    <label for="comp_single_cap" style="margin: 0 0 0 8px; font-weight: 600;">단캡</label>
+                                </div>
+                                <select id="material_single_cap" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 리드 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_lid" onchange="toggleComponent(this)">
+                                    <label for="comp_lid" style="margin: 0 0 0 8px; font-weight: 600;">리드</label>
+                                </div>
+                                <select id="material_lid" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 외용기 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_outer_container" onchange="toggleComponent(this)">
+                                    <label for="comp_outer_container" style="margin: 0 0 0 8px; font-weight: 600;">외용기</label>
+                                </div>
+                                <select id="material_outer_container" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 내용기 -->
+                            <div style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="comp_inner_container" onchange="toggleComponent(this)">
+                                    <label for="comp_inner_container" style="margin: 0 0 0 8px; font-weight: 600;">내용기</label>
+                                </div>
+                                <select id="material_inner_container" class="form-control" disabled>
+                                    <option value="">원료 선택</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 조립 및 납품 -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: #667eea;">조립 및 납품 정보</h4>
+                        
+                        <div class="form-group">
+                            <label>조립 방식</label>
+                            <textarea id="productAssembly" class="form-control" rows="3" placeholder="예: 외캡 + 내캡 조립&#10;리드 + 외용기 + 내용기 조립&#10;외캡과 외용기 조립"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>납품시 SET</label>
+                            <textarea id="productDeliverySet" class="form-control" rows="3" placeholder="예: 완제품&#10;외캡 + 내캡 조립 + 내용기 + 리드 + 외용기 분리 납품"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 이미지 -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: #667eea;">제품 이미지</h4>
+                        
+                        <div class="form-group">
+                            <label>제품 사진 *</label>
+                            <div class="upload-area" id="productImageArea" style="border: 2px dashed #007bff; min-height: 200px;">
+                                <input type="file" id="productImageInput" accept="image/*" style="display: none;">
+                                <div class="upload-placeholder">
+                                    <p>📷 이미지 선택 또는 드래그앤드롭</p>
+                                    <p class="upload-hint">권장: 800x800px (JPG, PNG)</p>
+                                </div>
+                                <img id="productImagePreview" class="upload-preview" style="display: none; max-width: 400px; max-height: 400px; object-fit: contain;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>제품 단면도 (선택)</label>
+                            <div class="upload-area" id="productCrossSectionArea" style="border: 2px dashed #6c757d; min-height: 200px;">
+                                <input type="file" id="productCrossSectionInput" accept="image/*" style="display: none;">
+                                <div class="upload-placeholder">
+                                    <p>📐 단면도 선택 또는 드래그앤드롭</p>
+                                    <p class="upload-hint">제품 내부 구조 단면도</p>
+                                </div>
+                                <img id="productCrossSectionPreview" class="upload-preview" style="display: none; max-width: 400px; max-height: 400px; object-fit: contain;">
+                            </div>
                         </div>
                     </div>
                     
@@ -625,6 +737,18 @@
         }
     </style>
 
+    <script>
+        // Toggle component material select
+        function toggleComponent(checkbox) {
+            const compId = checkbox.id.replace('comp_', '');
+            const materialSelect = document.getElementById('material_' + compId);
+            materialSelect.disabled = !checkbox.checked;
+            if (!checkbox.checked) {
+                materialSelect.value = '';
+            }
+        }
+    </script>
+    
     <script src="js/db.js"></script>
     <script src="js/admin.js"></script>
 </body>
