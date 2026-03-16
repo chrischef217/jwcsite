@@ -448,42 +448,116 @@ function openSampleRequestModal() {
     const sampleModal = document.getElementById('sampleRequestModal');
     const productDetailsDiv = document.getElementById('sampleProductDetails');
     
-    // Get material name - handle both old and new format
-    const materials = currentProduct.components?.map(c => {
-        const mats = c.materials || (c.material ? [c.material] : []);
-        return `${c.name}: ${mats.map(m => m.toUpperCase()).join(', ')}`;
-    }).join(', ') || '-';
+    // Build detailed product information sections
+    let detailsHTML = '';
     
-    // Populate product details
-    productDetailsDiv.innerHTML = `
-        <div class="detail-row">
-            <span class="detail-label">제품 코드:</span>
-            <span>${currentProduct.code}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">용량:</span>
-            <span>${currentProduct.volume}</span>
-        </div>
-        ${currentProduct.diameter ? `
-        <div class="detail-row">
-            <span class="detail-label">직경:</span>
-            <span>${currentProduct.diameter}mm</span>
-        </div>` : ''}
-        ${currentProduct.bodySize ? `
-        <div class="detail-row">
-            <span class="detail-label">BODY SIZE:</span>
-            <span>${currentProduct.bodySize}mm</span>
-        </div>` : ''}
-        ${currentProduct.totalHeight ? `
-        <div class="detail-row">
-            <span class="detail-label">TOTAL HEIGHT:</span>
-            <span>${currentProduct.totalHeight}mm</span>
-        </div>` : ''}
-        <div class="detail-row">
-            <span class="detail-label">부품/재질:</span>
-            <span>${materials}</span>
+    // 1. Basic Information Section
+    detailsHTML += `
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #2c3e50; font-size: 1rem; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #2c3e50;">
+                1. 기본 정보
+            </h4>
+            <div style="display: grid; gap: 8px;">
+                <div class="detail-row">
+                    <span class="detail-label">제품 코드:</span>
+                    <span>${currentProduct.code || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">용량:</span>
+                    <span>${currentProduct.volume || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">카테고리:</span>
+                    <span>${currentProduct.categoryName || currentProduct.category || '-'}</span>
+                </div>
+            </div>
         </div>
     `;
+    
+    // 2. Dimensions Section (if any dimension exists)
+    if (currentProduct.diameter || currentProduct.bodySize || currentProduct.totalHeight) {
+        detailsHTML += `
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #5a6c7d; font-size: 1rem; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #5a6c7d;">
+                    2. 치수 정보
+                </h4>
+                <div style="display: grid; gap: 8px;">
+                    ${currentProduct.diameter ? `
+                        <div class="detail-row">
+                            <span class="detail-label">직경 (Ø):</span>
+                            <span>${currentProduct.diameter} mm</span>
+                        </div>
+                    ` : ''}
+                    ${currentProduct.bodySize ? `
+                        <div class="detail-row">
+                            <span class="detail-label">BODY SIZE:</span>
+                            <span>${currentProduct.bodySize} mm</span>
+                        </div>
+                    ` : ''}
+                    ${currentProduct.totalHeight ? `
+                        <div class="detail-row">
+                            <span class="detail-label">TOTAL HEIGHT:</span>
+                            <span>${currentProduct.totalHeight} mm</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 3. Components Section
+    if (currentProduct.components && currentProduct.components.length > 0) {
+        detailsHTML += `
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #34495e; font-size: 1rem; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #34495e;">
+                    3. 부품 구성 및 원료
+                </h4>
+                <div style="display: grid; gap: 8px;">
+        `;
+        
+        currentProduct.components.forEach(comp => {
+            const mats = comp.materials || (comp.material ? [comp.material] : []);
+            const materialsText = mats.map(m => m.toUpperCase()).join(', ') || '-';
+            detailsHTML += `
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                    <span style="font-weight: 600; color: #495057;">${comp.name}</span>
+                    <span style="color: #6c757d; background: white; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem;">${materialsText}</span>
+                </div>
+            `;
+        });
+        
+        detailsHTML += `
+                </div>
+            </div>
+        `;
+    }
+    
+    // 4. Assembly & Delivery Section (if exists)
+    if (currentProduct.assembly || currentProduct.deliverySet) {
+        detailsHTML += `
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #8b7355; font-size: 1rem; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #8b7355;">
+                    4. 조립 및 납품
+                </h4>
+                <div style="display: grid; gap: 8px;">
+                    ${currentProduct.assembly ? `
+                        <div class="detail-row">
+                            <span class="detail-label">조립 방식:</span>
+                            <span style="white-space: pre-wrap;">${currentProduct.assembly}</span>
+                        </div>
+                    ` : ''}
+                    ${currentProduct.deliverySet ? `
+                        <div class="detail-row">
+                            <span class="detail-label">납품시 set:</span>
+                            <span style="white-space: pre-wrap;">${currentProduct.deliverySet}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    productDetailsDiv.innerHTML = detailsHTML;
     
     // Close product modal and open sample request modal
     closeProductModal();
