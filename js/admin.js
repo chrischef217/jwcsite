@@ -687,12 +687,14 @@ window.showProductForm = async function() {
     document.getElementById('productSize').value = '';
     document.getElementById('productVolume').value = '';
     document.getElementById('productCategory').value = '';
+    document.getElementById('productMaterial').value = '';
     document.getElementById('productImagePreview').style.display = 'none';
     document.getElementById('productImagePreview').src = '';
     document.getElementById('productForm').style.display = 'block';
     
-    // Load categories
+    // Load categories and materials
     await loadProductCategories();
+    await loadProductMaterials();
     
     // Scroll to form
     document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -722,11 +724,16 @@ window.editProduct = async function(productId) {
         document.getElementById('productSize').value = product.size || '';
         document.getElementById('productVolume').value = product.volume;
         document.getElementById('productCategory').value = product.category;
+        document.getElementById('productMaterial').value = product.material || '';
         
         if (product.imageData || product.image) {
             document.getElementById('productImagePreview').src = product.imageData || product.image;
             document.getElementById('productImagePreview').style.display = 'block';
         }
+        
+        // Load categories and materials
+        await loadProductCategories();
+        await loadProductMaterials();
         
         document.getElementById('productForm').style.display = 'block';
         document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -744,9 +751,10 @@ window.saveProductData = async function() {
         const size = document.getElementById('productSize').value.trim();
         const volume = document.getElementById('productVolume').value.trim();
         const category = document.getElementById('productCategory').value;
+        const material = document.getElementById('productMaterial').value;
         const imageInput = document.getElementById('productImageInput');
         
-        if (!name || !model || !volume || !category) {
+        if (!name || !model || !volume || !category || !material) {
             alert('필수 항목을 모두 입력해주세요.');
             return;
         }
@@ -758,6 +766,7 @@ window.saveProductData = async function() {
             size,
             volume,
             category,
+            material,
             createdAt: currentEditingProduct ? currentEditingProduct.createdAt : new Date().toISOString()
         };
         
@@ -1671,10 +1680,14 @@ async function loadCategories() {
         // Render certification categories
         renderCertCategories();
         
+        // Render materials
+        renderMaterials();
+        
     } catch (error) {
         console.error('Failed to load categories:', error);
         document.getElementById('productCategoriesList').innerHTML = '<p style="color: red; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오지 못했습니다.</p>';
         document.getElementById('certCategoriesList').innerHTML = '<p style="color: red; text-align: center; padding: 20px; grid-column: 1/-1;">카테고리를 불러오지 못했습니다.</p>';
+        document.getElementById('materialsList').innerHTML = '<p style="color: red; text-align: center; padding: 20px; grid-column: 1/-1;">재질을 불러오지 못했습니다.</p>';
     }
 }
 
@@ -1861,6 +1874,127 @@ window.deleteCertCategory = async function(categoryId) {
         
     } catch (error) {
         alert('❌ 카테고리 삭제 실패: ' + error.message);
+    }
+}
+
+// Render materials
+function renderMaterials() {
+    const container = document.getElementById('materialsList');
+    
+    if (!currentCategories || !currentCategories.materials || currentCategories.materials.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">등록된 재질이 없습니다.</p>';
+        return;
+    }
+    
+    let html = '';
+    currentCategories.materials.forEach(mat => {
+        html += `
+            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: between; align-items: start; gap: 8px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${mat.nameKo}</div>
+                        <div style="color: #666; font-size: 0.85rem;">${mat.name}</div>
+                        <div style="color: #999; font-size: 0.75rem; margin-top: 4px;">ID: ${mat.id}</div>
+                    </div>
+                    <button onclick="deleteMaterial('${mat.id}')" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">삭제</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Add material
+window.addMaterial = async function() {
+    try {
+        const id = document.getElementById('newMaterialId').value.trim();
+        const name = document.getElementById('newMaterialName').value.trim();
+        const nameKo = document.getElementById('newMaterialNameKo').value.trim();
+        
+        if (!id || !name || !nameKo) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+        
+        // Initialize materials array if not exists
+        if (!currentCategories.materials) {
+            currentCategories.materials = [];
+        }
+        
+        // Check if ID already exists
+        if (currentCategories.materials.find(m => m.id === id)) {
+            alert('이미 존재하는 재질 ID입니다.');
+            return;
+        }
+        
+        // Add new material
+        currentCategories.materials.push({ id, name, nameKo });
+        
+        // Save to server
+        await window.saveCategories('materials', currentCategories.materials);
+        
+        alert('✅ 재질이 추가되었습니다!');
+        
+        // Clear inputs
+        document.getElementById('newMaterialId').value = '';
+        document.getElementById('newMaterialName').value = '';
+        document.getElementById('newMaterialNameKo').value = '';
+        
+        // Reload materials list display
+        renderMaterials();
+        
+        // Update product material dropdown immediately
+        await loadProductMaterials();
+        
+    } catch (error) {
+        alert('❌ 재질 추가 실패: ' + error.message);
+    }
+}
+
+// Delete material
+window.deleteMaterial = async function(materialId) {
+    if (!confirm('정말 이 재질을 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deleteCategory('materials', materialId);
+        
+        // Update local cache
+        currentCategories.materials = currentCategories.materials.filter(m => m.id !== materialId);
+        
+        alert('✅ 재질이 삭제되었습니다.');
+        
+        // Reload materials list display
+        renderMaterials();
+        
+        // Update product material dropdown immediately
+        await loadProductMaterials();
+        
+    } catch (error) {
+        alert('❌ 재질 삭제 실패: ' + error.message);
+    }
+}
+
+// Load product materials dropdown
+async function loadProductMaterials() {
+    try {
+        const categories = await window.getAllCategories();
+        const select = document.getElementById('productMaterial');
+        
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">선택하세요</option>';
+        
+        if (categories.materials && categories.materials.length > 0) {
+            categories.materials.forEach(mat => {
+                const option = document.createElement('option');
+                option.value = mat.id;
+                option.textContent = mat.nameKo || mat.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load materials:', error);
     }
 }
 

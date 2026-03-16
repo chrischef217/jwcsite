@@ -41,6 +41,47 @@
         </div>
     </section>
 
+    <!-- Search Filter Section -->
+    <section class="search-filter-section">
+        <div class="container">
+            <div class="search-filter-box">
+                <!-- Capacity Slider -->
+                <div class="filter-group">
+                    <label>용량</label>
+                    <div class="capacity-slider-container">
+                        <input type="range" id="capacityMin" min="0" max="1200" value="0" step="10" class="capacity-slider">
+                        <input type="range" id="capacityMax" min="0" max="1200" value="1200" step="10" class="capacity-slider">
+                        <div class="capacity-track"></div>
+                        <div class="capacity-range" id="capacityRange"></div>
+                    </div>
+                    <div class="capacity-values">
+                        <span><span id="capacityMinValue">0</span> ml</span>
+                        <span>~</span>
+                        <span><span id="capacityMaxValue">1200</span> ml</span>
+                    </div>
+                </div>
+
+                <!-- Text Search -->
+                <div class="filter-group">
+                    <label>제품명 / 모델 / 사이즈</label>
+                    <input type="text" id="searchText" placeholder="검색어를 입력하세요" class="search-input">
+                </div>
+
+                <!-- Material Checkboxes -->
+                <div class="filter-group">
+                    <label>재질 (MATERIAL)</label>
+                    <div class="material-checkboxes" id="materialCheckboxes">
+                        <!-- Materials will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Search Button -->
+                <button class="search-btn" onclick="applyFilters()">🔍 검색</button>
+                <button class="reset-btn" onclick="resetFilters()">↺ 초기화</button>
+            </div>
+        </div>
+    </section>
+
     <!-- Category Filter -->
     <section class="category-filter">
         <div class="container" id="categoryFilterContainer">
@@ -64,6 +105,47 @@
         <p>&copy; 2024 JWC. All rights reserved.</p>
         <a href="admin-login.html" style="opacity: 0.3; font-size: 12px;">⚙️</a>
     </footer>
+
+    <!-- Product Detail Modal -->
+    <div id="productModal" class="product-modal">
+        <div class="product-modal-content">
+            <button class="modal-close-btn" onclick="closeProductModal()">&times;</button>
+            <div class="modal-body">
+                <!-- Product Image Gallery -->
+                <div class="modal-image-section">
+                    <img id="modalProductImage" src="" alt="Product">
+                </div>
+                
+                <!-- Product Info Section -->
+                <div class="modal-info-section">
+                    <h2 id="modalProductName">제품명</h2>
+                    <div class="modal-product-details">
+                        <div class="detail-row">
+                            <span class="detail-label">모델:</span>
+                            <span id="modalProductModel">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">용량:</span>
+                            <span id="modalProductCapacity">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">사이즈:</span>
+                            <span id="modalProductSize">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">재질:</span>
+                            <span id="modalProductMaterial">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">카테고리:</span>
+                            <span id="modalProductCategory">-</span>
+                        </div>
+                    </div>
+                    <button class="sample-request-btn" onclick="requestSample()">📋 샘플 신청하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="products.js"></script>
     <script>

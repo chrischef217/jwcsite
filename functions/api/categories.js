@@ -32,6 +32,14 @@ export async function onRequest(context) {
                     { id: 'patent', name: 'Patent', nameKo: '특허' },
                     { id: 'quality', name: 'Quality', nameKo: '품질인증' },
                     { id: 'others', name: 'Others', nameKo: '기타' }
+                ],
+                materials: [
+                    { id: 'pmma', name: 'PMMA', nameKo: 'PMMA' },
+                    { id: 'petg', name: 'PETG', nameKo: 'PETG' },
+                    { id: 'pp', name: 'PP', nameKo: 'PP' },
+                    { id: 'san', name: 'SAN', nameKo: 'SAN' },
+                    { id: 'gpps', name: 'GPPS', nameKo: 'GPPS' },
+                    { id: 'abs', name: 'ABS', nameKo: 'ABS' }
                 ]
             };
             
@@ -58,15 +66,16 @@ export async function onRequest(context) {
             const categoriesJson = await env.KV.get('categories');
             const categories = categoriesJson ? JSON.parse(categoriesJson) : {
                 products: [],
-                certifications: []
+                certifications: [],
+                materials: []
             };
             
             // Update specific type
-            if (data.type === 'products' || data.type === 'certifications') {
+            if (data.type === 'products' || data.type === 'certifications' || data.type === 'materials') {
                 categories[data.type] = data.categories;
             } else {
                 return new Response(JSON.stringify({ 
-                    error: 'Invalid type. Must be "products" or "certifications"' 
+                    error: 'Invalid type. Must be "products", "certifications", or "materials"' 
                 }), {
                     status: 400,
                     headers: corsHeaders
@@ -102,13 +111,14 @@ export async function onRequest(context) {
             const categoriesJson = await env.KV.get('categories');
             const categories = categoriesJson ? JSON.parse(categoriesJson) : {
                 products: [],
-                certifications: []
+                certifications: [],
+                materials: []
             };
             
             // Validate type
-            if (type !== 'products' && type !== 'certifications') {
+            if (type !== 'products' && type !== 'certifications' && type !== 'materials') {
                 return new Response(JSON.stringify({ 
-                    error: 'Invalid type. Must be "products" or "certifications"' 
+                    error: 'Invalid type. Must be "products", "certifications", or "materials"' 
                 }), {
                     status: 400,
                     headers: corsHeaders
