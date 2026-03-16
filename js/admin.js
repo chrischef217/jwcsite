@@ -1910,9 +1910,8 @@ window.addMaterial = async function() {
     try {
         const id = document.getElementById('newMaterialId').value.trim();
         const name = document.getElementById('newMaterialName').value.trim();
-        const nameKo = document.getElementById('newMaterialNameKo').value.trim();
         
-        if (!id || !name || !nameKo) {
+        if (!id || !name) {
             alert('모든 필드를 입력해주세요.');
             return;
         }
@@ -1928,8 +1927,8 @@ window.addMaterial = async function() {
             return;
         }
         
-        // Add new material
-        currentCategories.materials.push({ id, name, nameKo });
+        // Add new material (nameKo is same as name)
+        currentCategories.materials.push({ id, name, nameKo: name });
         
         // Save to server
         await window.saveCategories('materials', currentCategories.materials);
@@ -1939,7 +1938,6 @@ window.addMaterial = async function() {
         // Clear inputs
         document.getElementById('newMaterialId').value = '';
         document.getElementById('newMaterialName').value = '';
-        document.getElementById('newMaterialNameKo').value = '';
         
         // Reload materials list display
         renderMaterials();
