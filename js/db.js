@@ -181,6 +181,7 @@ async function saveProduct(productData) {
                 size: productData.size,
                 volume: productData.volume,
                 category: productData.category,
+                material: productData.material,
                 imageData: productData.imageData || productData.image,
                 createdAt: productData.createdAt || new Date().toISOString()
             })
