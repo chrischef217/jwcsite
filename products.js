@@ -244,7 +244,7 @@ function renderProducts(products) {
         // Get all component materials - handle both old and new format
         const materials = product.components?.map(c => {
             const mats = c.materials || (c.material ? [c.material] : []);
-            return mats.join(', ');
+            return mats.map(m => m.toUpperCase()).join(', ');
         }).filter(Boolean).join(' / ') || '-';
         
         html += `
@@ -377,7 +377,7 @@ function openProductModal(product) {
         product.components.forEach(comp => {
             // Handle both old (single material) and new (multiple materials) format
             const materials = comp.materials || (comp.material ? [comp.material] : []);
-            const materialsText = materials.join(', ') || '-';
+            const materialsText = materials.map(m => m.toUpperCase()).join(', ') || '-';
             
             componentsHTML += `
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
@@ -451,7 +451,7 @@ function openSampleRequestModal() {
     // Get material name - handle both old and new format
     const materials = currentProduct.components?.map(c => {
         const mats = c.materials || (c.material ? [c.material] : []);
-        return `${c.name}: ${mats.join(', ')}`;
+        return `${c.name}: ${mats.map(m => m.toUpperCase()).join(', ')}`;
     }).join(', ') || '-';
     
     // Populate product details
