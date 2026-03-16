@@ -33,6 +33,31 @@
         <main class="admin-main">
             <!-- Hero Slider Management -->
             <section class="admin-section" id="hero-slider">
+                <h2>메인 히어로 슬라이더 관리</h2>
+                <p style="color: #666; margin-bottom: 20px;">✅ 파일을 선택하거나 드래그앤드롭으로 업로드하세요. 서버 DB에 자동 저장됩니다.</p>
+                
+                <div class="progress-bar" id="logoProgress" style="display: none;">
+                    <div class="progress-fill"></div>
+                    <div class="progress-text">0%</div>
+                </div>
+                
+                <div class="upload-area small" id="logoUploadArea" style="border: 2px dashed #28a745;">
+                    <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                    <div class="upload-placeholder">
+                        <p>📁 파일 선택 또는 드래그앤드롭</p>
+                        <p class="upload-hint">권장: 500x500px 이하 (JPG, PNG)</p>
+                    </div>
+                    <img id="logoPreview" class="upload-preview" style="display: none;">
+                </div>
+                
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="saveLogoButton()">💾 로고 서버 저장</button>
+                    <button class="btn btn-secondary" onclick="removeLogo()">🗑️ 로고 제거</button>
+                </div>
+            </section>
+
+            <!-- Hero Slider Management -->
+            <section class="admin-section" id="hero-slider">
                 <h2>히어로 슬라이더 관리</h2>
                 <p style="color: #666; margin-bottom: 20px;">✅ 이미지/동영상을 업로드하고 순서를 변경할 수 있습니다. (이미지 5초, 영상은 영상 길이만큼 자동 재생)</p>
                 
@@ -261,9 +286,9 @@
                                     <input type="checkbox" id="comp_outer_cap" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_outer_cap" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">외캡</label>
                                 </div>
-                                <div id="materials_outer_cap" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_outer_cap" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 내캡 -->
@@ -272,9 +297,9 @@
                                     <input type="checkbox" id="comp_inner_cap" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_inner_cap" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">내캡</label>
                                 </div>
-                                <div id="materials_inner_cap" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_inner_cap" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 단캡 -->
@@ -283,9 +308,9 @@
                                     <input type="checkbox" id="comp_single_cap" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_single_cap" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">단캡</label>
                                 </div>
-                                <div id="materials_single_cap" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_single_cap" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 리드 -->
@@ -294,9 +319,9 @@
                                     <input type="checkbox" id="comp_lid" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_lid" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">리드</label>
                                 </div>
-                                <div id="materials_lid" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_lid" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 외용기 -->
@@ -305,9 +330,9 @@
                                     <input type="checkbox" id="comp_outer_container" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_outer_container" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">외용기</label>
                                 </div>
-                                <div id="materials_outer_container" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_outer_container" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 내용기 -->
@@ -316,9 +341,9 @@
                                     <input type="checkbox" id="comp_inner_container" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_inner_container" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">내용기</label>
                                 </div>
-                                <div id="materials_inner_container" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_inner_container" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 알장식 -->
@@ -327,9 +352,9 @@
                                     <input type="checkbox" id="comp_decoration" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_decoration" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">알장식</label>
                                 </div>
-                                <div id="materials_decoration" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_decoration" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 오버캡 -->
@@ -338,9 +363,9 @@
                                     <input type="checkbox" id="comp_over_cap" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_over_cap" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">오버캡</label>
                                 </div>
-                                <div id="materials_over_cap" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_over_cap" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 숄더 -->
@@ -349,9 +374,9 @@
                                     <input type="checkbox" id="comp_shoulder" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_shoulder" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">숄더</label>
                                 </div>
-                                <div id="materials_shoulder" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_shoulder" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 펌프 -->
@@ -360,9 +385,9 @@
                                     <input type="checkbox" id="comp_pump" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_pump" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">펌프</label>
                                 </div>
-                                <div id="materials_pump" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_pump" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 명판 -->
@@ -371,9 +396,9 @@
                                     <input type="checkbox" id="comp_nameplate" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_nameplate" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">명판</label>
                                 </div>
-                                <div id="materials_nameplate" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_nameplate" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 외캡장식 -->
@@ -382,9 +407,9 @@
                                     <input type="checkbox" id="comp_cap_decoration" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_cap_decoration" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">외캡장식</label>
                                 </div>
-                                <div id="materials_cap_decoration" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_cap_decoration" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                             
                             <!-- 캡 -->
@@ -393,9 +418,9 @@
                                     <input type="checkbox" id="comp_cap" style="width: 18px; height: 18px; cursor: pointer;">
                                     <label for="comp_cap" style="margin: 0 0 0 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">캡</label>
                                 </div>
-                                <div id="materials_cap" class="materials-checkboxes" style="display: none; padding-left: 10px; max-height: 150px; overflow-y: auto;">
-                                    <!-- Material checkboxes will be loaded here -->
-                                </div>
+                                <select id="material_cap" class="form-control" disabled style="cursor: pointer;">
+                                    <option value="">원료 선택</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -500,7 +525,7 @@
                         <select id="certCategory" class="form-control" required>
                             <option value="">선택하세요</option>
                             <!-- Options will be loaded dynamically -->
-                        </div>
+                        </select>
                     </div>
                     
                     <div class="form-group">
