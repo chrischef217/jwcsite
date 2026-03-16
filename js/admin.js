@@ -689,7 +689,6 @@ window.showProductForm = async function() {
     
     // Reset basic info fields
     document.getElementById('productCode').value = '';
-    document.getElementById('productName').value = '';
     document.getElementById('productVolume').value = '';
     document.getElementById('productDiameter').value = '';
     document.getElementById('productBodySize').value = '';
@@ -753,7 +752,6 @@ window.editProduct = async function(productId) {
         
         // Load basic info
         document.getElementById('productCode').value = product.code || '';
-        document.getElementById('productName').value = product.name || '';
         document.getElementById('productVolume').value = product.volume || '';
         document.getElementById('productDiameter').value = product.diameter || '';
         document.getElementById('productBodySize').value = product.bodySize || '';
@@ -808,7 +806,6 @@ window.editProduct = async function(productId) {
 window.saveProductData = async function() {
     try {
         const code = document.getElementById('productCode').value.trim();
-        const name = document.getElementById('productName').value.trim();
         const volume = document.getElementById('productVolume').value.trim();
         const diameter = document.getElementById('productDiameter').value.trim();
         const bodySize = document.getElementById('productBodySize').value.trim();
@@ -819,7 +816,7 @@ window.saveProductData = async function() {
         const imageInput = document.getElementById('productImageInput');
         const crossSectionInput = document.getElementById('productCrossSectionInput');
         
-        console.log('Saving product:', { code, name, volume, category });
+        console.log('Saving product:', { code, volume, category });
         
         if (!code || !volume || !category) {
             alert('필수 항목(제품 코드, 용량, 카테고리)을 모두 입력해주세요.');
