@@ -2108,10 +2108,10 @@ async function loadSamplesList() {
                         <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided})" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
                             ${sample.provided ? '↩️ 미제공으로 변경' : '📦 제공완료로 변경'}
                         </button>
-                        <button onclick="addAdminMemo('${sample.id}', '${sample.adminMemo || ''}')" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                        <button onclick="addAdminMemo('${sample.id}', \`${(sample.adminMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
                             📝 업체 피드백 메모
                         </button>
-                        <button onclick="addHistoryMemo('${sample.id}', '${sample.historyMemo || ''}')" style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                        <button onclick="addHistoryMemo('${sample.id}', \`${(sample.historyMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
                             📋 이력 메모
                         </button>
                     </div>
@@ -2165,34 +2165,92 @@ window.toggleSampleProvided = async function(sampleId, provided) {
 }
 
 // Add admin memo
+let currentMemoSampleId = null;
+let currentMemoType = null;
+
 window.addAdminMemo = async function(sampleId, currentMemo) {
-    const newMemo = prompt('업체 피드백 메모를 입력하세요:', currentMemo || '');
+    currentMemoSampleId = sampleId;
+    currentMemoType = 'admin';
     
-    if (newMemo === null) return; // Cancelled
+    document.getElementById('memoModalTitle').textContent = '📝 업체 피드백 메모';
+    document.getElementById('memoTextarea').value = currentMemo || '';
+    document.getElementById('memoModal').style.display = 'block';
+    document.getElementById('memoTextarea').focus();
+}
+
+// Add history memo
+window.addHistoryMemo = async function(sampleId, currentMemo) {
+    currentMemoSampleId = sampleId;
+    currentMemoType = 'history';
+    
+    document.getElementById('memoModalTitle').textContent = '📋 이력 메모';
+    document.getElementById('memoTextarea').value = currentMemo || '';
+    document.getElementById('memoModal').style.display = 'block';
+    document.getElementById('memoTextarea').focus();
+}
+
+// Close memo modal
+window.closeMemoModal = function() {
+    document.getElementById('memoModal').style.display = 'none';
+    currentMemoSampleId = null;
+    currentMemoType = null;
+}
+
+// Save memo
+window.saveMemo = async function() {
+    const memoText = document.getElementById('memoTextarea').value.trim();
+    
+    if (!currentMemoSampleId || !currentMemoType) return;
     
     try {
-        await window.updateSample(sampleId, { adminMemo: newMemo });
-        alert('✅ 메모가 저장되었습니다.');
+        const updateData = currentMemoType === 'admin' 
+            ? { adminMemo: memoText }
+            : { historyMemo: memoText };
+            
+        await window.updateSample(currentMemoSampleId, updateData);
+        
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.textContent = '✅ 메모가 저장되었습니다.';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10001;
+            animation: slideInRight 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+        
+        closeMemoModal();
         loadSamplesList();
     } catch (error) {
         alert('❌ 메모 저장 실패: ' + error.message);
     }
 }
 
-// Add history memo
-window.addHistoryMemo = async function(sampleId, currentMemo) {
-    const newMemo = prompt('이력 메모를 입력하세요:', currentMemo || '');
-    
-    if (newMemo === null) return; // Cancelled
-    
-    try {
-        await window.updateSample(sampleId, { historyMemo: newMemo });
-        alert('✅ 이력 메모가 저장되었습니다.');
-        loadSamplesList();
-    } catch (error) {
-        alert('❌ 이력 메모 저장 실패: ' + error.message);
+// Close modal on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('memoModal').style.display === 'block') {
+        closeMemoModal();
     }
-}
+});
+
+// Close modal on background click
+document.getElementById('memoModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeMemoModal();
+    }
+});
 
 // Delete sample request
 window.deleteSampleRequest = async function(sampleId) {
