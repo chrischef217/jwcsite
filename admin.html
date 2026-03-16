@@ -519,16 +519,16 @@
                 
                 <!-- Materials Categories -->
                 <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
-                    <h3 style="color: #333; margin-bottom: 20px;">재질 (Material)</h3>
+                    <h3 style="color: #333; margin-bottom: 10px;">원료 (재질)</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">✅ 제품 부품 구성에서 선택할 수 있는 원료를 관리합니다.</p>
                     
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <input type="text" id="newMaterialId" placeholder="재질 ID (예: pmma)" class="form-control" style="flex: 1; padding: 10px;">
-                        <input type="text" id="newMaterialName" placeholder="재질명 (예: PMMA)" class="form-control" style="flex: 1; padding: 10px;">
-                        <button onclick="addMaterial()" class="btn btn-primary" style="padding: 10px 20px; white-space: nowrap;">➕ 추가</button>
+                        <input type="text" id="newMaterialName" placeholder="원료명 입력 (예: PMMA, ABS, PP 등)" class="form-control" style="flex: 1; padding: 12px; font-size: 1rem;">
+                        <button onclick="addMaterial()" class="btn btn-primary" style="padding: 12px 24px; white-space: nowrap; font-weight: 600;">➕ 원료 추가</button>
                     </div>
                     
-                    <div id="materialsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                        <p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">재질 목록을 불러오는 중...</p>
+                    <div id="materialsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                        <p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">원료 목록을 불러오는 중...</p>
                     </div>
                 </div>
             </section>

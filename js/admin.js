@@ -2050,22 +2050,16 @@ function renderMaterials() {
     const container = document.getElementById('materialsList');
     
     if (!currentCategories || !currentCategories.materials || currentCategories.materials.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">등록된 재질이 없습니다.</p>';
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px; grid-column: 1/-1;">등록된 원료가 없습니다. 위 입력창에서 원료를 추가하세요.</p>';
         return;
     }
     
     let html = '';
     currentCategories.materials.forEach(mat => {
         html += `
-            <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; justify-content: between; align-items: start; gap: 8px;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${mat.nameKo}</div>
-                        <div style="color: #666; font-size: 0.85rem;">${mat.name}</div>
-                        <div style="color: #999; font-size: 0.75rem; margin-top: 4px;">ID: ${mat.id}</div>
-                    </div>
-                    <button onclick="deleteMaterial('${mat.id}')" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">삭제</button>
-                </div>
+            <div style="background: white; border: 2px solid #e9ecef; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+                <div style="font-weight: 600; color: #333; font-size: 1rem;">${mat.nameKo || mat.name}</div>
+                <button onclick="deleteMaterial('${mat.id}')" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">🗑️ 삭제</button>
             </div>
         `;
     });
@@ -2076,11 +2070,10 @@ function renderMaterials() {
 // Add material
 window.addMaterial = async function() {
     try {
-        const id = document.getElementById('newMaterialId').value.trim();
         const name = document.getElementById('newMaterialName').value.trim();
         
-        if (!id || !name) {
-            alert('모든 필드를 입력해주세요.');
+        if (!name) {
+            alert('원료명을 입력해주세요.');
             return;
         }
         
@@ -2089,22 +2082,28 @@ window.addMaterial = async function() {
             currentCategories.materials = [];
         }
         
-        // Check if ID already exists
-        if (currentCategories.materials.find(m => m.id === id)) {
-            alert('이미 존재하는 재질 ID입니다.');
+        // Generate ID from name (lowercase, remove spaces)
+        const id = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        
+        // Check if material name already exists
+        if (currentCategories.materials.find(m => m.id === id || m.name === name || m.nameKo === name)) {
+            alert('이미 존재하는 원료입니다.');
             return;
         }
         
-        // Add new material (nameKo is same as name)
-        currentCategories.materials.push({ id, name, nameKo: name });
+        // Add new material
+        currentCategories.materials.push({ 
+            id, 
+            name, 
+            nameKo: name 
+        });
         
         // Save to server
         await window.saveCategories('materials', currentCategories.materials);
         
-        alert('✅ 재질이 추가되었습니다!');
+        showToast('✅ 원료가 추가되었습니다!');
         
-        // Clear inputs
-        document.getElementById('newMaterialId').value = '';
+        // Clear input
         document.getElementById('newMaterialName').value = '';
         
         // Reload materials list display
@@ -2114,13 +2113,13 @@ window.addMaterial = async function() {
         await loadProductMaterials();
         
     } catch (error) {
-        alert('❌ 재질 추가 실패: ' + error.message);
+        alert('❌ 원료 추가 실패: ' + error.message);
     }
 }
 
 // Delete material
 window.deleteMaterial = async function(materialId) {
-    if (!confirm('정말 이 재질을 삭제하시겠습니까?')) return;
+    if (!confirm('정말 이 원료를 삭제하시겠습니까?\n\n⚠️ 주의: 이 원료를 사용 중인 제품이 있을 경우 문제가 발생할 수 있습니다.')) return;
     
     try {
         await window.deleteCategory('materials', materialId);
@@ -2128,7 +2127,7 @@ window.deleteMaterial = async function(materialId) {
         // Update local cache
         currentCategories.materials = currentCategories.materials.filter(m => m.id !== materialId);
         
-        alert('✅ 재질이 삭제되었습니다.');
+        showToast('✅ 원료가 삭제되었습니다.');
         
         // Reload materials list display
         renderMaterials();
@@ -2137,7 +2136,7 @@ window.deleteMaterial = async function(materialId) {
         await loadProductMaterials();
         
     } catch (error) {
-        alert('❌ 재질 삭제 실패: ' + error.message);
+        alert('❌ 원료 삭제 실패: ' + error.message);
     }
 }
 
