@@ -45,6 +45,7 @@ export async function onRequest(context) {
                 name: requestData.name,
                 phone: requestData.phone,
                 email: requestData.email,
+                address: requestData.address,
                 message: requestData.message,
                 product: requestData.product,
                 status: 'pending', // pending, approved, rejected, completed

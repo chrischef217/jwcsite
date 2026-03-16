@@ -350,6 +350,7 @@ async function submitSampleRequest(event) {
     const name = document.getElementById('sampleName').value.trim();
     const phone = document.getElementById('samplePhone').value.trim();
     const email = document.getElementById('sampleEmail').value.trim();
+    const address = document.getElementById('sampleAddress').value.trim();
     const message = document.getElementById('sampleMessage').value.trim();
     
     // Validate phone format
@@ -375,6 +376,7 @@ async function submitSampleRequest(event) {
                 name,
                 phone,
                 email,
+                address,
                 message,
                 product: {
                     id: currentProduct.id,

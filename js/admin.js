@@ -2078,6 +2078,7 @@ async function loadSamplesList() {
                             <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📞 연락처 정보</h4>
                             <p style="margin: 5px 0; color: #666;"><strong>전화:</strong> ${sample.phone}</p>
                             <p style="margin: 5px 0; color: #666;"><strong>이메일:</strong> ${sample.email}</p>
+                            <p style="margin: 5px 0; color: #666;"><strong>주소:</strong> ${sample.address || '-'}</p>
                         </div>
                         <div>
                             <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📦 제품 정보</h4>
