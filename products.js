@@ -1,6 +1,7 @@
 // Products Page - Advanced Search and Modal
 let allProducts = [];
 let allMaterials = [];
+let currentProduct = null;
 let currentFilters = {
     category: 'all',
     capacityMin: 0,
@@ -264,6 +265,7 @@ function renderProducts(products) {
 // Open product detail modal
 function openProductModal(product) {
     const modal = document.getElementById('productModal');
+    currentProduct = product;
     
     // Get material name
     const materialName = allMaterials.find(m => m.id === product.material)?.nameKo || product.material || '-';
@@ -288,9 +290,117 @@ function closeProductModal() {
     document.body.style.overflow = '';
 }
 
-// Request sample (redirect to contact page)
+// Open sample request modal
+function openSampleRequestModal() {
+    if (!currentProduct) {
+        alert('제품 정보를 불러올 수 없습니다.');
+        return;
+    }
+    
+    const sampleModal = document.getElementById('sampleRequestModal');
+    const productDetailsDiv = document.getElementById('sampleProductDetails');
+    
+    // Get material name
+    const materialName = allMaterials.find(m => m.id === currentProduct.material)?.nameKo || currentProduct.material || '-';
+    
+    // Populate product details
+    productDetailsDiv.innerHTML = `
+        <div class="detail-row">
+            <span class="detail-label">제품명:</span>
+            <span>${currentProduct.name}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">모델:</span>
+            <span>${currentProduct.model}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">용량:</span>
+            <span>${currentProduct.volume}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">사이즈:</span>
+            <span>${currentProduct.size || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">재질:</span>
+            <span>${materialName}</span>
+        </div>
+    `;
+    
+    // Close product modal and open sample request modal
+    closeProductModal();
+    sampleModal.classList.add('active');
+}
+
+// Close sample request modal
+function closeSampleRequestModal() {
+    const modal = document.getElementById('sampleRequestModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Reset form
+    document.getElementById('sampleRequestForm').reset();
+}
+
+// Submit sample request
+async function submitSampleRequest(event) {
+    event.preventDefault();
+    
+    const company = document.getElementById('sampleCompany').value.trim();
+    const name = document.getElementById('sampleName').value.trim();
+    const phone = document.getElementById('samplePhone').value.trim();
+    const email = document.getElementById('sampleEmail').value.trim();
+    const message = document.getElementById('sampleMessage').value.trim();
+    
+    // Validate phone format
+    const phoneRegex = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
+    if (!phoneRegex.test(phone)) {
+        alert('올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)');
+        return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 형식을 입력해주세요.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/samples', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                company,
+                name,
+                phone,
+                email,
+                message,
+                product: {
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    model: currentProduct.model,
+                    volume: currentProduct.volume,
+                    size: currentProduct.size,
+                    material: currentProduct.material
+                }
+            })
+        });
+        
+        if (!response.ok) throw new Error('샘플 신청 실패');
+        
+        alert('✅ 샘플 신청이 완료되었습니다!\n담당자가 확인 후 연락드리겠습니다.');
+        closeSampleRequestModal();
+        
+    } catch (error) {
+        console.error('샘플 신청 오류:', error);
+        alert('❌ 샘플 신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+}
+
+// Request sample (deprecated - redirect to contact)
 function requestSample() {
-    window.location.href = 'contact.html';
+    openSampleRequestModal();
 }
 
 // Close modal on background click

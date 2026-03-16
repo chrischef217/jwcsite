@@ -211,6 +211,9 @@ function handleSectionLoad(section) {
         case 'categories':
             loadCategories();
             break;
+        case 'samples':
+            loadSamplesList();
+            break;
         case 'notices':
             loadNotices();
             break;
@@ -2023,3 +2026,182 @@ async function loadProductMaterials() {
     }
 }
 
+// ========== SAMPLE REQUESTS MANAGEMENT ==========
+
+// Load samples list
+async function loadSamplesList() {
+    try {
+        const samples = await window.getAllSamples();
+        const container = document.getElementById('samplesList');
+        
+        if (!samples || samples.length === 0) {
+            container.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">샘플 신청 내역이 없습니다.</p>';
+            return;
+        }
+        
+        let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+        
+        samples.forEach(sample => {
+            const statusBadge = {
+                'pending': '<span style="background: #ffc107; color: #000; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">대기중</span>',
+                'approved': '<span style="background: #28a745; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">승인</span>',
+                'rejected': '<span style="background: #dc3545; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">거절</span>',
+                'completed': '<span style="background: #6c757d; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">완료</span>'
+            };
+            
+            const providedBadge = sample.provided ? 
+                '<span style="background: #17a2b8; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">제공완료</span>' : 
+                '<span style="background: #e9ecef; color: #6c757d; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">미제공</span>';
+            
+            html += `
+                <div style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; color: #333;">
+                                ${sample.company} - ${sample.name}
+                            </h3>
+                            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                                ${statusBadge[sample.status] || statusBadge['pending']}
+                                ${providedBadge}
+                            </div>
+                            <p style="color: #999; font-size: 0.9rem; margin: 0;">
+                                신청일: ${new Date(sample.createdAt).toLocaleString('ko-KR')}
+                            </p>
+                        </div>
+                        <button onclick="deleteSampleRequest('${sample.id}')" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            🗑️ 삭제
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📞 연락처 정보</h4>
+                            <p style="margin: 5px 0; color: #666;"><strong>전화:</strong> ${sample.phone}</p>
+                            <p style="margin: 5px 0; color: #666;"><strong>이메일:</strong> ${sample.email}</p>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📦 제품 정보</h4>
+                            <p style="margin: 5px 0; color: #666;"><strong>제품명:</strong> ${sample.product?.name || '-'}</p>
+                            <p style="margin: 5px 0; color: #666;"><strong>모델:</strong> ${sample.product?.model || '-'}</p>
+                            <p style="margin: 5px 0; color: #666;"><strong>용량:</strong> ${sample.product?.volume || '-'}</p>
+                        </div>
+                    </div>
+                    
+                    ${sample.message ? `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">💬 문의 내용</h4>
+                            <p style="margin: 0; color: #666; white-space: pre-wrap;">${sample.message}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="updateSampleStatus('${sample.id}', 'approved')" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            ✅ 승인
+                        </button>
+                        <button onclick="updateSampleStatus('${sample.id}', 'rejected')" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            ❌ 거절
+                        </button>
+                        <button onclick="updateSampleStatus('${sample.id}', 'completed')" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            ✔️ 완료
+                        </button>
+                        <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided})" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            ${sample.provided ? '↩️ 미제공으로 변경' : '📦 제공완료로 변경'}
+                        </button>
+                        <button onclick="addAdminMemo('${sample.id}', '${sample.adminMemo || ''}')" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            📝 업체 피드백 메모
+                        </button>
+                        <button onclick="addHistoryMemo('${sample.id}', '${sample.historyMemo || ''}')" style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                            📋 이력 메모
+                        </button>
+                    </div>
+                    
+                    ${sample.adminMemo ? `
+                        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #007bff;">
+                            <h4 style="font-size: 0.95rem; color: #007bff; margin: 0 0 8px 0;">📝 업체 피드백 메모</h4>
+                            <p style="margin: 0; color: #495057; white-space: pre-wrap;">${sample.adminMemo}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${sample.historyMemo ? `
+                        <div style="background: #f3e7ff; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #6f42c1;">
+                            <h4 style="font-size: 0.95rem; color: #6f42c1; margin: 0 0 8px 0;">📋 이력 메모</h4>
+                            <p style="margin: 0; color: #495057; white-space: pre-wrap;">${sample.historyMemo}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Failed to load samples:', error);
+        document.getElementById('samplesList').innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">샘플 신청 내역을 불러오지 못했습니다.</p>';
+    }
+}
+
+// Update sample status
+window.updateSampleStatus = async function(sampleId, newStatus) {
+    try {
+        await window.updateSample(sampleId, { status: newStatus });
+        alert('✅ 상태가 변경되었습니다.');
+        loadSamplesList();
+    } catch (error) {
+        alert('❌ 상태 변경 실패: ' + error.message);
+    }
+}
+
+// Toggle sample provided status
+window.toggleSampleProvided = async function(sampleId, provided) {
+    try {
+        await window.updateSample(sampleId, { provided: provided });
+        alert(`✅ ${provided ? '제공완료' : '미제공'}로 변경되었습니다.`);
+        loadSamplesList();
+    } catch (error) {
+        alert('❌ 상태 변경 실패: ' + error.message);
+    }
+}
+
+// Add admin memo
+window.addAdminMemo = async function(sampleId, currentMemo) {
+    const newMemo = prompt('업체 피드백 메모를 입력하세요:', currentMemo || '');
+    
+    if (newMemo === null) return; // Cancelled
+    
+    try {
+        await window.updateSample(sampleId, { adminMemo: newMemo });
+        alert('✅ 메모가 저장되었습니다.');
+        loadSamplesList();
+    } catch (error) {
+        alert('❌ 메모 저장 실패: ' + error.message);
+    }
+}
+
+// Add history memo
+window.addHistoryMemo = async function(sampleId, currentMemo) {
+    const newMemo = prompt('이력 메모를 입력하세요:', currentMemo || '');
+    
+    if (newMemo === null) return; // Cancelled
+    
+    try {
+        await window.updateSample(sampleId, { historyMemo: newMemo });
+        alert('✅ 이력 메모가 저장되었습니다.');
+        loadSamplesList();
+    } catch (error) {
+        alert('❌ 이력 메모 저장 실패: ' + error.message);
+    }
+}
+
+// Delete sample request
+window.deleteSampleRequest = async function(sampleId) {
+    if (!confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) return;
+    
+    try {
+        await window.deleteSample(sampleId);
+        alert('✅ 샘플 신청이 삭제되었습니다.');
+        loadSamplesList();
+    } catch (error) {
+        alert('❌ 삭제 실패: ' + error.message);
+    }
+}

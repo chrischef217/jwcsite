@@ -479,3 +479,62 @@ async function deleteCategory(type, categoryId) {
 window.getAllCategories = getAllCategories;
 window.saveCategories = saveCategories;
 window.deleteCategory = deleteCategory;
+
+// ========== SAMPLE REQUESTS MANAGEMENT ==========
+
+// Get all sample requests
+async function getAllSamples() {
+    try {
+        const response = await fetch('/api/samples');
+        if (!response.ok) throw new Error('Failed to fetch samples');
+        return await response.json();
+    } catch (error) {
+        console.error('❌ Failed to load samples:', error);
+        return [];
+    }
+}
+
+// Update sample request
+async function updateSample(sampleId, updateData) {
+    try {
+        console.log('💾 Updating sample:', sampleId);
+        
+        const response = await fetch(`/api/samples?id=${sampleId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) throw new Error('Failed to update sample');
+        
+        const result = await response.json();
+        console.log('✅ Sample updated:', result);
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to update sample:', error);
+        throw error;
+    }
+}
+
+// Delete sample request
+async function deleteSample(sampleId) {
+    try {
+        console.log('🗑️ Deleting sample:', sampleId);
+        
+        const response = await fetch(`/api/samples?id=${sampleId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete sample');
+        
+        console.log('✅ Sample deleted');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to delete sample:', error);
+        throw error;
+    }
+}
+
+window.getAllSamples = getAllSamples;
+window.updateSample = updateSample;
+window.deleteSample = deleteSample;
