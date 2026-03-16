@@ -270,8 +270,50 @@ function openProductModal(product) {
     
     console.log('Opening product modal:', product);
     
+    // Setup image gallery
+    const mainImage = document.getElementById('modalMainImage');
+    const thumbnailsContainer = document.getElementById('modalImageThumbnails');
+    
+    const images = [];
+    
+    // Add main image
+    if (product.imageData || product.image) {
+        images.push({
+            src: product.imageData || product.image,
+            label: '제품 사진'
+        });
+    }
+    
+    // Add cross section image
+    if (product.crossSectionImageData) {
+        images.push({
+            src: product.crossSectionImageData,
+            label: '단면 사진'
+        });
+    }
+    
     // Set main image
-    document.getElementById('modalProductImage').src = product.imageData || product.image || '';
+    if (images.length > 0) {
+        mainImage.src = images[0].src;
+        mainImage.alt = images[0].label;
+    }
+    
+    // Build thumbnails
+    thumbnailsContainer.innerHTML = '';
+    images.forEach((img, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'modal-thumbnail' + (index === 0 ? ' active' : '');
+        thumbnail.innerHTML = `<img src="${img.src}" alt="${img.label}">`;
+        thumbnail.onclick = function() {
+            mainImage.src = img.src;
+            mainImage.alt = img.label;
+            
+            // Update active state
+            document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        };
+        thumbnailsContainer.appendChild(thumbnail);
+    });
     
     // Set product code/name
     document.getElementById('modalProductName').textContent = product.code || '제품 코드';
@@ -372,12 +414,9 @@ function openProductModal(product) {
         assemblySection.style.display = 'none';
     }
     
-    // Cross Section Image
+    // Hide cross section section (now in gallery)
     const crossSectionSection = document.getElementById('modalCrossSectionSection');
-    if (product.crossSectionImageData) {
-        document.getElementById('modalCrossSectionImage').src = product.crossSectionImageData;
-        crossSectionSection.style.display = 'block';
-    } else {
+    if (crossSectionSection) {
         crossSectionSection.style.display = 'none';
     }
     
