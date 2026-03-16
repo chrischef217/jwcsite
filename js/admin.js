@@ -202,6 +202,7 @@ function handleSectionLoad(section) {
         case 'products':
             loadProductsList();
             loadProductCategories();
+            loadProductMaterials();
             break;
         case 'certifications':
             loadCertificationsList();
