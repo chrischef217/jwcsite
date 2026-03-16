@@ -241,18 +241,19 @@ function renderProducts(products) {
     let html = '';
     
     products.forEach(product => {
-        const materialName = allMaterials.find(m => m.id === product.material)?.nameKo || product.material || '-';
+        // Get all component materials
+        const materials = product.components?.map(c => c.material).filter(Boolean).join(', ') || '-';
         
         html += `
             <div class="product-card" data-category="${product.category}" onclick='openProductModal(${JSON.stringify(product).replace(/'/g, "&apos;")})'>
                 <div class="product-image">
-                    <img src="${product.imageData || product.image}" alt="${product.name} ${product.model}">
+                    <img src="${product.imageData || product.image}" alt="${product.code}">
                 </div>
                 <div class="product-info">
-                    <h3>${product.name}</h3>
-                    <p class="product-model">${product.model}</p>
-                    ${product.size ? `<p class="product-size">${product.size}</p>` : ''}
-                    <p class="product-volume">${product.volume}</p>
+                    <h3>${product.code}</h3>
+                    <p class="product-volume">${product.volume || '-'}</p>
+                    ${product.diameter ? `<p class="product-size">Ø ${product.diameter}mm</p>` : ''}
+                    <p class="product-material">${materials}</p>
                 </div>
             </div>
         `;
@@ -267,16 +268,39 @@ function openProductModal(product) {
     const modal = document.getElementById('productModal');
     currentProduct = product;
     
-    // Get material name
-    const materialName = allMaterials.find(m => m.id === product.material)?.nameKo || product.material || '-';
+    // Build components HTML
+    let componentsHTML = '<div style="margin-top: 10px;">';
+    if (product.components && product.components.length > 0) {
+        product.components.forEach(comp => {
+            componentsHTML += `
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                    <span style="font-weight: 500;">${comp.name}:</span>
+                    <span style="color: #666;">${comp.material}</span>
+                </div>
+            `;
+        });
+    } else {
+        componentsHTML += '<p style="color: #999;">부품 정보 없음</p>';
+    }
+    componentsHTML += '</div>';
+    
+    // Build dimensions HTML
+    let dimensionsHTML = '';
+    if (product.diameter || product.bodySize || product.totalHeight) {
+        dimensionsHTML = '<div style="margin-top: 10px;">';
+        if (product.diameter) dimensionsHTML += `<p>직경: ${product.diameter}mm</p>`;
+        if (product.bodySize) dimensionsHTML += `<p>BODY SIZE: ${product.bodySize}mm</p>`;
+        if (product.totalHeight) dimensionsHTML += `<p>TOTAL HEIGHT: ${product.totalHeight}mm</p>`;
+        dimensionsHTML += '</div>';
+    }
     
     // Populate modal
     document.getElementById('modalProductImage').src = product.imageData || product.image;
-    document.getElementById('modalProductName').textContent = product.name;
-    document.getElementById('modalProductModel').textContent = product.model || '-';
+    document.getElementById('modalProductName').textContent = product.code;
+    document.getElementById('modalProductModel').textContent = product.code || '-';
     document.getElementById('modalProductCapacity').textContent = product.volume || '-';
-    document.getElementById('modalProductSize').textContent = product.size || '-';
-    document.getElementById('modalProductMaterial').textContent = materialName;
+    document.getElementById('modalProductSize').innerHTML = dimensionsHTML || '-';
+    document.getElementById('modalProductMaterial').innerHTML = componentsHTML;
     document.getElementById('modalProductCategory').textContent = product.categoryName || product.category || '-';
     
     modal.classList.add('active');
@@ -301,29 +325,36 @@ function openSampleRequestModal() {
     const productDetailsDiv = document.getElementById('sampleProductDetails');
     
     // Get material name
-    const materialName = allMaterials.find(m => m.id === currentProduct.material)?.nameKo || currentProduct.material || '-';
+    const materials = currentProduct.components?.map(c => `${c.name}: ${c.material}`).join(', ') || '-';
     
     // Populate product details
     productDetailsDiv.innerHTML = `
         <div class="detail-row">
-            <span class="detail-label">제품명:</span>
-            <span>${currentProduct.name}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">모델:</span>
-            <span>${currentProduct.model}</span>
+            <span class="detail-label">제품 코드:</span>
+            <span>${currentProduct.code}</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">용량:</span>
             <span>${currentProduct.volume}</span>
         </div>
+        ${currentProduct.diameter ? `
         <div class="detail-row">
-            <span class="detail-label">사이즈:</span>
-            <span>${currentProduct.size || '-'}</span>
-        </div>
+            <span class="detail-label">직경:</span>
+            <span>${currentProduct.diameter}mm</span>
+        </div>` : ''}
+        ${currentProduct.bodySize ? `
         <div class="detail-row">
-            <span class="detail-label">재질:</span>
-            <span>${materialName}</span>
+            <span class="detail-label">BODY SIZE:</span>
+            <span>${currentProduct.bodySize}mm</span>
+        </div>` : ''}
+        ${currentProduct.totalHeight ? `
+        <div class="detail-row">
+            <span class="detail-label">TOTAL HEIGHT:</span>
+            <span>${currentProduct.totalHeight}mm</span>
+        </div>` : ''}
+        <div class="detail-row">
+            <span class="detail-label">부품/재질:</span>
+            <span>${materials}</span>
         </div>
     `;
     
@@ -380,11 +411,13 @@ async function submitSampleRequest(event) {
                 message,
                 product: {
                     id: currentProduct.id,
-                    name: currentProduct.name,
-                    model: currentProduct.model,
+                    code: currentProduct.code,
                     volume: currentProduct.volume,
-                    size: currentProduct.size,
-                    material: currentProduct.material
+                    diameter: currentProduct.diameter,
+                    bodySize: currentProduct.bodySize,
+                    totalHeight: currentProduct.totalHeight,
+                    components: currentProduct.components,
+                    category: currentProduct.category
                 }
             })
         });

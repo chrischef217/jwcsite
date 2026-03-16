@@ -650,16 +650,19 @@ async function loadProductsList() {
             `;
             
             grouped[category].forEach(product => {
+                // Get components materials
+                const materials = product.components?.map(c => c.material).join(', ') || '-';
+                
                 html += `
                     <div class="product-item" style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div style="width: 100%; padding-top: 100%; position: relative; overflow: hidden; border-radius: 8px; background: #f8f9fa; margin-bottom: 12px;">
-                            <img src="${product.imageData || product.image}" alt="${product.name}" 
+                            <img src="${product.imageData || product.image}" alt="${product.code}" 
                                  style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; object-fit: contain;">
                         </div>
-                        <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${product.name}</h4>
-                        <p style="color: #007bff; font-weight: 600; margin: 5px 0;">${product.model}</p>
-                        ${product.size ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">${product.size}</p>` : ''}
-                        <p style="color: #555; font-weight: 500; margin: 5px 0;">${product.volume}</p>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1rem; color: #333;">${product.code}</h4>
+                        <p style="color: #555; font-weight: 500; margin: 5px 0;">${product.volume || '-'}</p>
+                        ${product.diameter ? `<p style="color: #666; font-size: 0.85rem; margin: 3px 0;">Ø ${product.diameter}mm</p>` : ''}
+                        <p style="color: #888; font-size: 0.8rem; margin: 3px 0;">${materials}</p>
                         <div style="display: flex; gap: 8px; margin-top: 12px;">
                             <button onclick="editProduct('${product.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
                             <button onclick="deleteProductItem('${product.id}')" class="btn btn-sm" style="flex: 1; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>
@@ -851,7 +854,6 @@ window.saveProductData = async function() {
         const productData = {
             id: currentEditingProduct ? currentEditingProduct.id : Date.now().toString(),
             code,
-            name,
             volume,
             diameter,
             bodySize,
@@ -2220,7 +2222,7 @@ async function loadSamplesList(page = 1) {
                     <td style="padding: 15px; color: #666;">${samples.length - globalIndex}</td>
                     <td style="padding: 15px; color: #333; font-weight: 600;">${sample.company}</td>
                     <td style="padding: 15px; color: #666;">${sample.name}</td>
-                    <td style="padding: 15px; color: #666;">${sample.product?.name || '-'}</td>
+                    <td style="padding: 15px; color: #666;">${sample.product?.code || '-'}</td>
                     <td style="padding: 15px; text-align: center;">${statusBadge[sample.status] || statusBadge['pending']}</td>
                     <td style="padding: 15px; text-align: center;">${providedBadge}</td>
                     <td style="padding: 15px; color: #999; font-size: 0.9rem;">${new Date(sample.createdAt).toLocaleDateString('ko-KR')}</td>
@@ -2325,11 +2327,12 @@ window.showSampleDetail = function(sampleId) {
                     <h3 style="font-size: 1.1rem; color: #333; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
                         📦 제품 정보
                     </h3>
-                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>제품명:</strong> ${sample.product?.name || '-'}</p>
-                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>모델:</strong> ${sample.product?.model || '-'}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>제품 코드:</strong> ${sample.product?.code || '-'}</p>
                     <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>용량:</strong> ${sample.product?.volume || '-'}</p>
-                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>사이즈:</strong> ${sample.product?.size || '-'}</p>
-                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>재질:</strong> ${sample.product?.material || '-'}</p>
+                    ${sample.product?.diameter ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>직경:</strong> ${sample.product.diameter}mm</p>` : ''}
+                    ${sample.product?.bodySize ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>BODY SIZE:</strong> ${sample.product.bodySize}mm</p>` : ''}
+                    ${sample.product?.totalHeight ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>TOTAL HEIGHT:</strong> ${sample.product.totalHeight}mm</p>` : ''}
+                    ${sample.product?.components ? `<p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>부품/재질:</strong> ${sample.product.components.map(c => `${c.name}: ${c.material}`).join(', ')}</p>` : ''}
                 </div>
             </div>
             
