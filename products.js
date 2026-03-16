@@ -268,40 +268,118 @@ function openProductModal(product) {
     const modal = document.getElementById('productModal');
     currentProduct = product;
     
-    // Build components HTML
-    let componentsHTML = '<div style="margin-top: 10px;">';
+    console.log('Opening product modal:', product);
+    
+    // Set main image
+    document.getElementById('modalProductImage').src = product.imageData || product.image || '';
+    
+    // Set product code/name
+    document.getElementById('modalProductName').textContent = product.code || '제품 코드';
+    
+    // Basic Info
+    document.getElementById('modalProductVolume').textContent = product.volume || '-';
+    document.getElementById('modalProductCategory').textContent = product.categoryName || product.category || '-';
+    
+    // Dimensions Section
+    const dimensionsSection = document.getElementById('modalDimensionsSection');
+    const dimensionsDiv = document.getElementById('modalDimensions');
+    let hasDimensions = false;
+    let dimensionsHTML = '';
+    
+    if (product.diameter) {
+        dimensionsHTML += `
+            <div class="detail-row">
+                <span class="detail-label">직경 (Ø):</span>
+                <span>${product.diameter} mm</span>
+            </div>
+        `;
+        hasDimensions = true;
+    }
+    
+    if (product.bodySize) {
+        dimensionsHTML += `
+            <div class="detail-row">
+                <span class="detail-label">BODY SIZE:</span>
+                <span>${product.bodySize} mm</span>
+            </div>
+        `;
+        hasDimensions = true;
+    }
+    
+    if (product.totalHeight) {
+        dimensionsHTML += `
+            <div class="detail-row">
+                <span class="detail-label">TOTAL HEIGHT:</span>
+                <span>${product.totalHeight} mm</span>
+            </div>
+        `;
+        hasDimensions = true;
+    }
+    
+    if (hasDimensions) {
+        dimensionsDiv.innerHTML = dimensionsHTML;
+        dimensionsSection.style.display = 'block';
+    } else {
+        dimensionsSection.style.display = 'none';
+    }
+    
+    // Components Section
+    const componentsSection = document.getElementById('modalComponentsSection');
+    const componentsDiv = document.getElementById('modalComponents');
+    
     if (product.components && product.components.length > 0) {
+        let componentsHTML = '<div style="display: grid; gap: 8px;">';
         product.components.forEach(comp => {
             componentsHTML += `
-                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                    <span style="font-weight: 500;">${comp.name}:</span>
-                    <span style="color: #666;">${comp.material}</span>
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                    <span style="font-weight: 600; color: #495057;">${comp.name}</span>
+                    <span style="color: #6c757d; background: white; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem;">${comp.material}</span>
                 </div>
             `;
         });
+        componentsHTML += '</div>';
+        componentsDiv.innerHTML = componentsHTML;
+        componentsSection.style.display = 'block';
     } else {
-        componentsHTML += '<p style="color: #999;">부품 정보 없음</p>';
-    }
-    componentsHTML += '</div>';
-    
-    // Build dimensions HTML
-    let dimensionsHTML = '';
-    if (product.diameter || product.bodySize || product.totalHeight) {
-        dimensionsHTML = '<div style="margin-top: 10px;">';
-        if (product.diameter) dimensionsHTML += `<p>직경: ${product.diameter}mm</p>`;
-        if (product.bodySize) dimensionsHTML += `<p>BODY SIZE: ${product.bodySize}mm</p>`;
-        if (product.totalHeight) dimensionsHTML += `<p>TOTAL HEIGHT: ${product.totalHeight}mm</p>`;
-        dimensionsHTML += '</div>';
+        componentsSection.style.display = 'none';
     }
     
-    // Populate modal
-    document.getElementById('modalProductImage').src = product.imageData || product.image;
-    document.getElementById('modalProductName').textContent = product.code;
-    document.getElementById('modalProductModel').textContent = product.code || '-';
-    document.getElementById('modalProductCapacity').textContent = product.volume || '-';
-    document.getElementById('modalProductSize').innerHTML = dimensionsHTML || '-';
-    document.getElementById('modalProductMaterial').innerHTML = componentsHTML;
-    document.getElementById('modalProductCategory').textContent = product.categoryName || product.category || '-';
+    // Assembly & Delivery Section
+    const assemblySection = document.getElementById('modalAssemblySection');
+    const assemblyRow = document.getElementById('modalAssemblyRow');
+    const deliveryRow = document.getElementById('modalDeliveryRow');
+    let hasAssemblyInfo = false;
+    
+    if (product.assembly) {
+        document.getElementById('modalAssembly').textContent = product.assembly;
+        assemblyRow.style.display = 'flex';
+        hasAssemblyInfo = true;
+    } else {
+        assemblyRow.style.display = 'none';
+    }
+    
+    if (product.deliverySet) {
+        document.getElementById('modalDeliverySet').textContent = product.deliverySet;
+        deliveryRow.style.display = 'flex';
+        hasAssemblyInfo = true;
+    } else {
+        deliveryRow.style.display = 'none';
+    }
+    
+    if (hasAssemblyInfo) {
+        assemblySection.style.display = 'block';
+    } else {
+        assemblySection.style.display = 'none';
+    }
+    
+    // Cross Section Image
+    const crossSectionSection = document.getElementById('modalCrossSectionSection');
+    if (product.crossSectionImageData) {
+        document.getElementById('modalCrossSectionImage').src = product.crossSectionImageData;
+        crossSectionSection.style.display = 'block';
+    } else {
+        crossSectionSection.style.display = 'none';
+    }
     
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
