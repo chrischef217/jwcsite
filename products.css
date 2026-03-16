@@ -342,14 +342,14 @@
 }
 
 .modal-thumbnail:hover {
-    border-color: #007bff;
+    border-color: #8b7355;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+    box-shadow: 0 4px 8px rgba(139, 115, 85, 0.25);
 }
 
 .modal-thumbnail.active {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    border-color: #8b7355;
+    box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.2);
 }
 
 .modal-thumbnail img {
@@ -366,10 +366,10 @@
 
 .modal-info-section h2 {
     font-size: 1.8rem;
-    color: #333;
+    color: #2c3e50;
     margin: 0;
     padding-bottom: 15px;
-    border-bottom: 3px solid #007bff;
+    border-bottom: 3px solid #34495e;
 }
 
 .modal-section {
