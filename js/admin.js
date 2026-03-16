@@ -686,19 +686,46 @@ async function loadProductsList() {
 window.showProductForm = async function() {
     currentEditingProduct = null;
     document.getElementById('formTitle').textContent = '새 제품 추가';
+    
+    // Reset basic info fields
+    document.getElementById('productCode').value = '';
     document.getElementById('productName').value = '';
-    document.getElementById('productModel').value = '';
-    document.getElementById('productSize').value = '';
     document.getElementById('productVolume').value = '';
+    document.getElementById('productDiameter').value = '';
+    document.getElementById('productBodySize').value = '';
+    document.getElementById('productTotalHeight').value = '';
     document.getElementById('productCategory').value = '';
-    document.getElementById('productMaterial').value = '';
+    document.getElementById('productAssembly').value = '';
+    document.getElementById('productDeliverySet').value = '';
+    
+    // Reset component checkboxes and materials
+    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+    componentTypes.forEach(type => {
+        const checkbox = document.getElementById('comp_' + type);
+        const materialSelect = document.getElementById('material_' + type);
+        
+        if (checkbox) checkbox.checked = false;
+        if (materialSelect) {
+            materialSelect.disabled = true;
+            materialSelect.value = '';
+        }
+    });
+    
+    // Reset images
     document.getElementById('productImagePreview').style.display = 'none';
     document.getElementById('productImagePreview').src = '';
-    document.getElementById('productForm').style.display = 'block';
+    document.getElementById('productImageInput').value = '';
+    
+    document.getElementById('productCrossSectionPreview').style.display = 'none';
+    document.getElementById('productCrossSectionPreview').src = '';
+    document.getElementById('productCrossSectionInput').value = '';
     
     // Load categories and materials
     await loadProductCategories();
     await loadProductMaterials();
+    
+    // Show form
+    document.getElementById('productForm').style.display = 'block';
     
     // Scroll to form
     document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
