@@ -701,7 +701,7 @@ window.showProductForm = async function() {
     document.getElementById('productDeliverySet').value = '';
     
     // Reset component checkboxes and materials
-    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container', 'decoration', 'over_cap', 'shoulder', 'pump', 'nameplate', 'cap_decoration', 'cap'];
     componentTypes.forEach(type => {
         const checkbox = document.getElementById('comp_' + type);
         const materialSelect = document.getElementById('material_' + type);
@@ -828,14 +828,21 @@ window.saveProductData = async function() {
         
         // Collect components
         const components = [];
-        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container', 'decoration', 'over_cap', 'shoulder', 'pump', 'nameplate', 'cap_decoration', 'cap'];
         const componentNames = {
             'outer_cap': '외캡',
             'inner_cap': '내캡',
             'single_cap': '단캡',
             'lid': '리드',
             'outer_container': '외용기',
-            'inner_container': '내용기'
+            'inner_container': '내용기',
+            'decoration': '알장식',
+            'over_cap': '오버캡',
+            'shoulder': '숄더',
+            'pump': '펌프',
+            'nameplate': '명판',
+            'cap_decoration': '외캡장식',
+            'cap': '캡'
         };
         
         componentTypes.forEach(type => {
@@ -2146,7 +2153,7 @@ async function loadProductMaterials() {
         const categories = await window.getAllCategories();
         
         // Load materials for all component dropdowns
-        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+        const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container', 'decoration', 'over_cap', 'shoulder', 'pump', 'nameplate', 'cap_decoration', 'cap'];
         
         componentTypes.forEach(type => {
             const select = document.getElementById('material_' + type);
@@ -2176,7 +2183,7 @@ async function loadProductMaterials() {
 
 // Setup component checkbox event listeners
 function setupComponentCheckboxes() {
-    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container', 'decoration', 'over_cap', 'shoulder', 'pump', 'nameplate', 'cap_decoration', 'cap'];
     
     componentTypes.forEach(type => {
         const checkbox = document.getElementById('comp_' + type);
