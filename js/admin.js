@@ -2163,26 +2163,78 @@ window.showSampleDetail = function(sampleId) {
                 </div>
             ` : ''}
             
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                <button onclick="updateSampleStatus('${sample.id}', 'approved'); closeSampleDetail();" style="padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    ✅ 승인
-                </button>
-                <button onclick="updateSampleStatus('${sample.id}', 'rejected'); closeSampleDetail();" style="padding: 14px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    ❌ 거절
-                </button>
-                <button onclick="updateSampleStatus('${sample.id}', 'completed'); closeSampleDetail();" style="padding: 14px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    ✔️ 완료
-                </button>
-                <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided}); closeSampleDetail();" style="padding: 14px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    ${sample.provided ? '↩️ 미제공으로 변경' : '📦 제공완료로 변경'}
-                </button>
-                <button onclick="closeSampleDetail(); addAdminMemo('${sample.id}', \`${(sample.adminMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" style="padding: 14px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    📝 업체 피드백 메모
-                </button>
-                <button onclick="closeSampleDetail(); addHistoryMemo('${sample.id}', \`${(sample.historyMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" style="padding: 14px; background: #6f42c1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
-                    📋 이력 메모
-                </button>
-                <button onclick="if(confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) { deleteSampleRequest('${sample.id}'); closeSampleDetail(); }" style="padding: 14px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; grid-column: span 2;">
+            <!-- Action Buttons Section -->
+            <div style="border-top: 2px solid #f0f0f0; padding-top: 25px; margin-top: 25px;">
+                <!-- Status Change Section -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #666; font-weight: 600;">상태 변경</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <button onclick="updateSampleStatus('${sample.id}', 'approved'); closeSampleDetail();" 
+                                style="padding: 12px 20px; background: ${sample.status === 'approved' ? '#28a745' : '#fff'}; 
+                                       color: ${sample.status === 'approved' ? '#fff' : '#28a745'}; 
+                                       border: 2px solid #28a745; border-radius: 10px; cursor: pointer; 
+                                       font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                       box-shadow: ${sample.status === 'approved' ? '0 2px 8px rgba(40, 167, 69, 0.3)' : 'none'};">
+                            ✅ 승인
+                        </button>
+                        <button onclick="updateSampleStatus('${sample.id}', 'rejected'); closeSampleDetail();" 
+                                style="padding: 12px 20px; background: ${sample.status === 'rejected' ? '#dc3545' : '#fff'}; 
+                                       color: ${sample.status === 'rejected' ? '#fff' : '#dc3545'}; 
+                                       border: 2px solid #dc3545; border-radius: 10px; cursor: pointer; 
+                                       font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                       box-shadow: ${sample.status === 'rejected' ? '0 2px 8px rgba(220, 53, 69, 0.3)' : 'none'};">
+                            ❌ 거절
+                        </button>
+                        <button onclick="updateSampleStatus('${sample.id}', 'completed'); closeSampleDetail();" 
+                                style="padding: 12px 20px; background: ${sample.status === 'completed' ? '#6c757d' : '#fff'}; 
+                                       color: ${sample.status === 'completed' ? '#fff' : '#6c757d'}; 
+                                       border: 2px solid #6c757d; border-radius: 10px; cursor: pointer; 
+                                       font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                       box-shadow: ${sample.status === 'completed' ? '0 2px 8px rgba(108, 117, 125, 0.3)' : 'none'};">
+                            ✔️ 완료
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sample Provided Toggle -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #666; font-weight: 600;">샘플 제공 여부</h4>
+                    <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided}); closeSampleDetail();" 
+                            style="width: 100%; padding: 12px 20px; background: ${sample.provided ? '#17a2b8' : '#fff'}; 
+                                   color: ${sample.provided ? '#fff' : '#17a2b8'}; 
+                                   border: 2px solid #17a2b8; border-radius: 10px; cursor: pointer; 
+                                   font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                   box-shadow: ${sample.provided ? '0 2px 8px rgba(23, 162, 184, 0.3)' : 'none'};">
+                        📦 ${sample.provided ? '제공완료 ✓' : '미제공 → 제공완료로 변경'}
+                    </button>
+                </div>
+                
+                <!-- Memo Buttons -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #666; font-weight: 600;">메모 관리</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button onclick="closeSampleDetail(); addAdminMemo('${sample.id}', \`${(sample.adminMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" 
+                                style="padding: 12px 20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); 
+                                       color: white; border: none; border-radius: 10px; cursor: pointer; 
+                                       font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                       box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);">
+                            📝 업체 피드백 메모
+                        </button>
+                        <button onclick="closeSampleDetail(); addHistoryMemo('${sample.id}', \`${(sample.historyMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" 
+                                style="padding: 12px 20px; background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); 
+                                       color: white; border: none; border-radius: 10px; cursor: pointer; 
+                                       font-size: 0.95rem; font-weight: 600; transition: all 0.2s;
+                                       box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);">
+                            📋 이력 메모
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Delete Button -->
+                <button onclick="if(confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) { deleteSampleRequest('${sample.id}', true); closeSampleDetail(); }" 
+                        style="width: 100%; padding: 12px 20px; background: #fff; color: #dc3545; 
+                               border: 2px solid #dc3545; border-radius: 10px; cursor: pointer; 
+                               font-size: 0.95rem; font-weight: 600; transition: all 0.2s;">
                     🗑️ 삭제
                 </button>
             </div>
