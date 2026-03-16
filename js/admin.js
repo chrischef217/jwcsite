@@ -2029,9 +2029,13 @@ async function loadProductMaterials() {
 // ========== SAMPLE REQUESTS MANAGEMENT ==========
 
 // Load samples list
+// Store samples data globally for detail popup
+let allSamplesData = [];
+
 async function loadSamplesList() {
     try {
         const samples = await window.getAllSamples();
+        allSamplesData = samples; // Store for detail view
         const container = document.getElementById('samplesList');
         
         if (!samples || samples.length === 0) {
@@ -2039,9 +2043,24 @@ async function loadSamplesList() {
             return;
         }
         
-        let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+        // Table-style list view
+        let html = `
+            <table style="width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">No</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">회사명</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">담당자</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">제품</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">상태</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">제공여부</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">신청일</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
         
-        samples.forEach(sample => {
+        samples.forEach((sample, index) => {
             const statusBadge = {
                 'pending': '<span style="background: #ffc107; color: #000; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">대기중</span>',
                 'approved': '<span style="background: #28a745; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">승인</span>',
@@ -2050,90 +2069,23 @@ async function loadSamplesList() {
             };
             
             const providedBadge = sample.provided ? 
-                '<span style="background: #17a2b8; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">제공완료</span>' : 
-                '<span style="background: #e9ecef; color: #6c757d; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">미제공</span>';
+                '<span style="background: #17a2b8; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✓</span>' : 
+                '<span style="background: #e9ecef; color: #6c757d; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✗</span>';
             
             html += `
-                <div style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
-                        <div>
-                            <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; color: #333;">
-                                ${sample.company} - ${sample.name}
-                            </h3>
-                            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                                ${statusBadge[sample.status] || statusBadge['pending']}
-                                ${providedBadge}
-                            </div>
-                            <p style="color: #999; font-size: 0.9rem; margin: 0;">
-                                신청일: ${new Date(sample.createdAt).toLocaleString('ko-KR')}
-                            </p>
-                        </div>
-                        <button onclick="deleteSampleRequest('${sample.id}')" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            🗑️ 삭제
-                        </button>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📞 연락처 정보</h4>
-                            <p style="margin: 5px 0; color: #666;"><strong>전화:</strong> ${sample.phone}</p>
-                            <p style="margin: 5px 0; color: #666;"><strong>이메일:</strong> ${sample.email}</p>
-                            <p style="margin: 5px 0; color: #666;"><strong>주소:</strong> ${sample.address || '-'}</p>
-                        </div>
-                        <div>
-                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">📦 제품 정보</h4>
-                            <p style="margin: 5px 0; color: #666;"><strong>제품명:</strong> ${sample.product?.name || '-'}</p>
-                            <p style="margin: 5px 0; color: #666;"><strong>모델:</strong> ${sample.product?.model || '-'}</p>
-                            <p style="margin: 5px 0; color: #666;"><strong>용량:</strong> ${sample.product?.volume || '-'}</p>
-                        </div>
-                    </div>
-                    
-                    ${sample.message ? `
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                            <h4 style="font-size: 1rem; color: #333; margin: 0 0 10px 0;">💬 문의 내용</h4>
-                            <p style="margin: 0; color: #666; white-space: pre-wrap;">${sample.message}</p>
-                        </div>
-                    ` : ''}
-                    
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button onclick="updateSampleStatus('${sample.id}', 'approved')" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            ✅ 승인
-                        </button>
-                        <button onclick="updateSampleStatus('${sample.id}', 'rejected')" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            ❌ 거절
-                        </button>
-                        <button onclick="updateSampleStatus('${sample.id}', 'completed')" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            ✔️ 완료
-                        </button>
-                        <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided})" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            ${sample.provided ? '↩️ 미제공으로 변경' : '📦 제공완료로 변경'}
-                        </button>
-                        <button onclick="addAdminMemo('${sample.id}', \`${(sample.adminMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            📝 업체 피드백 메모
-                        </button>
-                        <button onclick="addHistoryMemo('${sample.id}', \`${(sample.historyMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                            📋 이력 메모
-                        </button>
-                    </div>
-                    
-                    ${sample.adminMemo ? `
-                        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #007bff;">
-                            <h4 style="font-size: 0.95rem; color: #007bff; margin: 0 0 8px 0;">📝 업체 피드백 메모</h4>
-                            <p style="margin: 0; color: #495057; white-space: pre-wrap;">${sample.adminMemo}</p>
-                        </div>
-                    ` : ''}
-                    
-                    ${sample.historyMemo ? `
-                        <div style="background: #f3e7ff; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #6f42c1;">
-                            <h4 style="font-size: 0.95rem; color: #6f42c1; margin: 0 0 8px 0;">📋 이력 메모</h4>
-                            <p style="margin: 0; color: #495057; white-space: pre-wrap;">${sample.historyMemo}</p>
-                        </div>
-                    ` : ''}
-                </div>
+                <tr onclick="showSampleDetail('${sample.id}')" style="cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                    <td style="padding: 15px; color: #666;">${samples.length - index}</td>
+                    <td style="padding: 15px; color: #333; font-weight: 600;">${sample.company}</td>
+                    <td style="padding: 15px; color: #666;">${sample.name}</td>
+                    <td style="padding: 15px; color: #666;">${sample.product?.name || '-'}</td>
+                    <td style="padding: 15px; text-align: center;">${statusBadge[sample.status] || statusBadge['pending']}</td>
+                    <td style="padding: 15px; text-align: center;">${providedBadge}</td>
+                    <td style="padding: 15px; color: #999; font-size: 0.9rem;">${new Date(sample.createdAt).toLocaleDateString('ko-KR')}</td>
+                </tr>
             `;
         });
         
-        html += '</div>';
+        html += '</tbody></table>';
         container.innerHTML = html;
         
     } catch (error) {
@@ -2142,11 +2094,122 @@ async function loadSamplesList() {
     }
 }
 
+// Show sample detail in modal
+window.showSampleDetail = function(sampleId) {
+    const sample = allSamplesData.find(s => s.id === sampleId);
+    if (!sample) return;
+    
+    const statusBadge = {
+        'pending': '<span style="background: #ffc107; color: #000; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">대기중</span>',
+        'approved': '<span style="background: #28a745; color: #fff; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">승인</span>',
+        'rejected': '<span style="background: #dc3545; color: #fff; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">거절</span>',
+        'completed': '<span style="background: #6c757d; color: #fff; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">완료</span>'
+    };
+    
+    const providedBadge = sample.provided ? 
+        '<span style="background: #17a2b8; color: #fff; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">제공완료</span>' : 
+        '<span style="background: #e9ecef; color: #6c757d; padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 600;">미제공</span>';
+    
+    const modalContent = `
+        <div style="padding: 30px; max-height: 80vh; overflow-y: auto;">
+            <div style="margin-bottom: 25px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 1.8rem; color: #333;">${sample.company} - ${sample.name}</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    ${statusBadge[sample.status] || statusBadge['pending']}
+                    ${providedBadge}
+                </div>
+                <p style="color: #999; font-size: 0.95rem; margin: 0;">신청일: ${new Date(sample.createdAt).toLocaleString('ko-KR')}</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                    <h3 style="font-size: 1.1rem; color: #333; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                        📞 연락처 정보
+                    </h3>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>전화:</strong> ${sample.phone}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>이메일:</strong> ${sample.email}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>주소:</strong> ${sample.address || '-'}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                    <h3 style="font-size: 1.1rem; color: #333; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                        📦 제품 정보
+                    </h3>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>제품명:</strong> ${sample.product?.name || '-'}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>모델:</strong> ${sample.product?.model || '-'}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>용량:</strong> ${sample.product?.volume || '-'}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>사이즈:</strong> ${sample.product?.size || '-'}</p>
+                    <p style="margin: 8px 0; color: #666; line-height: 1.6;"><strong>재질:</strong> ${sample.product?.material || '-'}</p>
+                </div>
+            </div>
+            
+            ${sample.message ? `
+                <div style="background: #fff8e1; padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #ffc107;">
+                    <h3 style="font-size: 1.1rem; color: #f57c00; margin: 0 0 12px 0;">💬 문의 내용</h3>
+                    <p style="margin: 0; color: #666; white-space: pre-wrap; line-height: 1.8;">${sample.message}</p>
+                </div>
+            ` : ''}
+            
+            ${sample.adminMemo ? `
+                <div style="background: #e7f3ff; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #007bff;">
+                    <h3 style="font-size: 1.05rem; color: #007bff; margin: 0 0 12px 0;">📝 업체 피드백 메모</h3>
+                    <p style="margin: 0; color: #495057; white-space: pre-wrap; line-height: 1.8;">${sample.adminMemo}</p>
+                </div>
+            ` : ''}
+            
+            ${sample.historyMemo ? `
+                <div style="background: #f3e7ff; padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #6f42c1;">
+                    <h3 style="font-size: 1.05rem; color: #6f42c1; margin: 0 0 12px 0;">📋 이력 메모</h3>
+                    <p style="margin: 0; color: #495057; white-space: pre-wrap; line-height: 1.8;">${sample.historyMemo}</p>
+                </div>
+            ` : ''}
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <button onclick="updateSampleStatus('${sample.id}', 'approved'); closeSampleDetail();" style="padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    ✅ 승인
+                </button>
+                <button onclick="updateSampleStatus('${sample.id}', 'rejected'); closeSampleDetail();" style="padding: 14px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    ❌ 거절
+                </button>
+                <button onclick="updateSampleStatus('${sample.id}', 'completed'); closeSampleDetail();" style="padding: 14px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    ✔️ 완료
+                </button>
+                <button onclick="toggleSampleProvided('${sample.id}', ${!sample.provided}); closeSampleDetail();" style="padding: 14px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    ${sample.provided ? '↩️ 미제공으로 변경' : '📦 제공완료로 변경'}
+                </button>
+                <button onclick="closeSampleDetail(); addAdminMemo('${sample.id}', \`${(sample.adminMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" style="padding: 14px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    📝 업체 피드백 메모
+                </button>
+                <button onclick="closeSampleDetail(); addHistoryMemo('${sample.id}', \`${(sample.historyMemo || '').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);" style="padding: 14px; background: #6f42c1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                    📋 이력 메모
+                </button>
+                <button onclick="if(confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) { deleteSampleRequest('${sample.id}'); closeSampleDetail(); }" style="padding: 14px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; grid-column: span 2;">
+                    🗑️ 삭제
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('sampleDetailContent').innerHTML = modalContent;
+    document.getElementById('sampleDetailModal').style.display = 'block';
+}
+
+window.closeSampleDetail = function() {
+    document.getElementById('sampleDetailModal').style.display = 'none';
+}
+
 // Update sample status
 window.updateSampleStatus = async function(sampleId, newStatus) {
     try {
         await window.updateSample(sampleId, { status: newStatus });
-        alert('✅ 상태가 변경되었습니다.');
+        
+        const statusText = {
+            'approved': '승인',
+            'rejected': '거절',
+            'completed': '완료',
+            'pending': '대기중'
+        };
+        
+        showToast(`✅ 상태가 "${statusText[newStatus]}"(으)로 변경되었습니다.`);
         loadSamplesList();
     } catch (error) {
         alert('❌ 상태 변경 실패: ' + error.message);
@@ -2157,11 +2220,35 @@ window.updateSampleStatus = async function(sampleId, newStatus) {
 window.toggleSampleProvided = async function(sampleId, provided) {
     try {
         await window.updateSample(sampleId, { provided: provided });
-        alert(`✅ ${provided ? '제공완료' : '미제공'}로 변경되었습니다.`);
+        showToast(`✅ ${provided ? '제공완료' : '미제공'}로 변경되었습니다.`);
         loadSamplesList();
     } catch (error) {
         alert('❌ 상태 변경 실패: ' + error.message);
     }
+}
+
+// Show toast notification
+function showToast(message, color = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)') {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10001;
+        animation: slideInRight 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
 }
 
 // Add admin memo
@@ -2209,27 +2296,7 @@ window.saveMemo = async function() {
             
         await window.updateSample(currentMemoSampleId, updateData);
         
-        // Show success notification
-        const notification = document.createElement('div');
-        notification.textContent = '✅ 메모가 저장되었습니다.';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 10001;
-            animation: slideInRight 0.3s ease;
-        `;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 2000);
+        showToast('✅ 메모가 저장되었습니다.');
         
         closeMemoModal();
         loadSamplesList();
@@ -2240,8 +2307,13 @@ window.saveMemo = async function() {
 
 // Close modal on ESC key
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('memoModal').style.display === 'block') {
-        closeMemoModal();
+    if (e.key === 'Escape') {
+        if (document.getElementById('memoModal').style.display === 'block') {
+            closeMemoModal();
+        }
+        if (document.getElementById('sampleDetailModal').style.display === 'block') {
+            closeSampleDetail();
+        }
     }
 });
 
@@ -2252,13 +2324,19 @@ document.getElementById('memoModal')?.addEventListener('click', function(e) {
     }
 });
 
+document.getElementById('sampleDetailModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSampleDetail();
+    }
+});
+
 // Delete sample request
-window.deleteSampleRequest = async function(sampleId) {
-    if (!confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) return;
+window.deleteSampleRequest = async function(sampleId, skipConfirm = false) {
+    if (!skipConfirm && !confirm('정말 이 샘플 신청을 삭제하시겠습니까?')) return;
     
     try {
         await window.deleteSample(sampleId);
-        alert('✅ 샘플 신청이 삭제되었습니다.');
+        showToast('✅ 샘플 신청이 삭제되었습니다.', 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)');
         loadSamplesList();
     } catch (error) {
         alert('❌ 삭제 실패: ' + error.message);
