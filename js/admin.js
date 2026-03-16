@@ -2031,11 +2031,14 @@ async function loadProductMaterials() {
 // Load samples list
 // Store samples data globally for detail popup
 let allSamplesData = [];
+let currentSamplePage = 1;
+const samplesPerPage = 10;
 
-async function loadSamplesList() {
+async function loadSamplesList(page = 1) {
     try {
         const samples = await window.getAllSamples();
         allSamplesData = samples; // Store for detail view
+        currentSamplePage = page;
         const container = document.getElementById('samplesList');
         
         if (!samples || samples.length === 0) {
@@ -2043,9 +2046,15 @@ async function loadSamplesList() {
             return;
         }
         
+        // Calculate pagination
+        const totalPages = Math.ceil(samples.length / samplesPerPage);
+        const startIndex = (page - 1) * samplesPerPage;
+        const endIndex = startIndex + samplesPerPage;
+        const paginatedSamples = samples.slice(startIndex, endIndex);
+        
         // Table-style list view
         let html = `
-            <table style="width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <table style="width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
                 <thead>
                     <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <th style="padding: 15px; text-align: left; font-weight: 600;">No</th>
@@ -2060,7 +2069,8 @@ async function loadSamplesList() {
                 <tbody>
         `;
         
-        samples.forEach((sample, index) => {
+        paginatedSamples.forEach((sample, index) => {
+            const globalIndex = startIndex + index;
             const statusBadge = {
                 'pending': '<span style="background: #ffc107; color: #000; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">대기중</span>',
                 'approved': '<span style="background: #28a745; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">승인</span>',
@@ -2074,7 +2084,7 @@ async function loadSamplesList() {
             
             html += `
                 <tr onclick="showSampleDetail('${sample.id}')" style="cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
-                    <td style="padding: 15px; color: #666;">${samples.length - index}</td>
+                    <td style="padding: 15px; color: #666;">${samples.length - globalIndex}</td>
                     <td style="padding: 15px; color: #333; font-weight: 600;">${sample.company}</td>
                     <td style="padding: 15px; color: #666;">${sample.name}</td>
                     <td style="padding: 15px; color: #666;">${sample.product?.name || '-'}</td>
@@ -2086,6 +2096,54 @@ async function loadSamplesList() {
         });
         
         html += '</tbody></table>';
+        
+        // Add pagination if needed
+        if (totalPages > 1) {
+            html += '<div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 20px;">';
+            
+            // Previous button
+            if (page > 1) {
+                html += `<button onclick="loadSamplesList(${page - 1})" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; color: #666; font-weight: 600; transition: all 0.2s;">‹</button>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (
+                    i === 1 || // First page
+                    i === totalPages || // Last page
+                    (i >= page - 2 && i <= page + 2) // Pages around current
+                ) {
+                    const isActive = i === page;
+                    html += `
+                        <button onclick="loadSamplesList(${i})" 
+                                style="padding: 8px 14px; 
+                                       background: ${isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white'}; 
+                                       border: ${isActive ? 'none' : '1px solid #ddd'}; 
+                                       border-radius: 6px; 
+                                       cursor: pointer; 
+                                       color: ${isActive ? 'white' : '#666'}; 
+                                       font-weight: ${isActive ? '700' : '600'}; 
+                                       transition: all 0.2s;
+                                       box-shadow: ${isActive ? '0 2px 8px rgba(102, 126, 234, 0.3)' : 'none'};">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += '<span style="color: #999; padding: 0 5px;">...</span>';
+                }
+            }
+            
+            // Next button
+            if (page < totalPages) {
+                html += `<button onclick="loadSamplesList(${page + 1})" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; color: #666; font-weight: 600; transition: all 0.2s;">›</button>`;
+            }
+            
+            html += '</div>';
+            
+            // Page info
+            html += `<p style="text-align: center; color: #999; font-size: 0.9rem; margin-top: 10px;">전체 ${samples.length}개 중 ${startIndex + 1}-${Math.min(endIndex, samples.length)}개 표시 (${page}/${totalPages} 페이지)</p>`;
+        }
+        
         container.innerHTML = html;
         
     } catch (error) {
@@ -2262,7 +2320,7 @@ window.updateSampleStatus = async function(sampleId, newStatus) {
         };
         
         showToast(`✅ 상태가 "${statusText[newStatus]}"(으)로 변경되었습니다.`);
-        loadSamplesList();
+        loadSamplesList(currentSamplePage);
     } catch (error) {
         alert('❌ 상태 변경 실패: ' + error.message);
     }
@@ -2273,7 +2331,7 @@ window.toggleSampleProvided = async function(sampleId, provided) {
     try {
         await window.updateSample(sampleId, { provided: provided });
         showToast(`✅ ${provided ? '제공완료' : '미제공'}로 변경되었습니다.`);
-        loadSamplesList();
+        loadSamplesList(currentSamplePage);
     } catch (error) {
         alert('❌ 상태 변경 실패: ' + error.message);
     }
@@ -2351,7 +2409,7 @@ window.saveMemo = async function() {
         showToast('✅ 메모가 저장되었습니다.');
         
         closeMemoModal();
-        loadSamplesList();
+        loadSamplesList(currentSamplePage);
     } catch (error) {
         alert('❌ 메모 저장 실패: ' + error.message);
     }
@@ -2389,7 +2447,13 @@ window.deleteSampleRequest = async function(sampleId, skipConfirm = false) {
     try {
         await window.deleteSample(sampleId);
         showToast('✅ 샘플 신청이 삭제되었습니다.', 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)');
-        loadSamplesList();
+        
+        // If current page becomes empty after delete, go to previous page
+        const totalItems = allSamplesData.length - 1; // After deletion
+        const totalPages = Math.ceil(totalItems / samplesPerPage);
+        const newPage = currentSamplePage > totalPages ? Math.max(1, totalPages) : currentSamplePage;
+        
+        loadSamplesList(newPage);
     } catch (error) {
         alert('❌ 삭제 실패: ' + error.message);
     }
