@@ -755,8 +755,17 @@ window.saveProductData = async function() {
         const material = document.getElementById('productMaterial').value;
         const imageInput = document.getElementById('productImageInput');
         
+        console.log('Saving product:', { name, model, size, volume, category, material });
+        
         if (!name || !model || !volume || !category || !material) {
             alert('필수 항목을 모두 입력해주세요.');
+            console.error('Missing required fields:', { 
+                name: !!name, 
+                model: !!model, 
+                volume: !!volume, 
+                category: !!category, 
+                material: !!material 
+            });
             return;
         }
         
@@ -770,6 +779,8 @@ window.saveProductData = async function() {
             material,
             createdAt: currentEditingProduct ? currentEditingProduct.createdAt : new Date().toISOString()
         };
+        
+        console.log('Product data before save:', productData);
         
         // Handle image
         if (imageInput.files && imageInput.files[0]) {
@@ -1980,7 +1991,10 @@ async function loadProductMaterials() {
         const categories = await window.getAllCategories();
         const select = document.getElementById('productMaterial');
         
-        if (!select) return;
+        if (!select) {
+            console.error('productMaterial select element not found!');
+            return;
+        }
         
         select.innerHTML = '<option value="">선택하세요</option>';
         
@@ -1991,6 +2005,9 @@ async function loadProductMaterials() {
                 option.textContent = mat.nameKo || mat.name;
                 select.appendChild(option);
             });
+            console.log('✅ Loaded materials:', categories.materials.length);
+        } else {
+            console.warn('⚠️ No materials found in categories');
         }
     } catch (error) {
         console.error('Failed to load materials:', error);
