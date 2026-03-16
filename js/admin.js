@@ -865,7 +865,18 @@ window.saveProductData = async function() {
             createdAt: currentEditingProduct ? currentEditingProduct.createdAt : new Date().toISOString()
         };
         
-        console.log('Product data before save:', productData);
+        console.log('📊 Product data collected:', {
+            code,
+            volume,
+            diameter,
+            bodySize,
+            totalHeight,
+            category,
+            componentsCount: components.length,
+            components,
+            assembly: assembly ? 'YES' : 'NO',
+            deliverySet: deliverySet ? 'YES' : 'NO'
+        });
         
         // Handle main image
         if (imageInput.files && imageInput.files[0]) {
@@ -2155,11 +2166,48 @@ async function loadProductMaterials() {
             }
         });
         
+        // Setup checkbox event listeners
+        setupComponentCheckboxes();
+        
         console.log('✅ Loaded materials for all component dropdowns');
     } catch (error) {
         console.error('Failed to load materials:', error);
     }
 }
+
+// Setup component checkbox event listeners
+function setupComponentCheckboxes() {
+    const componentTypes = ['outer_cap', 'inner_cap', 'single_cap', 'lid', 'outer_container', 'inner_container'];
+    
+    componentTypes.forEach(type => {
+        const checkbox = document.getElementById('comp_' + type);
+        const materialSelect = document.getElementById('material_' + type);
+        
+        if (checkbox && materialSelect) {
+            // Remove existing listener if any
+            checkbox.removeEventListener('change', handleCheckboxChange);
+            
+            // Add new listener
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    materialSelect.disabled = false;
+                    materialSelect.parentElement.style.borderColor = '#667eea';
+                    materialSelect.parentElement.style.backgroundColor = '#f8f9ff';
+                } else {
+                    materialSelect.disabled = true;
+                    materialSelect.value = '';
+                    materialSelect.parentElement.style.borderColor = '#e0e0e0';
+                    materialSelect.parentElement.style.backgroundColor = 'transparent';
+                }
+            });
+        }
+    });
+    
+    console.log('✅ Setup component checkbox listeners');
+}
+
+// Dummy function for removeEventListener
+function handleCheckboxChange() {}
 
 // ========== SAMPLE REQUESTS MANAGEMENT ==========
 

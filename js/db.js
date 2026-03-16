@@ -164,27 +164,41 @@ async function getAllProducts() {
 // Save product (create or update)
 async function saveProduct(productData) {
     try {
-        console.log('💾 Saving product:', productData.name);
+        console.log('💾 Saving product:', productData.code);
         
-        // Compress image if it's a file
+        // Compress main image if it's a file
         if (productData.image && productData.image instanceof File) {
             productData.imageData = await compressImage(productData.image, 800, 0.85);
         }
         
+        // Compress cross section image if it's a file
+        if (productData.crossSectionImage && productData.crossSectionImage instanceof File) {
+            productData.crossSectionImageData = await compressImage(productData.crossSectionImage, 800, 0.85);
+        }
+        
+        // Build the payload with new data structure
+        const payload = {
+            id: productData.id || Date.now().toString(),
+            code: productData.code,
+            volume: productData.volume,
+            diameter: productData.diameter || '',
+            bodySize: productData.bodySize || '',
+            totalHeight: productData.totalHeight || '',
+            category: productData.category,
+            components: productData.components || [],
+            assembly: productData.assembly || '',
+            deliverySet: productData.deliverySet || '',
+            imageData: productData.imageData || productData.image,
+            crossSectionImageData: productData.crossSectionImageData || '',
+            createdAt: productData.createdAt || new Date().toISOString()
+        };
+        
+        console.log('💾 Payload to save:', payload);
+        
         const response = await fetch('/api/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: productData.id || Date.now().toString(),
-                name: productData.name,
-                model: productData.model,
-                size: productData.size,
-                volume: productData.volume,
-                category: productData.category,
-                material: productData.material,
-                imageData: productData.imageData || productData.image,
-                createdAt: productData.createdAt || new Date().toISOString()
-            })
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) throw new Error('Failed to save product');
